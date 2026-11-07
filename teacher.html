@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Кабинет преподавателя · Академия УЗИ</title>
+<style>
+:root{--bg:#f3f6f7;--paper:#fff;--ink:#18232f;--muted:#5b6b78;--line:#d5e0e3;--navy:#1f3864;--teal:#007a7a;--soft:#e2f1f1;--bad:#b3261e;--bad-soft:#fbe7e5;--ok:#1e7a46;--ok-soft:#e3f3e9;--warn:#8a5a00;--warn-soft:#fff4d6}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1519;--paper:#172027;--ink:#e5edf0;--muted:#9db0ba;--line:#2b3a43;--navy:#9cb6e6;--teal:#4cc3c3;--soft:#16302f;--bad:#ff8a80;--bad-soft:#3a1d1b;--ok:#6ad19a;--ok-soft:#163024;--warn:#f2c86b;--warn-soft:#3a2f14}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "PT Sans","Segoe UI",Arial,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:24px 16px 56px;display:grid;gap:16px}
+.eyebrow{font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+h1{font:700 clamp(26px,5vw,34px)/1.15 Georgia,"Times New Roman",serif;color:var(--navy);margin:6px 0 0}
+h2{font:700 18px/1.3 Georgia,serif;color:var(--navy);margin:0}
+h3{font-size:15px;margin:0;color:var(--navy)}
+p{margin:0}
+.muted{color:var(--muted)} .small{font-size:13px}
+a{color:var(--teal)} a.back{font-size:14px;font-weight:700;text-decoration:none}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px clamp(12px,3vw,22px);display:grid;gap:12px;min-width:0}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1.5px solid var(--line)}
+.tabs button{font:inherit;font-weight:700;background:none;border:0;border-bottom:3px solid transparent;padding:8px 10px;color:var(--muted);cursor:pointer;margin-bottom:-1.5px}
+.tabs button[aria-selected="true"]{color:var(--navy);border-bottom-color:var(--navy)}
+.badge{display:inline-block;min-width:20px;padding:0 6px;border-radius:10px;background:var(--bad);color:#fff;font-size:12px;text-align:center;margin-left:4px}
+input[type=text],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
+textarea{width:100%;min-height:120px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--teal);outline-offset:1px;border-color:var(--teal)}
+.btn{font:inherit;font-weight:700;border-radius:8px;padding:8px 14px;cursor:pointer;border:1.5px solid var(--navy);background:var(--paper);color:var(--navy);white-space:nowrap}
+.btn.primary{background:var(--navy);color:var(--paper)}
+.btn.sm{padding:3px 9px;font-size:13px}
+.btn.danger{border-color:var(--bad);color:var(--bad)}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>input[type=text]{flex:1 1 200px}
+.err{color:var(--bad);font-weight:700} .ok{color:var(--ok);font-weight:700}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:7px 6px;border-top:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:700;border-top:0;white-space:nowrap}
+th.sort{cursor:pointer} th.sort:hover{color:var(--navy)}
+td.n,th.n{text-align:right;font-family:ui-monospace,Consolas,monospace;white-space:nowrap}
+tr.click{cursor:pointer} tr.click:hover td{background:var(--soft)}
+.pct{font-weight:700}.pct.g{color:var(--ok)}.pct.b{color:var(--bad)}
+.st{font-size:12px;font-weight:700;border-radius:6px;padding:1px 6px;white-space:nowrap}
+.st.active{background:var(--ok-soft);color:var(--ok)} .st.pending{background:var(--warn-soft);color:var(--warn)} .st.blocked{background:var(--bad-soft);color:var(--bad)}
+.creds{background:var(--soft);border-radius:8px;padding:12px;display:grid;gap:8px}
+.creds pre{margin:0;font:13px/1.5 ui-monospace,Consolas,monospace;white-space:pre-wrap}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{background:var(--soft);border-radius:8px;padding:10px 12px;display:grid;gap:2px}
+.stat span{font-size:13px;color:var(--muted)} .stat b{font:700 22px/1.1 Georgia,serif;color:var(--navy)}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;min-width:60px}
+.bar i{display:block;height:100%;background:var(--bad)}
+dialog{border:1px solid var(--line);border-radius:12px;padding:0;max-width:min(720px,94vw);width:100%;background:var(--paper);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog .card{border:0}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a7b83">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+<div class="wrap">
+  <header><a class="back" href="./">← Все тесты</a> · <a class="back" href="account.html">Личный кабинет</a><br><span class="eyebrow">Академия УЗИ</span><h1>Кабинет преподавателя</h1></header>
+  <p class="muted" id="loading">Загрузка…</p>
+  <section class="card" id="denied" hidden><p id="denied-text"></p><p><a href="account.html">Перейти ко входу</a></p></section>
+
+  <div id="app" hidden style="display:grid;gap:16px">
+    <div class="tabs" role="tablist">
+      <button type="button" data-tab="sum" aria-selected="true">Сводка</button>
+      <button type="button" data-tab="students" aria-selected="false">Курсанты</button>
+      <button type="button" data-tab="add" aria-selected="false">Добавить</button>
+      <button type="button" data-tab="req" aria-selected="false">Заявки<span class="badge" id="req-n" hidden></span></button>
+      <button type="button" data-tab="groups" aria-selected="false">Группы</button>
+    </div>
+    <div class="row"><label for="gsel" class="muted small">Группа:</label><select id="gsel"></select><button class="btn sm" id="reload" type="button">Обновить</button><span class="muted small" id="upd"></span></div>
+
+    <!-- ===== Сводка ===== -->
+    <div data-pane="sum" style="display:grid;gap:16px">
+      <section class="card">
+        <div class="stats">
+          <div class="stat"><span>Курсантов</span><b id="k-n">0</b></div>
+          <div class="stat"><span>Заходили за 7 дней</span><b id="k-act">0</b></div>
+          <div class="stat"><span>Попыток всего</span><b id="k-att">0</b></div>
+          <div class="stat"><span>Средний результат</span><b id="k-avg">—</b></div>
+        </div>
+      </section>
+      <section class="card">
+        <h2>Тесты</h2>
+        <p class="muted small">Сколько курсантов группы прошли тест и их средний лучший результат. Сначала самые слабые.</p>
+        <div class="scroll"><table><thead><tr><th>Тест</th><th class="n">Прошли</th><th class="n">Средний лучший</th><th class="n">Попыток</th></tr></thead><tbody id="t-tests"></tbody></table></div>
+        <p class="muted" id="t-tests-empty">Пока нет результатов.</p>
+      </section>
+      <section class="card">
+        <h2>Частые ошибки</h2>
+        <p class="muted small">Вопросы, в которых ошиблось больше всего курсантов группы — темы для разбора на занятии.</p>
+        <div class="scroll"><table><thead><tr><th>Вопрос</th><th>Тема</th><th class="n">Ошиблись</th><th></th></tr></thead><tbody id="t-errs"></tbody></table></div>
+        <p class="muted" id="t-errs-empty">Пока нет ошибок.</p>
+      </section>
+    </div>
+
+    <!-- ===== Курсанты ===== -->
+    <section class="card" data-pane="students" hidden>
+      <div class="row"><h2 style="flex:1">Курсанты</h2><input type="text" id="q" placeholder="Поиск по ФИО" style="flex:0 1 220px"><button class="btn sm" id="csv" type="button">Скачать таблицу</button></div>
+      <div class="scroll"><table><thead><tr>
+        <th class="sort" data-k="full_name">ФИО</th><th>Вход</th><th class="sort n" data-k="tests">Тестов</th><th class="sort n" data-k="avg">Средний</th>
+        <th class="sort n" data-k="last">Последняя активность</th><th class="sort n" data-k="overdue">Повторение</th><th>Статус</th></tr></thead><tbody id="t-st"></tbody></table></div>
+      <p class="muted small">Нажмите на курсанта — откроется его карточка: результаты, новый код, группа, блокировка. «Повторение»: сколько вопросов просрочено (было пора повторить больше суток назад) из всех в расписании.</p>
+    </section>
+
+    <!-- ===== Добавить ===== -->
+    <section class="card" data-pane="add" hidden>
+      <h2>Добавить курсантов по коду</h2>
+      <p class="muted">Впишите ФИО — по одному в строке. Каждому будут созданы логин и код для входа. Код виден <b>только сейчас</b>: сохраните или сразу отправьте. Потерянный код заменяется в карточке курсанта («Новый код»).</p>
+      <div class="row"><label class="muted small" for="add-g">В группу:</label><select id="add-g"></select></div>
+      <textarea id="add-names" placeholder="Асанова Асель Бекболотовна&#10;Иванов Иван Иванович"></textarea>
+      <div class="row"><button class="btn primary" id="add-go" type="button">Создать</button><span id="add-msg" role="status"></span></div>
+      <div id="add-out" hidden style="display:grid;gap:10px">
+        <div class="row"><h3 style="flex:1">Созданные аккаунты</h3><button class="btn sm" id="add-copy" type="button">Скопировать все</button></div>
+        <div class="scroll"><table><thead><tr><th>ФИО</th><th>Логин</th><th>Код</th><th></th></tr></thead><tbody id="add-rows"></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- ===== Заявки ===== -->
+    <section class="card" data-pane="req" hidden>
+      <h2>Заявки на подтверждение</h2>
+      <p class="muted">Курсанты, которые зарегистрировались сами по почте. Проверьте ФИО и почту, выберите группу и подтвердите. Незнакомых — отклоните.</p>
+      <div class="scroll"><table><thead><tr><th>ФИО</th><th>Почта</th><th>Дата</th><th>Группа</th><th></th></tr></thead><tbody id="t-req"></tbody></table></div>
+      <p class="muted" id="req-empty">Новых заявок нет.</p>
+    </section>
+
+    <!-- ===== Группы ===== -->
+    <section class="card" data-pane="groups" hidden>
+      <h2>Группы</h2>
+      <div class="row"><input type="text" id="g-name" maxlength="80" placeholder="Например: УЗД-2026, осень"><button class="btn primary" id="g-add" type="button">Создать группу</button><span id="g-msg" role="status"></span></div>
+      <div class="scroll"><table><thead><tr><th>Группа</th><th class="n">Курсантов</th><th class="n">Создана</th><th></th></tr></thead><tbody id="t-groups"></tbody></table></div>
+    </section>
+  </div>
+</div>
+
+<dialog id="dlg"><div class="card" id="dlg-body"></div></dialog>
+
+<script src="engine/vendor/supabase-js-2.119.0.umd.js"></script>
+<script src="engine/account.js"></script>
+<script>
+(function () {
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const A = window.AcadAccount, sb = A && A.client;
+const SITE = new URL("account.html", location.href).href;
+const MODE = { study: "учебный", exam: "экзамен", review: "ошибки", game: "игра", srs: "повторение" };
+const ST = { active: "активен", pending: "ждёт", blocked: "отключён" };
+const day = 864e5;
+const dt = s => s ? new Date(s).toLocaleDateString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit" }) : "—";
+const dtt = s => s ? new Date(s).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—";
+const ago = s => { if (!s) return "никогда"; const d = Math.floor((Date.now() - Date.parse(s)) / day); return d <= 0 ? "сегодня" : d === 1 ? "вчера" : d + " дн. назад"; };
+const pct = p => p == null ? "—" : `<span class="pct ${p >= 75 ? "g" : p < 60 ? "b" : ""}">${p}%</span>`;
+
+let D = { profiles: [], groups: [], attempts: [], srs: [], meta: {}, bank: {} };
+let group = "all", sortKey = "full_name", sortDir = 1;
+
+// ---------- серверная функция преподавателя ----------
+async function admin(body) {
+  const { data, error } = await sb.functions.invoke("teacher-admin", { body });
+  if (error) {
+    let msg = error.message;
+    try { const j = await error.context.json(); if (j && j.error) msg = j.error; } catch (e) {}
+    if (/Failed to send|fetch/i.test(msg)) msg = "Серверная функция teacher-admin недоступна. Проверьте, что она установлена в Supabase.";
+    throw new Error(msg);
+  }
+  return data;
+}
+const credText = (name, login, code) => `Академия УЗИ — вход в личный кабинет\n${name}\nСайт: ${SITE}\nЛогин: ${login}\nКод: ${code}`;
+const wa = t => "https://wa.me/?text=" + encodeURIComponent(t);
+function copy(text, el) {
+  const done = () => { if (el) { const o = el.textContent; el.textContent = "Скопировано"; setTimeout(() => el.textContent = o, 1500); } };
+  try { navigator.clipboard.writeText(text).then(done, () => prompt("Скопируйте:", text)); } catch (e) { prompt("Скопируйте:", text); }
+}
+
+// ---------- загрузка данных ----------
+async function fetchAll(q) { let out = []; for (let f = 0; ; f += 1000) { const { data, error } = await q().range(f, f + 999); if (error) throw error; out = out.concat(data); if (data.length < 1000) return out; } }
+async function load() {
+  $("upd").textContent = "загрузка…";
+  const [profiles, groups, attempts, srs, meta] = await Promise.all([
+    fetchAll(() => sb.from("profiles").select("id,full_name,login,role,status,group_id,created_at").order("full_name")),
+    fetchAll(() => sb.from("groups").select("id,name,created_at").order("created_at")),
+    fetchAll(() => sb.from("attempts").select("user_id,test_id,title,mode,correct,total,percent,wrong_ids,finished_at").order("finished_at", { ascending: false })),
+    fetchAll(() => sb.from("srs_cards").select("user_id,card->>due")),
+    sb.rpc("teacher_users_meta").then(r => r.error ? [] : r.data)
+  ]);
+  D.profiles = profiles; D.groups = groups; D.attempts = attempts; D.srs = srs;
+  D.meta = {}; (meta || []).forEach(m => D.meta[m.id] = m);
+  D.metaMissing = !meta || !meta.length;
+  await loadBank();
+  $("upd").textContent = "обновлено " + new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+  renderAll();
+}
+// тексты вопросов — для «частых ошибок»
+async function loadBank() {
+  const ids = [...new Set(D.attempts.flatMap(a => a.wrong_ids || []).map(q => q.replace(/-\d+$/, "")))].filter(t => !D.bank[t]);
+  await Promise.all(ids.map(t => fetch(`data/tests/${t}.json`).then(r => r.ok ? r.json() : null).then(j => { D.bank[t] = j || { title: t, questions: [] }; }).catch(() => { D.bank[t] = { title: t, questions: [] }; })));
+}
+const qinfo = qid => { const t = D.bank[qid.replace(/-\d+$/, "")]; const q = t && t.questions.find(x => x.id === qid); return { test: t ? t.title : "", q }; };
+
+// ---------- вычисления ----------
+const students = () => D.profiles.filter(p => p.role === "student");
+const inGroup = p => group === "all" || (group === "none" ? !p.group_id : p.group_id === group);
+function studentStats(p) {
+  const at = D.attempts.filter(a => a.user_id === p.id && a.mode !== "review" && a.mode !== "srs");
+  const last = {}; at.forEach(a => { if (!(a.test_id in last)) last[a.test_id] = a.percent; });   // attempts идут от новых к старым
+  const vals = Object.values(last);
+  const cards = D.srs.filter(c => c.user_id === p.id), now = Date.now();
+  const overdue = cards.filter(c => Date.parse(c.due) < now - day).length;
+  const m = D.meta[p.id] || {};
+  const lastAct = [at[0] && at[0].finished_at, m.last_sign_in_at].filter(Boolean).sort().pop() || null;
+  return { at, tests: vals.length, avg: vals.length ? Math.round(vals.reduce((s, v) => s + v, 0) / vals.length) : null,
+           cards: cards.length, overdue, last: lastAct, email: m.email || null, signin: m.last_sign_in_at || null };
+}
+const gname = id => { const g = D.groups.find(x => x.id === id); return g ? g.name : "без группы"; };
+
+// ---------- отрисовка ----------
+function renderGroupsSelect() {
+  const opts = `<option value="all">Все курсанты</option>` + D.groups.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join("") + `<option value="none">Без группы</option>`;
+  $("gsel").innerHTML = opts; $("gsel").value = D.groups.some(g => g.id === group) || group === "none" ? group : (group = "all");
+  const own = D.groups.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join("") + `<option value="">без группы</option>`;
+  const keep = $("add-g").value; $("add-g").innerHTML = own; if (keep !== undefined && [...$("add-g").options].some(o => o.value === keep)) $("add-g").value = keep;
+  if (group !== "all" && group !== "none") $("add-g").value = group;
+}
+
+function renderSummary() {
+  const list = students().filter(p => p.status === "active" && inGroup(p)), ids = new Set(list.map(p => p.id));
+  const at = D.attempts.filter(a => ids.has(a.user_id) && a.mode !== "review" && a.mode !== "srs");
+  const stats = list.map(studentStats);
+  $("k-n").textContent = list.length;
+  $("k-act").textContent = stats.filter(s => s.last && Date.now() - Date.parse(s.last) < 7 * day).length;
+  $("k-att").textContent = at.length;
+  const avgs = stats.map(s => s.avg).filter(v => v != null);
+  $("k-avg").textContent = avgs.length ? Math.round(avgs.reduce((s, v) => s + v, 0) / avgs.length) + "%" : "—";
+  // по тестам
+  const T = {};
+  at.forEach(a => { const t = T[a.test_id] || (T[a.test_id] = { title: a.title, best: {}, n: 0 }); t.n++; t.best[a.user_id] = Math.max(t.best[a.user_id] || 0, a.percent); });
+  const rows = Object.values(T).map(t => { const b = Object.values(t.best); return { title: t.title, who: b.length, avg: Math.round(b.reduce((s, v) => s + v, 0) / b.length), n: t.n }; }).sort((a, b) => a.avg - b.avg);
+  $("t-tests").innerHTML = rows.map(r => `<tr><td>${esc(r.title)}</td><td class="n">${r.who} из ${list.length}</td><td class="n">${pct(r.avg)}</td><td class="n">${r.n}</td></tr>`).join("");
+  $("t-tests-empty").hidden = !!rows.length;
+  // частые ошибки: сколько разных курсантов ошиблись в вопросе
+  const E = {};
+  at.forEach(a => (a.wrong_ids || []).forEach(q => { (E[q] || (E[q] = new Set())).add(a.user_id); }));
+  const errs = Object.entries(E).map(([q, s]) => ({ q, n: s.size })).sort((a, b) => b.n - a.n).slice(0, 20);
+  $("t-errs").innerHTML = errs.map(e => { const i = qinfo(e.q), q = i.q;
+    return `<tr class="click" data-q="${esc(e.q)}"><td>${q ? esc(q.q.length > 140 ? q.q.slice(0, 140) + "…" : q.q) : esc(e.q)}</td><td class="small muted">${esc(i.test)}${q ? " · " + esc(q.t) : ""}</td><td class="n">${e.n}</td><td style="width:80px"><div class="bar"><i style="width:${Math.round(e.n / Math.max(1, list.length) * 100)}%"></i></div></td></tr>`; }).join("");
+  $("t-errs-empty").hidden = !!errs.length;
+  $("t-errs").querySelectorAll("[data-q]").forEach(tr => tr.onclick = () => showQuestion(tr.dataset.q, E[tr.dataset.q]));
+}
+
+function showQuestion(qid, who) {
+  const i = qinfo(qid), q = i.q;
+  const names = [...who].map(id => (D.profiles.find(p => p.id === id) || {}).full_name).filter(Boolean).sort();
+  openDlg(`<h2>${esc(i.test)}</h2>${q ? `<p class="muted small">${esc(q.t)}</p><p><b>${esc(q.q)}</b></p>${q.img ? `<img src="${esc(q.img)}" alt="" style="max-width:100%;max-height:300px;border-radius:8px">` : ""}
+    <ol type="А" style="margin:0;padding-left:22px">${q.o.map((o, k) => `<li${k === q.a ? ' style="color:var(--ok);font-weight:700"' : ""}>${esc(o)}</li>`).join("")}</ol><p class="muted">${esc(q.e || "")}</p>` : `<p>${esc(qid)}</p>`}
+    <h3>Ошиблись (${names.length})</h3><p>${names.map(esc).join(", ")}</p>`);
+}
+
+function renderStudents() {
+  const f = $("q").value.trim().toLowerCase();
+  const rows = students().filter(p => p.status !== "pending" && inGroup(p) && (!f || p.full_name.toLowerCase().includes(f)))
+    .map(p => Object.assign({ p, full_name: p.full_name }, studentStats(p)));
+  rows.sort((a, b) => { const x = a[sortKey], y = b[sortKey]; if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1;
+    return (typeof x === "string" ? x.localeCompare(y, "ru") : x - y) * sortDir; });
+  $("t-st").innerHTML = rows.map(r => `<tr class="click" data-id="${r.p.id}"><td>${esc(r.p.full_name || "—")}${group === "all" ? `<div class="small muted">${esc(gname(r.p.group_id))}</div>` : ""}</td>
+    <td class="small">${r.p.login ? "логин " + esc(r.p.login) : esc(r.email || "почта")}</td><td class="n">${r.tests}</td><td class="n">${pct(r.avg)}</td>
+    <td class="n">${ago(r.last)}</td><td class="n">${r.cards ? `${r.overdue ? `<span class="pct b">${r.overdue}</span>` : "0"} / ${r.cards}` : "—"}</td>
+    <td><span class="st ${r.p.status}">${ST[r.p.status]}</span></td></tr>`).join("") || `<tr><td colspan="7" class="muted">Нет курсантов.</td></tr>`;
+  $("t-st").querySelectorAll("[data-id]").forEach(tr => tr.onclick = () => showStudent(tr.dataset.id));
+  $("csv").onclick = () => {
+    const head = ["ФИО", "Группа", "Логин/почта", "Тестов", "Средний %", "Последняя активность", "Просрочено повторений", "Всего в повторении", "Статус"];
+    const lines = [head].concat(rows.map(r => [r.p.full_name, gname(r.p.group_id), r.p.login || r.email || "", r.tests, r.avg == null ? "" : r.avg, r.last ? dt(r.last) : "", r.overdue, r.cards, ST[r.p.status]]));
+    const csv = "﻿" + lines.map(l => l.map(v => `"${String(v).replace(/"/g, '""')}"`).join(";")).join("\r\n");
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    a.download = "kursanty-" + new Date().toISOString().slice(0, 10) + ".csv"; a.click();
+  };
+}
+
+function showStudent(id) {
+  const p = D.profiles.find(x => x.id === id); if (!p) return;
+  const s = studentStats(p);
+  const by = {}; s.at.forEach(a => { const b = by[a.test_id] || (by[a.test_id] = { title: a.title, n: 0, last: a.percent, best: 0 }); b.n++; b.best = Math.max(b.best, a.percent); });
+  const gopts = D.groups.map(g => `<option value="${g.id}"${g.id === p.group_id ? " selected" : ""}>${esc(g.name)}</option>`).join("") + `<option value=""${p.group_id ? "" : " selected"}>без группы</option>`;
+  openDlg(`<div class="row"><h2 style="flex:1">${esc(p.full_name)}</h2><span class="st ${p.status}">${ST[p.status]}</span></div>
+    <p class="muted small">${p.login ? "Логин: <b>" + esc(p.login) + "</b>" : "Почта: <b>" + esc(s.email || "—") + "</b>"} · аккаунт с ${dt(p.created_at)} · последний вход: ${dtt(s.signin)}</p>
+    <div class="row"><label class="small muted">Группа:</label><select id="d-g">${gopts}</select><button class="btn sm" id="d-gs" type="button">Сохранить</button>
+      <button class="btn sm" id="d-code" type="button">Новый код</button>
+      <button class="btn sm" id="d-block" type="button">${p.status === "blocked" ? "Включить" : "Отключить"}</button>
+      <button class="btn sm danger" id="d-del" type="button">Удалить</button></div>
+    <div id="d-out"></div>
+    <div class="stats"><div class="stat"><span>Тестов пройдено</span><b>${s.tests}</b></div><div class="stat"><span>Средний</span><b>${s.avg == null ? "—" : s.avg + "%"}</b></div>
+      <div class="stat"><span>Попыток</span><b>${s.at.length}</b></div><div class="stat"><span>Повторение: просрочено</span><b>${s.overdue} / ${s.cards}</b></div></div>
+    <h3>По тестам</h3><div class="scroll"><table><thead><tr><th>Тест</th><th class="n">Попыток</th><th class="n">Последний</th><th class="n">Лучший</th></tr></thead><tbody>
+      ${Object.values(by).sort((a, b) => a.last - b.last).map(b => `<tr><td>${esc(b.title)}</td><td class="n">${b.n}</td><td class="n">${pct(b.last)}</td><td class="n">${pct(b.best)}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">Нет попыток</td></tr>`}</tbody></table></div>
+    <h3>Последние попытки</h3><div class="scroll"><table><tbody>${s.at.slice(0, 15).map(a => `<tr><td class="n">${dtt(a.finished_at)}</td><td>${esc(a.title)}</td><td class="small">${MODE[a.mode] || ""}</td><td class="n">${a.correct}/${a.total} · ${pct(a.percent)}</td></tr>`).join("")}</tbody></table></div>`);
+  const out = $("d-out");
+  const fail = e => { out.innerHTML = `<p class="err">${esc(e.message || e)}</p>`; };
+  $("d-gs").onclick = () => setStudent(p, p.status, $("d-g").value || null).then(() => { out.innerHTML = '<p class="ok">Группа сохранена.</p>'; }, fail);
+  $("d-block").onclick = () => { const to = p.status === "blocked" ? "active" : "blocked";
+    if (to === "blocked" && !confirm("Отключить аккаунт? Курсант сможет войти, но результаты сохраняться не будут.")) return;
+    setStudent(p, to, p.group_id).then(() => showStudent(id), fail); };
+  $("d-code").onclick = async () => {
+    if (!confirm("Выдать новый код (пароль)? Старый перестанет работать.")) return;
+    try { const r = await admin({ action: "reset_password", user_id: p.id }); const who = p.login || s.email;
+      const t = credText(p.full_name, who, r.code);
+      out.innerHTML = `<div class="creds"><pre>${esc(t)}</pre><div class="row"><button class="btn sm" id="d-cc" type="button">Скопировать</button><a class="btn sm" href="${wa(t)}" target="_blank" rel="noopener">Отправить в WhatsApp</a></div><p class="small muted">Код виден только сейчас.</p></div>`;
+      $("d-cc").onclick = e => copy(t, e.target);
+    } catch (e) { fail(e); } };
+  $("d-del").onclick = async () => {
+    if (!confirm(`Удалить ${p.full_name} вместе со всеми результатами? Это нельзя отменить.`)) return;
+    try { await admin({ action: "delete_student", user_id: p.id }); closeDlg(); await load(); } catch (e) { fail(e); } };
+}
+
+async function setStudent(p, status, gid) {
+  const { error } = await sb.rpc("teacher_set_student", { p_user: p.id, p_status: status, p_group: gid });
+  if (error) throw new Error(A.ru(error));
+  p.status = status; p.group_id = gid; renderAll(true);
+}
+
+function renderRequests() {
+  const req = students().filter(p => p.status === "pending");
+  $("req-n").hidden = !req.length; $("req-n").textContent = req.length;
+  const gopts = D.groups.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join("") + `<option value="">без группы</option>`;
+  $("t-req").innerHTML = req.map(p => `<tr data-id="${p.id}"><td>${esc(p.full_name || "—")}</td><td class="small">${esc((D.meta[p.id] || {}).email || "—")}</td><td class="n">${dt(p.created_at)}</td>
+    <td><select>${gopts}</select></td><td class="row"><button class="btn sm primary" data-a="ok" type="button">Подтвердить</button><button class="btn sm danger" data-a="no" type="button">Отклонить</button></td></tr>`).join("");
+  $("req-empty").hidden = !!req.length;
+  $("t-req").querySelectorAll("tr").forEach(tr => {
+    const p = D.profiles.find(x => x.id === tr.dataset.id), sel = tr.querySelector("select");
+    if (group !== "all" && group !== "none") sel.value = group;
+    tr.querySelector('[data-a="ok"]').onclick = () => setStudent(p, "active", sel.value || null).catch(e => alert(e.message));
+    tr.querySelector('[data-a="no"]').onclick = () => { if (confirm(`Отклонить заявку ${p.full_name}? Аккаунт будет отключён.`)) setStudent(p, "blocked", null).catch(e => alert(e.message)); };
+  });
+}
+
+function renderGroups() {
+  $("t-groups").innerHTML = D.groups.map(g => `<tr data-id="${g.id}"><td>${esc(g.name)}</td><td class="n">${students().filter(p => p.group_id === g.id).length}</td><td class="n">${dt(g.created_at)}</td>
+    <td class="row"><button class="btn sm" data-a="ren" type="button">Переименовать</button><button class="btn sm danger" data-a="del" type="button">Удалить</button></td></tr>`).join("")
+    || `<tr><td colspan="4" class="muted">Групп пока нет — создайте первую.</td></tr>`;
+  $("t-groups").querySelectorAll("tr[data-id]").forEach(tr => {
+    const g = D.groups.find(x => x.id === tr.dataset.id);
+    tr.querySelector('[data-a="ren"]').onclick = async () => { const n = prompt("Новое название группы:", g.name); if (!n || !n.trim()) return;
+      const { error } = await sb.from("groups").update({ name: n.trim().slice(0, 80) }).eq("id", g.id); if (error) return alert(A.ru(error)); g.name = n.trim(); renderAll(true); };
+    tr.querySelector('[data-a="del"]').onclick = async () => { if (!confirm(`Удалить группу «${g.name}»? Курсанты останутся, но без группы.`)) return;
+      const { error } = await sb.from("groups").delete().eq("id", g.id); if (error) return alert(A.ru(error)); await load(); };
+  });
+}
+
+function renderAll(keepSelect) {
+  if (!keepSelect) renderGroupsSelect();
+  renderSummary(); renderStudents(); renderRequests(); renderGroups();
+}
+
+// ---------- добавление по коду ----------
+let created = [];
+$("add-go").onclick = async () => {
+  const names = $("add-names").value.split(/\r?\n/).map(s => s.trim().replace(/\s+/g, " ")).filter(Boolean);
+  const bad = names.filter(n => n.split(" ").length < 2);
+  if (!names.length) return msg("add-msg", "Впишите хотя бы одно ФИО.", true);
+  if (bad.length) return msg("add-msg", "Нужны фамилия и имя: " + bad.join(", "), true);
+  if (names.length > 60) return msg("add-msg", "За один раз — не больше 60.", true);
+  $("add-go").disabled = true; const gid = $("add-g").value || null; const left = [];
+  for (let i = 0; i < names.length; i++) {
+    msg("add-msg", `Создаём ${i + 1} из ${names.length}…`);
+    try { const r = await admin({ action: "create_student", full_name: names[i], group_id: gid }); created.unshift({ name: names[i], login: r.login, code: r.code }); }
+    catch (e) { left.push(names[i]); msg("add-msg", `${names[i]}: ${e.message}`, true); if (/недоступна|Только для/.test(e.message)) break; }
+    renderCreated();
+  }
+  $("add-go").disabled = false; $("add-names").value = left.join("\n");
+  if (!left.length) msg("add-msg", `Готово: ${names.length}.`); else msg("add-msg", `Не создано: ${left.length} — они остались в списке.`, true);
+  load();
+};
+function renderCreated() {
+  $("add-out").hidden = !created.length;
+  $("add-rows").innerHTML = created.map((c, i) => `<tr><td>${esc(c.name)}</td><td class="n">${esc(c.login)}</td><td class="n"><b>${esc(c.code)}</b></td>
+    <td class="row"><button class="btn sm" data-i="${i}" type="button">Скопировать</button><a class="btn sm" href="${wa(credText(c.name, c.login, c.code))}" target="_blank" rel="noopener">WhatsApp</a></td></tr>`).join("");
+  $("add-rows").querySelectorAll("[data-i]").forEach(b => b.onclick = () => { const c = created[+b.dataset.i]; copy(credText(c.name, c.login, c.code), b); });
+}
+$("add-copy").onclick = e => copy(`Академия УЗИ — вход: ${SITE}\n\n` + created.map(c => `${c.name}\tлогин: ${c.login}\tкод: ${c.code}`).join("\n"), e.target);
+
+$("g-add").onclick = async () => {
+  const n = $("g-name").value.trim(); if (!n) return msg("g-msg", "Введите название.", true);
+  const { data, error } = await sb.from("groups").insert({ name: n.slice(0, 80) }).select().single();
+  if (error) return msg("g-msg", A.ru(error), true);
+  $("g-name").value = ""; msg("g-msg", "Группа создана."); group = data.id; await load();
+};
+function msg(id, t, bad) { const el = $(id); el.textContent = t; el.className = bad ? "err" : "ok"; }
+
+// ---------- окно и вкладки ----------
+function openDlg(html) { $("dlg-body").innerHTML = `<div class="row" style="justify-content:flex-end"><button class="btn sm" type="button" id="dlg-x">Закрыть</button></div>` + html; $("dlg-x").onclick = closeDlg; if (!$("dlg").open) $("dlg").showModal(); }
+function closeDlg() { $("dlg").close(); }
+$("dlg").addEventListener("click", e => { if (e.target === $("dlg")) closeDlg(); });
+document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => {
+  document.querySelectorAll("[data-tab]").forEach(x => x.setAttribute("aria-selected", String(x === b)));
+  document.querySelectorAll("[data-pane]").forEach(p => p.hidden = p.dataset.pane !== b.dataset.tab);
+});
+$("gsel").onchange = () => { group = $("gsel").value; renderAll(true); };
+$("q").oninput = renderStudents;
+document.querySelectorAll("th.sort").forEach(th => th.onclick = () => { const k = th.dataset.k; sortDir = sortKey === k ? -sortDir : (k === "full_name" ? 1 : -1); sortKey = k; renderStudents(); });
+$("reload").onclick = () => load().catch(e => $("upd").textContent = A.ru(e));
+
+// ---------- запуск ----------
+if (!A || !sb) { $("loading").textContent = "Не удалось загрузить модуль входа. Обновите страницу."; return; }
+A.ready.then(p => {
+  $("loading").hidden = true;
+  if (!p) { $("denied").hidden = false; $("denied-text").textContent = "Войдите в личный кабинет как преподаватель."; return; }
+  if (p.role !== "teacher" || p.status !== "active") { $("denied").hidden = false; $("denied-text").textContent = "Эта страница — только для преподавателя."; return; }
+  $("app").hidden = false;
+  load().then(() => { if (D.metaMissing) $("upd").textContent += " · почта и время входа не видны: запустите в Supabase скрипт 03-teacher-view.sql"; })
+    .catch(e => { $("upd").textContent = "Ошибка загрузки: " + A.ru(e); });
+});
+})();
+</script>
+</body>
+</html>
