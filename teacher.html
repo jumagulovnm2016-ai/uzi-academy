@@ -104,7 +104,7 @@ dialog .card{border:0}
       <div class="row"><h2 style="flex:1">Курсанты</h2><input type="text" id="q" placeholder="Поиск по ФИО" style="flex:0 1 220px"><button class="btn sm" id="csv" type="button">Скачать таблицу</button></div>
       <div class="scroll"><table><thead><tr>
         <th class="sort" data-k="full_name">ФИО</th><th>Вход</th><th class="sort n" data-k="tests">Тестов</th><th class="sort n" data-k="avg">Средний</th>
-        <th class="sort n" data-k="last">Последняя активность</th><th class="sort n" data-k="overdue">Повторение</th><th>Статус</th></tr></thead><tbody id="t-st"></tbody></table></div>
+        <th class="sort n" data-k="last">Последняя активность</th><th class="sort n" data-k="overdue">Повторение</th><th class="sort n" data-k="until">Доступ</th><th>Статус</th></tr></thead><tbody id="t-st"></tbody></table></div>
       <p class="muted small">Нажмите на курсанта — откроется его карточка: результаты, новый код, группа, блокировка. «Повторение»: сколько вопросов просрочено (было пора повторить больше суток назад) из всех в расписании.</p>
     </section>
 
@@ -112,7 +112,8 @@ dialog .card{border:0}
     <section class="card" data-pane="add" hidden>
       <h2>Добавить курсантов по коду</h2>
       <p class="muted">Впишите ФИО — по одному в строке. Каждому будут созданы логин и код для входа. Код виден <b>только сейчас</b>: сохраните или сразу отправьте. Потерянный код заменяется в карточке курсанта («Новый код»).</p>
-      <div class="row"><label class="muted small" for="add-g">В группу:</label><select id="add-g"></select></div>
+      <div class="row"><label class="muted small" for="add-g">В группу:</label><select id="add-g"></select>
+        <label class="muted small" for="add-days">Доступ, дней:</label><input type="text" id="add-days" value="30" inputmode="numeric" style="width:70px"><span class="muted small">пусто — без срока</span></div>
       <textarea id="add-names" placeholder="Асанова Асель Бекболотовна&#10;Иванов Иван Иванович"></textarea>
       <div class="row"><button class="btn primary" id="add-go" type="button">Создать</button><span id="add-msg" role="status"></span></div>
       <div id="add-out" hidden style="display:grid;gap:10px">
@@ -124,6 +125,7 @@ dialog .card{border:0}
     <!-- ===== Заявки ===== -->
     <section class="card" data-pane="req" hidden>
       <h2>Заявки на подтверждение</h2>
+      <div class="row"><label class="muted small" for="req-days">При подтверждении открыть доступ на, дней:</label><input type="text" id="req-days" value="30" inputmode="numeric" style="width:70px"><span class="muted small">пусто — без срока</span></div>
       <p class="muted">Курсанты, которые зарегистрировались сами по почте. Проверьте ФИО и почту, выберите группу и подтвердите. Незнакомых — отклоните.</p>
       <div class="scroll"><table><thead><tr><th>ФИО</th><th>Почта</th><th>Дата</th><th>Группа</th><th></th></tr></thead><tbody id="t-req"></tbody></table></div>
       <p class="muted" id="req-empty">Новых заявок нет.</p>
@@ -133,7 +135,7 @@ dialog .card{border:0}
     <section class="card" data-pane="groups" hidden>
       <h2>Группы</h2>
       <div class="row"><input type="text" id="g-name" maxlength="80" placeholder="Например: УЗД-2026, осень"><button class="btn primary" id="g-add" type="button">Создать группу</button><span id="g-msg" role="status"></span></div>
-      <div class="scroll"><table><thead><tr><th>Группа</th><th class="n">Курсантов</th><th class="n">Создана</th><th></th></tr></thead><tbody id="t-groups"></tbody></table></div>
+      <div class="scroll"><table><thead><tr><th>Группа</th><th class="n">Курсантов</th><th class="n">Создана</th><th>Доступ</th><th></th></tr></thead><tbody id="t-groups"></tbody></table></div>
     </section>
   </div>
 </div>
@@ -172,7 +174,24 @@ async function admin(body) {
   }
   return data;
 }
-const credText = (name, login, code) => `Академия УЗИ — вход в личный кабинет\n${name}\nСайт: ${SITE}\nЛогин: ${login}\nКод: ${code}`;
+const credText = (name, login, code, until) => `Академия УЗИ — вход в личный кабинет\n${name}\nСайт: ${SITE}\nЛогин: ${login}\nКод: ${code}` + (until ? `\nДоступ до: ${dlong(until)}` : "");
+// ---------- срок доступа (скрипт 05-access-term.sql) ----------
+const dlong = s => new Date(s).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
+const endOfDay = d => { const x = new Date(d); x.setHours(23, 59, 59, 0); return x; };
+const inDays = n => endOfDay(Date.now() + n * day).toISOString();
+// сколько календарных дней осталось (0 — последний день, отрицательное — истёк)
+const daysLeft = s => { if (!s) return null; if (Date.parse(s) <= Date.now()) return -1; const a = new Date(s), b = new Date(); a.setHours(0, 0, 0, 0); b.setHours(0, 0, 0, 0); return Math.round((a - b) / day); };
+function parseDate(t) { const m = String(t || "").trim().match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{2,4})$/) || String(t || "").trim().match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (!m) return null; let [d, mo, y] = m[1].length === 4 ? [m[3], m[2], m[1]] : [m[1], m[2], m[3]]; y = +y < 100 ? 2000 + +y : +y;
+  const x = new Date(y, mo - 1, d, 23, 59, 59); return isNaN(x) || x.getDate() !== +d ? null : x.toISOString(); }
+const accCell = s => { if (!s) return '<span class="muted">без срока</span>'; const n = daysLeft(s);
+  return n < 0 ? `<span class="pct b">истёк ${dt(s)}</span>` : `<span class="${n <= 5 ? "pct" : ""}" style="${n <= 5 ? "color:var(--warn)" : ""}">до ${dt(s)}</span>`; };
+async function setAccess(p, until) {
+  const { error } = await sb.rpc("teacher_set_access", { p_user: p.id, p_until: until });
+  if (error) throw new Error(/function|not find|schema cache/i.test(error.message) ? "Чтобы задавать срок доступа, запустите в Supabase скрипт 05-access-term.sql" : A.ru(error));
+  p.access_until = until;
+}
+const termDays = id => { const v = $(id).value.trim(); return v === "" || v === "0" ? null : Math.max(1, Math.min(3650, parseInt(v, 10) || 30)); };
 const wa = t => "https://wa.me/?text=" + encodeURIComponent(t);
 function copy(text, el) {
   const done = () => { if (el) { const o = el.textContent; el.textContent = "Скопировано"; setTimeout(() => el.textContent = o, 1500); } };
@@ -184,7 +203,8 @@ async function fetchAll(q) { let out = []; for (let f = 0; ; f += 1000) { const 
 async function load() {
   $("upd").textContent = "загрузка…";
   const [profiles, groups, attempts, srs, meta] = await Promise.all([
-    fetchAll(() => sb.from("profiles").select("id,full_name,login,role,status,group_id,created_at").order("full_name")),
+    fetchAll(() => sb.from("profiles").select("id,full_name,login,role,status,group_id,created_at,access_until").order("full_name"))
+      .catch(() => fetchAll(() => sb.from("profiles").select("id,full_name,login,role,status,group_id,created_at").order("full_name"))),
     fetchAll(() => sb.from("groups").select("id,name,created_at").order("created_at")),
     fetchAll(() => sb.from("attempts").select("user_id,test_id,title,mode,correct,total,percent,wrong_ids,finished_at").order("finished_at", { ascending: false })),
     fetchAll(() => sb.from("srs_cards").select("user_id,card->>due")),
@@ -265,17 +285,17 @@ function showQuestion(qid, who) {
 function renderStudents() {
   const f = $("q").value.trim().toLowerCase();
   const rows = students().filter(p => p.status !== "pending" && inGroup(p) && (!f || p.full_name.toLowerCase().includes(f)))
-    .map(p => Object.assign({ p, full_name: p.full_name }, studentStats(p)));
+    .map(p => Object.assign({ p, full_name: p.full_name, until: p.access_until ? Date.parse(p.access_until) : null }, studentStats(p)));
   rows.sort((a, b) => { const x = a[sortKey], y = b[sortKey]; if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1;
     return (typeof x === "string" ? x.localeCompare(y, "ru") : x - y) * sortDir; });
   $("t-st").innerHTML = rows.map(r => `<tr class="click" data-id="${r.p.id}"><td>${esc(r.p.full_name || "—")}${group === "all" ? `<div class="small muted">${esc(gname(r.p.group_id))}</div>` : ""}</td>
     <td class="small">${r.p.login ? "логин " + esc(r.p.login) : esc(r.email || "почта")}</td><td class="n">${r.tests}</td><td class="n">${pct(r.avg)}</td>
     <td class="n">${ago(r.last)}</td><td class="n">${r.cards ? `${r.overdue ? `<span class="pct b">${r.overdue}</span>` : "0"} / ${r.cards}` : "—"}</td>
-    <td><span class="st ${r.p.status}">${ST[r.p.status]}</span></td></tr>`).join("") || `<tr><td colspan="7" class="muted">Нет курсантов.</td></tr>`;
+    <td class="n">${accCell(r.p.access_until)}</td><td><span class="st ${r.p.status}">${ST[r.p.status]}</span></td></tr>`).join("") || `<tr><td colspan="8" class="muted">Нет курсантов.</td></tr>`;
   $("t-st").querySelectorAll("[data-id]").forEach(tr => tr.onclick = () => showStudent(tr.dataset.id));
   $("csv").onclick = () => {
-    const head = ["ФИО", "Группа", "Логин/почта", "Тестов", "Средний %", "Последняя активность", "Просрочено повторений", "Всего в повторении", "Статус"];
-    const lines = [head].concat(rows.map(r => [r.p.full_name, gname(r.p.group_id), r.p.login || r.email || "", r.tests, r.avg == null ? "" : r.avg, r.last ? dt(r.last) : "", r.overdue, r.cards, ST[r.p.status]]));
+    const head = ["ФИО", "Группа", "Логин/почта", "Тестов", "Средний %", "Последняя активность", "Просрочено повторений", "Всего в повторении", "Доступ до", "Статус"];
+    const lines = [head].concat(rows.map(r => [r.p.full_name, gname(r.p.group_id), r.p.login || r.email || "", r.tests, r.avg == null ? "" : r.avg, r.last ? dt(r.last) : "", r.overdue, r.cards, r.p.access_until ? dt(r.p.access_until) : "без срока", ST[r.p.status]]));
     const csv = "﻿" + lines.map(l => l.map(v => `"${String(v).replace(/"/g, '""')}"`).join(";")).join("\r\n");
     const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     a.download = "kursanty-" + new Date().toISOString().slice(0, 10) + ".csv"; a.click();
@@ -293,6 +313,8 @@ function showStudent(id) {
       <button class="btn sm" id="d-code" type="button">Новый код</button>
       <button class="btn sm" id="d-block" type="button">${p.status === "blocked" ? "Включить" : "Отключить"}</button>
       <button class="btn sm danger" id="d-del" type="button">Удалить</button></div>
+    <div class="row"><span class="small muted">Доступ:</span><b class="small" id="d-acc">${p.access_until ? (daysLeft(p.access_until) < 0 ? "истёк " + dlong(p.access_until) : "до " + dlong(p.access_until) + (daysLeft(p.access_until) === 0 ? " (последний день)" : ` (осталось ${daysLeft(p.access_until)} дн.)`)) : "без срока"}</b>
+      <button class="btn sm" id="d-a30" type="button">+30 дней</button><button class="btn sm" id="d-adate" type="button">Указать дату</button><button class="btn sm" id="d-anone" type="button">Без срока</button></div>
     <div id="d-out"></div>
     <div class="stats"><div class="stat"><span>Тестов пройдено</span><b>${s.tests}</b></div><div class="stat"><span>Средний</span><b>${s.avg == null ? "—" : s.avg + "%"}</b></div>
       <div class="stat"><span>Попыток</span><b>${s.at.length}</b></div><div class="stat"><span>Повторение: просрочено</span><b>${s.overdue} / ${s.cards}</b></div></div>
@@ -310,6 +332,12 @@ function showStudent(id) {
       : `<p class="muted small">${Object.keys(last).length ? "Слабых тем нет — во всех темах 70% и выше." : "Нет попыток."}</p>`;
   })();
   const out = $("d-out");
+  const accDo = until => setAccess(p, until).then(() => { renderAll(true); showStudent(id); }, e => { out.innerHTML = `<p class="err">${esc(e.message)}</p>`; });
+  // +30 дней — от сегодняшнего дня, а если срок ещё не истёк — от его конца
+  $("d-a30").onclick = () => { const base = p.access_until && Date.parse(p.access_until) > Date.now() ? Date.parse(p.access_until) : Date.now(); accDo(endOfDay(base + 30 * day).toISOString()); };
+  $("d-adate").onclick = () => { const t = prompt("Доступ до (день.месяц.год), например 08.12.2026:", p.access_until ? dt(p.access_until).replace(/\.(\d\d)$/, ".20$1") : ""); if (t == null) return;
+    const v = parseDate(t); if (!v) return alert("Не понял дату. Пример: 08.12.2026"); accDo(v); };
+  $("d-anone").onclick = () => accDo(null);
   const fail = e => { out.innerHTML = `<p class="err">${esc(e.message || e)}</p>`; };
   $("d-gs").onclick = () => setStudent(p, p.status, $("d-g").value || null).then(() => { out.innerHTML = '<p class="ok">Группа сохранена.</p>'; }, fail);
   $("d-block").onclick = () => { const to = p.status === "blocked" ? "active" : "blocked";
@@ -351,17 +379,26 @@ function renderRequests() {
   $("t-req").querySelectorAll("tr").forEach(tr => {
     const p = D.profiles.find(x => x.id === tr.dataset.id), sel = tr.querySelector("select");
     if (group !== "all" && group !== "none") sel.value = group;
-    tr.querySelector('[data-a="ok"]').onclick = () => setStudent(p, "active", sel.value || null).catch(e => alert(e.message));
+    tr.querySelector('[data-a="ok"]').onclick = async () => {
+      try { const days = termDays("req-days"); await setStudent(p, "active", sel.value || null); if (days) { await setAccess(p, inDays(days)); renderAll(true); } }
+      catch (e) { alert(e.message); } };
     tr.querySelector('[data-a="no"]').onclick = () => { if (confirm(`Отклонить заявку ${p.full_name}? Аккаунт будет отключён.`)) setStudent(p, "blocked", null).catch(e => alert(e.message)); };
   });
 }
 
 function renderGroups() {
   $("t-groups").innerHTML = D.groups.map(g => `<tr data-id="${g.id}"><td>${esc(g.name)}</td><td class="n">${students().filter(p => p.group_id === g.id).length}</td><td class="n">${dt(g.created_at)}</td>
-    <td class="row"><button class="btn sm" data-a="ren" type="button">Переименовать</button><button class="btn sm danger" data-a="del" type="button">Удалить</button></td></tr>`).join("")
-    || `<tr><td colspan="4" class="muted">Групп пока нет — создайте первую.</td></tr>`;
+    <td class="small">${(() => { const u = [...new Set(students().filter(p => p.group_id === g.id).map(p => p.access_until ? dt(p.access_until) : "без срока"))]; return u.length ? esc(u.join(", ")) : "—"; })()}</td>
+    <td class="row"><button class="btn sm" data-a="acc" type="button">Срок для группы</button><button class="btn sm" data-a="ren" type="button">Переименовать</button><button class="btn sm danger" data-a="del" type="button">Удалить</button></td></tr>`).join("")
+    || `<tr><td colspan="5" class="muted">Групп пока нет — создайте первую.</td></tr>`;
   $("t-groups").querySelectorAll("tr[data-id]").forEach(tr => {
     const g = D.groups.find(x => x.id === tr.dataset.id);
+    tr.querySelector('[data-a="acc"]').onclick = async () => {
+      const t = prompt(`Доступ для всех курсантов группы «${g.name}» до (день.месяц.год).\nПусто — без срока.`, dt(inDays(30)).replace(/\.(\d\d)$/, ".20$1")); if (t == null) return;
+      const v = t.trim() === "" ? null : parseDate(t); if (t.trim() !== "" && !v) return alert("Не понял дату. Пример: 08.12.2026");
+      const { data, error } = await sb.rpc("teacher_set_group_access", { p_group: g.id, p_until: v });
+      if (error) return alert(/function|not find|schema cache/i.test(error.message) ? "Запустите в Supabase скрипт 05-access-term.sql" : A.ru(error));
+      alert(`Срок обновлён у ${data} курсант(ов).`); await load(); };
     tr.querySelector('[data-a="ren"]').onclick = async () => { const n = prompt("Новое название группы:", g.name); if (!n || !n.trim()) return;
       const { error } = await sb.from("groups").update({ name: n.trim().slice(0, 80) }).eq("id", g.id); if (error) return alert(A.ru(error)); g.name = n.trim(); renderAll(true); };
     tr.querySelector('[data-a="del"]').onclick = async () => { if (!confirm(`Удалить группу «${g.name}»? Курсанты останутся, но без группы.`)) return;
@@ -385,7 +422,11 @@ $("add-go").onclick = async () => {
   $("add-go").disabled = true; const gid = $("add-g").value || null; const left = [];
   for (let i = 0; i < names.length; i++) {
     msg("add-msg", `Создаём ${i + 1} из ${names.length}…`);
-    try { const r = await admin({ action: "create_student", full_name: names[i], group_id: gid }); created.unshift({ name: names[i], login: r.login, code: r.code }); }
+    try { const r = await admin({ action: "create_student", full_name: names[i], group_id: gid });
+      const days = termDays("add-days"), until = days ? inDays(days) : null; let note = "";
+      if (until) { try { await setAccess({ id: r.user_id }, until); } catch (e) { note = e.message; } }
+      created.unshift({ name: names[i], login: r.login, code: r.code, until: note ? null : until });
+      if (note) msg("add-msg", note, true); }
     catch (e) { left.push(names[i]); msg("add-msg", `${names[i]}: ${e.message}`, true); if (/недоступна|Только для/.test(e.message)) break; }
     renderCreated();
   }
@@ -396,8 +437,8 @@ $("add-go").onclick = async () => {
 function renderCreated() {
   $("add-out").hidden = !created.length;
   $("add-rows").innerHTML = created.map((c, i) => `<tr><td>${esc(c.name)}</td><td class="n">${esc(c.login)}</td><td class="n"><b>${esc(c.code)}</b></td>
-    <td class="row"><button class="btn sm" data-i="${i}" type="button">Скопировать</button><a class="btn sm" href="${wa(credText(c.name, c.login, c.code))}" target="_blank" rel="noopener">WhatsApp</a></td></tr>`).join("");
-  $("add-rows").querySelectorAll("[data-i]").forEach(b => b.onclick = () => { const c = created[+b.dataset.i]; copy(credText(c.name, c.login, c.code), b); });
+    <td class="row"><button class="btn sm" data-i="${i}" type="button">Скопировать</button><a class="btn sm" href="${wa(credText(c.name, c.login, c.code, c.until))}" target="_blank" rel="noopener">WhatsApp</a></td></tr>`).join("");
+  $("add-rows").querySelectorAll("[data-i]").forEach(b => b.onclick = () => { const c = created[+b.dataset.i]; copy(credText(c.name, c.login, c.code, c.until), b); });
 }
 $("add-copy").onclick = e => copy(`Академия УЗИ — вход: ${SITE}\n\n` + created.map(c => `${c.name}\tлогин: ${c.login}\tкод: ${c.code}`).join("\n"), e.target);
 

@@ -3,7 +3,7 @@
 <script>
 // без ожидания сети: если на устройстве есть вход и подтверждённый профиль — сразу показать тесты
 try { var pr = JSON.parse(localStorage.getItem("acad-profile") || "null");
-  if (localStorage.getItem("acad-auth") && pr && pr.status === "active") { document.documentElement.classList.remove("locked"); if (pr.role === "teacher") document.documentElement.classList.add("teacher"); } } catch (e) {}
+  if (localStorage.getItem("acad-auth") && pr && pr.status === "active" && !(pr.access_until && Date.parse(pr.access_until) <= Date.now())) { document.documentElement.classList.remove("locked"); if (pr.role === "teacher") document.documentElement.classList.add("teacher"); } } catch (e) {}
 </script>
 <head>
 <meta charset="utf-8">
@@ -183,11 +183,12 @@ addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); windo
   var A = window.AcadAccount; if (!A || !A.ready) return;
   function show(p) {
     var root = document.documentElement;
-    root.classList.toggle("locked", !(p && p.status === "active"));
+    var exp = !!(p && p.access_until && Date.parse(p.access_until) <= Date.now());
+    root.classList.toggle("locked", !(p && p.status === "active" && !exp));
     root.classList.toggle("teacher", !!(p && p.role === "teacher" && p.status === "active"));
     if (!p) return;
     document.getElementById("acc-t").textContent = p.full_name || "Личный кабинет";
-    document.getElementById("acc-s").textContent = p.status === "pending" ? "ожидает подтверждения преподавателем" : p.status === "blocked" ? "аккаунт отключён" : (p.role === "teacher" ? "преподаватель" : (p.group || "личный кабинет")) + " · результаты и повторение сохраняются";
+    document.getElementById("acc-s").textContent = exp ? "срок доступа истёк — обратитесь к преподавателю" : p.status === "pending" ? "ожидает подтверждения преподавателем" : p.status === "blocked" ? "аккаунт отключён" : (p.role === "teacher" ? "преподаватель" : (p.group || "личный кабинет")) + " · результаты и повторение сохраняются";
     document.getElementById("acc-n").textContent = "кабинет";
   }
   A.ready.then(show); A.onChange(show);

@@ -52,7 +52,9 @@ async function loadProfile() {
     } catch (e) { /* нет связи — проверим в следующий раз */ }
   }
   try {
-    const { data, error } = await sb.from("profiles").select("id,full_name,login,role,status,group_id,groups(name)").eq("id", session.user.id).single();
+    const cols = "id,full_name,login,role,status,group_id,groups(name)";
+    let { data, error } = await sb.from("profiles").select(cols + ",access_until").eq("id", session.user.id).single();
+    if (error && /access_until/.test(error.message || "")) ({ data, error } = await sb.from("profiles").select(cols).eq("id", session.user.id).single());   // скрипт 05 ещё не запущен
     if (error) throw error;
     api.profile = Object.assign({}, data, { email: data.login ? null : session.user.email, group: data.groups ? data.groups.name : null });
     delete api.profile.groups;
@@ -103,7 +105,10 @@ api.rename = async (fullName) => {
   await loadProfile(); emit();
 };
 
-const active = () => !!(api.profile && api.profile.status === "active");
+// срок доступа (скрипт 05): после него тесты и сохранение закрыты, кабинет и история остаются
+const expired = p => !!(p && p.access_until && Date.parse(p.access_until) <= Date.now());
+api.expired = expired;
+const active = () => !!(api.profile && api.profile.status === "active" && !expired(api.profile));
 api.active = active;
 
 // ---------- результаты: очередь на устройстве → сервер ----------
@@ -191,7 +196,7 @@ api.gate = async function (opts) {
   opts = opts || {};
   // быстрый путь: на устройстве есть сессия и последний известный профиль подтверждён — не ждём сеть
   const cached = LS.get(K.profile, null), hasSession = (() => { try { return !!localStorage.getItem("acad-auth"); } catch (e) { return false; } })();
-  const allowed = p => !!(p && p.status === "active" && (!opts.teacher || p.role === "teacher"));
+  const allowed = p => !!(p && p.status === "active" && !expired(p) && (!opts.teacher || p.role === "teacher"));
   if (hasSession && allowed(cached)) {
     // но проверяем и по серверу: если преподаватель отключил курсанта или сменил ему код — закрываем сразу
     api.ready.then(p => { if (!allowed(p)) shutter(p, opts); });
@@ -208,6 +213,7 @@ function shutter(p, opts) {
   const next = encodeURIComponent(location.pathname.split("/").pop() + location.search);
   const [title, text, btn] = !p
     ? ["Нужно войти", "Тесты Академии УЗИ доступны только курсантам. Войдите по логину и коду от преподавателя или по своей почте.", "Войти"]
+    : p.status === "active" && expired(p) ? ["Срок доступа истёк", `Доступ к тестам и руководствам был открыт до ${new Date(p.access_until).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" })}. Ваши результаты сохранены в личном кабинете. Чтобы продлить доступ, обратитесь к преподавателю.`, "Личный кабинет"]
     : p.status === "pending" ? ["Ожидает подтверждения", "Ваша регистрация ещё не подтверждена преподавателем. Как только он добавит вас в группу, тесты откроются.", "Личный кабинет"]
     : p.status === "blocked" ? ["Аккаунт отключён", "Обратитесь к преподавателю.", "Личный кабинет"]
     : ["Только для преподавателя", "Эта страница доступна только преподавателю курса.", "Личный кабинет"];
