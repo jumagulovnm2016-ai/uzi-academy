@@ -46,6 +46,7 @@ async function loadProfile() {
       const { error: ue } = await sb.auth.getUser();
       if (ue && (ue.status === 400 || ue.status === 401 || ue.status === 403 || /session|not found|missing|JWT/i.test(ue.message || ""))) {
         try { await sb.auth.signOut({ scope: "local" }); } catch (x) {}
+        LS.set("acad-kicked", Date.now());                       // объяснить причину выхода на этом устройстве
         [K.profile, K.srs, K.owner, K.synced, K.dirty, "acad-mistakes"].forEach(LS.del);
         api.profile = null; return null;
       }
@@ -216,7 +217,9 @@ function shutter(p, opts) {
   if (document.getElementById("acad-gate")) return;
   const next = encodeURIComponent(location.pathname.split("/").pop() + location.search);
   const [title, text, btn] = !p
-    ? ["Нужно войти", "Тесты Академии УЗИ доступны только курсантам. Войдите по логину и коду от преподавателя или по своей почте.", "Войти"]
+    ? ["Нужно войти", (Date.now() - LS.get("acad-kicked", 0) < 7 * 864e5
+        ? "На этом устройстве выполнен выход: в ваш аккаунт вошли на другом устройстве или преподаватель выдал новый код. Один аккаунт работает на одном устройстве. "
+        : "") + "Тесты Академии УЗИ доступны только курсантам. Войдите по логину и коду от преподавателя или по своей почте.", "Войти"]
     : p.status === "active" && expired(p) ? ["Срок доступа истёк", `Доступ к тестам и руководствам был открыт до ${new Date(p.access_until).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" })}. Ваши результаты сохранены в личном кабинете. Чтобы продлить доступ, обратитесь к преподавателю.`, "Личный кабинет"]
     : p.status === "pending" ? ["Ожидает подтверждения", "Ваша регистрация ещё не подтверждена преподавателем. Как только он добавит вас в группу, тесты откроются.", "Личный кабинет"]
     : p.status === "blocked" ? ["Аккаунт отключён", "Обратитесь к преподавателю.", "Личный кабинет"]
@@ -236,7 +239,11 @@ function shutter(p, opts) {
 }
 
 async function afterLogin() {
-  await loadProfile(); emit();
+  LS.del("acad-kicked");
+  await loadProfile();
+  // один аккаунт курсанта — одно устройство: прежние сеансы завершаются (скрипт 07)
+  if (api.profile && api.profile.role !== "teacher") { try { await sb.rpc("keep_only_this_session"); } catch (e) {} }
+  emit();
   if (active()) { flush(); await api.syncSrs(); emit(); }
 }
 
