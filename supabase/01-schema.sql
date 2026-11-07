@@ -154,13 +154,11 @@ create policy groups_select on public.groups for select to authenticated
 create policy groups_write on public.groups for all to authenticated
   using (is_teacher()) with check (is_teacher());
 
--- profiles: курсант видит себя и может поменять только своё ФИО; преподаватель видит всех
+-- profiles: курсант видит только себя и ничего не меняет (ФИО меняет преподаватель через teacher_rename);
+-- преподаватель видит всех
 create policy profiles_select on public.profiles for select to authenticated
   using (id = auth.uid() or is_teacher());
-create policy profiles_update_own on public.profiles for update to authenticated
-  using (id = auth.uid()) with check (id = auth.uid());
 revoke insert, update, delete on public.profiles from authenticated;
-grant update (full_name) on public.profiles to authenticated;
 
 -- attempts: сохранять может только подтверждённый курсант и только свои; изменять и удалять — никто
 create policy attempts_select on public.attempts for select to authenticated

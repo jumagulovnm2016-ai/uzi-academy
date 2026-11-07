@@ -100,7 +100,7 @@ api.signOut = async () => {
 
 api.rename = async (fullName) => {
   fullName = String(fullName || "").trim().replace(/\s+/g, " ").slice(0, 120);
-  const { error } = await sb.from("profiles").update({ full_name: fullName }).eq("id", api.profile.id);
+  const { error } = await sb.rpc("teacher_rename", { p_user: api.profile.id, p_full_name: fullName });   // только преподаватель
   if (error) throw new Error(ru(error));
   await loadProfile(); emit();
 };
@@ -108,6 +108,10 @@ api.rename = async (fullName) => {
 // срок доступа (скрипт 05): после него тесты и сохранение закрыты, кабинет и история остаются
 const expired = p => !!(p && p.access_until && Date.parse(p.access_until) <= Date.now());
 api.expired = expired;
+// текущий курсант: загруженный профиль, а до ответа сервера — сохранённый на устройстве
+api.current = () => api.profile || (() => { const c = LS.get(K.profile, null); try { return c && localStorage.getItem("acad-auth") ? c : null; } catch (e) { return null; } })();
+// как курсант назван в отчёте преподавателю: логин или почта аккаунта
+api.who = p => p ? (p.login ? "логин " + p.login : (p.email ? "почта " + p.email : "аккаунт " + String(p.id).slice(0, 8))) : "";
 const active = () => !!(api.profile && api.profile.status === "active" && !expired(api.profile));
 api.active = active;
 

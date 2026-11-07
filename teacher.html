@@ -310,6 +310,7 @@ function showStudent(id) {
   openDlg(`<div class="row"><h2 style="flex:1">${esc(p.full_name)}</h2><span class="st ${p.status}">${ST[p.status]}</span></div>
     <p class="muted small">${p.login ? "Логин: <b>" + esc(p.login) + "</b>" : "Почта: <b>" + esc(s.email || "—") + "</b>"} · аккаунт с ${dt(p.created_at)} · последний вход: ${dtt(s.signin)}</p>
     <div class="row"><label class="small muted">Группа:</label><select id="d-g">${gopts}</select><button class="btn sm" id="d-gs" type="button">Сохранить</button>
+      <button class="btn sm" id="d-ren" type="button">Изменить ФИО</button>
       <button class="btn sm" id="d-code" type="button">Новый код</button>
       <button class="btn sm" id="d-block" type="button">${p.status === "blocked" ? "Включить" : "Отключить"}</button>
       <button class="btn sm danger" id="d-del" type="button">Удалить</button></div>
@@ -332,6 +333,11 @@ function showStudent(id) {
       : `<p class="muted small">${Object.keys(last).length ? "Слабых тем нет — во всех темах 70% и выше." : "Нет попыток."}</p>`;
   })();
   const out = $("d-out");
+  $("d-ren").onclick = async () => {
+    const n = prompt("ФИО курсанта (фамилия, имя, отчество):", p.full_name); if (n == null) return;
+    const v = n.trim().replace(/\s+/g, " "); if (v.split(" ").length < 2) return alert("Нужны фамилия и имя.");
+    const { error } = await sb.rpc("teacher_rename", { p_user: p.id, p_full_name: v });
+    if (error) return alert(A.ru(error)); p.full_name = v; renderAll(true); showStudent(id); };
   const accDo = until => setAccess(p, until).then(() => { renderAll(true); showStudent(id); }, e => { out.innerHTML = `<p class="err">${esc(e.message)}</p>`; });
   // +30 дней — от сегодняшнего дня, а если срок ещё не истёк — от его конца
   $("d-a30").onclick = () => { const base = p.access_until && Date.parse(p.access_until) > Date.now() ? Date.parse(p.access_until) : Date.now(); accDo(endOfDay(base + 30 * day).toISOString()); };

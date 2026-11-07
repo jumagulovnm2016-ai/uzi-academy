@@ -133,12 +133,24 @@ function updateClock() {
 }
 
 // ---------- ФИО ----------
-function fioOk() { const v = $("fio").value.trim().replace(/\s+/g, " "); return v.split(" ").length >= 2 && /^[A-Za-zА-Яа-яЁёӨөҮүҢң'\- ]+$/.test(v) ? v : null; }
+// ФИО берётся только из личного кабинета: под чужим именем тест не сдать (переименовать может преподаватель)
+let ME = null;
+function fioOk() {
+  if (ME) return ME.full_name && ME.full_name.trim().split(/\s+/).length >= 2 ? ME.full_name.trim() : null;
+  const v = $("fio").value.trim().replace(/\s+/g, " "); return v.split(" ").length >= 2 && /^[A-Za-zА-Яа-яЁёӨөҮүҢң'\- ]+$/.test(v) ? v : null; }
+function fioFromAccount() {
+  if (!ME) return;
+  $("fio").value = ME.full_name || ""; $("fio").readOnly = true; $("fio").setAttribute("aria-readonly", "true");
+  const h = $("fiohint"); h.classList.remove("err");
+  h.textContent = fioOk() ? `ФИО из личного кабинета (${AcadAccount.who(ME)}). Изменить его может только преподаватель.` : "В личном кабинете не указано ФИО полностью — попросите преподавателя исправить.";
+  if (!fioOk()) h.classList.add("err");
+}
 function fioLocked() {
   $("fio").value = S.fio; $("fio").readOnly = true;
   const h = $("fiohint"); h.classList.remove("err"); h.textContent = "ФИО зафиксировано до конца попытки.";
 }
 function fioReset() {
+  if (ME) { fioFromAccount(); return; }
   $("fio").readOnly = false;
   const h = $("fiohint"); h.classList.remove("err");
   h.textContent = "Введите фамилию, имя и отчество. Без ФИО ответы не принимаются; после первого ответа ФИО изменить нельзя.";
@@ -239,7 +251,7 @@ function choose(i) {
   if (S.mode !== "review") {
     if (S.startAt === null) {
       const f = fioOk();
-      if (!f) { const h = $("fiohint"); h.textContent = "Сначала введите ФИО полностью — хотя бы фамилию и имя, буквами."; h.classList.add("err"); $("fio").focus(); return; }
+      if (!f) { const h = $("fiohint"); h.textContent = ME ? "В личном кабинете не указано ФИО полностью — попросите преподавателя исправить." : "Сначала введите ФИО полностью — хотя бы фамилию и имя, буквами."; h.classList.add("err"); $("fio").focus(); return; }
       S.fio = f; S.startAt = Date.now(); fioLocked(); runTimer();
     }
   } else {
@@ -334,9 +346,10 @@ function showResult(auto) {
       <div class="actions"><button class="btn primary" id="copy" type="button">Скопировать отчёт</button><button class="btn" id="resend" type="button">Отправить ещё раз</button><button class="btn" id="share" type="button">Отправить через Telegram</button><span id="sendmsg" role="status"></span></div>
       ${wrongList}`;
     if (!S.reportText) {
-      const lines = [`Тест «${T.title}» — результат`, `Режим: ${MODES[S.mode].name} · Академия УЗИ`, `ФИО: ${S.fio || "не указано"}`, `Дата: ${stamp(new Date(S.endAt || Date.now()))}`,
+      const lines = [`Тест «${T.title}» — результат`, `Режим: ${MODES[S.mode].name} · Академия УЗИ`, `ФИО: ${(ME && ME.full_name) || S.fio || "не указано"}`, `Дата: ${stamp(new Date(S.endAt || Date.now()))}`,
         `Результат: ${ok} из ${Q.length} (${p}%) — ${g}`, `Время: ${fmt(used)} из ${fmt(LIMITv)}${S.timedOut ? " (время вышло)" : ""}`,
         `Без ответа: ${Q.length - done}`, `Ошибки в вопросах: ${wrong.length ? wrong.map(i => i + 1).join(", ") : "нет"}`];
+      if (ME) lines.splice(lines.findIndex(l => l.startsWith("ФИО:")) + 1, 0, `Аккаунт: ${AcadAccount.who(ME)}`);
       if (T.pool) lines.splice(2, 0, `Вариант: ${S.seed}`);
       const att = attemptNo(); if (att) lines.splice(lines.findIndex(l => l.startsWith("Дата:")) + 1, 0, `Попытка на этом устройстве: ${att}`);
       S.reportText = lines.join("\n") + "\nКод проверки: " + hash(body(lines.join("\n")));
@@ -461,13 +474,10 @@ async function boot() {
     else if (e.key === "ArrowRight") go(S.cur + 1); else if (e.key === "ArrowLeft") go(S.cur - 1);
   });
 
-  // ФИО из личного кабинета, если курсант вошёл и попытка ещё не начата
-  if (window.AcadAccount && AcadAccount.ready) AcadAccount.ready.then(p => {
-    if (p && p.full_name && S.startAt === null && !$("fio").value.trim() && S.mode !== "review") {
-      $("fio").value = p.full_name; S.fio = p.full_name; save();
-      const h = $("fiohint"); h.classList.remove("err"); h.textContent = "ФИО взято из личного кабинета. Результат сохранится и в кабинете.";
-    }
-  });
+  // ФИО — только из личного кабинета (поле нельзя изменить)
+  ME = window.AcadAccount && AcadAccount.current ? AcadAccount.current() : null;
+  if (ME) { S.fio = fioOk() || ""; fioFromAccount(); save(); }
+  if (window.AcadAccount && AcadAccount.ready) AcadAccount.ready.then(p => { if (p) { ME = p; if (!S.reportText) { S.fio = fioOk() || ""; save(); } fioFromAccount(); } });
 
   renderAll();
   if (S.finished) showResult();

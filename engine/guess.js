@@ -142,7 +142,8 @@ function finish() {
   const wrong = log.map((r, k) => r.ok ? null : k + 1).filter(Boolean);
   if (!S.text) {
     const att = attemptNo();
-    const lines = [`${T.title} — результат`, `Режим: игра · Академия УЗИ`, `ФИО: ${S.fio}`, `Дата: ${stamp(new Date())}`].concat(att ? [`Попытка на этом устройстве: ${att}`] : []).concat([
+    const me = window.__acadWho && window.__acadWho();
+    const lines = [`${T.title} — результат`, `Режим: игра · Академия УЗИ`, `ФИО: ${(me && me.full_name) || S.fio}`].concat(me ? [`Аккаунт: ${AcadAccount.who(me)}`] : []).concat([`Дата: ${stamp(new Date())}`]).concat(att ? [`Попытка на этом устройстве: ${att}`] : []).concat([
       `Баллы: ${S.score} из ${n * 1000}`, `Верно: ${ok} из ${n} (${p}%) — ${grade(p)}`, `Среднее время ответа: ${avg.toFixed(1)} с`,
       `Лучшая серия: ${S.best}`, `Ошибки в вопросах: ${wrong.length ? wrong.join(", ") : "нет"}`]);
     S.text = lines.join("\n") + "\nКод: " + hash(lines.join("\n"));
@@ -206,10 +207,15 @@ async function boot() {
   const nMist = T.questions.filter(q => store.get(MKEY, {})[q.id]).length;
   if (nMist) { $("mistline").hidden = false; $("mistn").textContent = nMist; $("asreview").href = `quiz.html?t=${encodeURIComponent(T.id)}&mode=review`; }
 
-  $("go").onclick = () => { const v = fioOk($("fio").value); if (!v) { $("fioerr").hidden = false; $("fio").focus(); return; } S = null; $("fio").value = v; begin(); };
+  // ФИО — только из личного кабинета (поле нельзя изменить)
+  let ME = window.AcadAccount && AcadAccount.current ? AcadAccount.current() : null;
+  const lockFio = () => { if (!ME) return; $("fio").value = ME.full_name || ""; $("fio").readOnly = true; };
+  lockFio();
+  if (window.AcadAccount && AcadAccount.ready) AcadAccount.ready.then(p => { if (p) { ME = p; lockFio(); } });
+  window.__acadWho = () => ME;
+  $("go").onclick = () => { const v = fioOk(ME ? (ME.full_name || "") : $("fio").value); if (!v) { $("fioerr").hidden = false; $("fio").focus(); return; } S = null; $("fio").value = v; begin(); };
   $("fio").addEventListener("keydown", e => { if (e.key === "Enter") $("go").click(); });
 
-  if (window.AcadAccount && AcadAccount.ready) AcadAccount.ready.then(p => { if (p && p.full_name && !$("fio").value.trim()) $("fio").value = p.full_name; });
   const saved = store.get(KEY, null);
   if (saved && saved.v === 1 && saved.fio && saved.log.length <= Q.length) {
     S = saved; $("start").hidden = true; $("game").hidden = false;

@@ -194,6 +194,7 @@ function render(p) {
   $("p-group").textContent = p.group || (p.role === "teacher" ? "—" : "пока не назначена");
   $("st-pending").hidden = p.status !== "pending"; $("st-blocked").hidden = p.status !== "blocked";
   $("p-teacher").hidden = p.role !== "teacher";
+  $("p-edit").hidden = p.role !== "teacher";        // ФИО курсанта меняет только преподаватель
   const exp = A.expired(p), until = p.access_until ? new Date(p.access_until) : null;
   $("p-acck").hidden = $("p-acc").hidden = !until;
   if (until) { const a = new Date(until), b = new Date(); a.setHours(0, 0, 0, 0); b.setHours(0, 0, 0, 0); const left = Math.round((a - b) / 864e5);
