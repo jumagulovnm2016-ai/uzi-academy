@@ -36,7 +36,9 @@ async function sendTG(text) {
 }
 
 const MKEY = "acad-mistakes";
-function markMistake(qid, wrong) { const m = store.get(MKEY, {}); if (wrong) m[qid] = (m[qid] || 0) + 1; else delete m[qid]; store.set(MKEY, m); }
+function markMistake(qid, wrong) {
+  if (window.AcadSRS) AcadSRS.rate(qid, !wrong);          // интервальное повторение (engine/srs.js)
+  const m = store.get(MKEY, {}); if (wrong) m[qid] = (m[qid] || 0) + 1; else delete m[qid]; store.set(MKEY, m); }
 
 const SHAPES = ['<svg viewBox="0 0 24 24"><path fill="#fff" d="M12 3 22 20H2z"/></svg>', '<svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2 22 12 12 22 2 12z"/></svg>',
   '<svg viewBox="0 0 24 24"><circle fill="#fff" cx="12" cy="12" r="9.5"/></svg>', '<svg viewBox="0 0 24 24"><rect fill="#fff" x="3.5" y="3.5" width="17" height="17" rx="1"/></svg>'];

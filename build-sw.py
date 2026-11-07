@@ -33,7 +33,7 @@ with open('data/catalog.json', 'w', encoding='utf-8') as f:
 precache += ['./data/catalog.json']
 
 # Единый движок тестов и банк вопросов
-precache += ['./engine/' + f for f in sorted(os.listdir('engine'))] if os.path.isdir('engine') else []
+precache += sorted('./' + os.path.join(d, f).replace(os.sep, '/') for d, _, fs in os.walk('engine') for f in fs if not f.endswith('.txt'))
 precache += ['./data/tests/' + f for f in sorted(os.listdir('data/tests')) if f.endswith('.json')] if os.path.isdir('data/tests') else []
 
 img_map = {}

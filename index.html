@@ -47,6 +47,7 @@ addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); windo
  <button class="btn" id="inst-btn" type="button" hidden>Установить</button>
  <ol id="inst-steps" hidden></ol>
 </section>
+<a class="t" id="srs" href="quiz.html?srs=1" hidden><b>Повторение по расписанию</b><small id="srs-sub"></small><span id="srs-n"></span></a>
 <p class="note">Откройте нужный тест в браузере (Chrome, Safari). Введите ФИО полностью — после завершения результат автоматически уходит преподавателю.</p>
 <a class="t" href="guides.html"><b>Руководства</b><small>методички и лекции по темам курса — PDF</small><span>16 рук.</span></a>
 
@@ -144,6 +145,19 @@ addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); windo
   addEventListener("appinstalled", function () { box.hidden = true; });
   // даём Chrome пару секунд прислать событие, затем показываем подсказку для своего случая
   if (window.__installEvt) show(); else setTimeout(show, 2500);
+})();
+</script>
+<script src="engine/vendor/ts-fsrs-5.4.1.umd.js"></script>
+<script src="engine/srs.js"></script>
+<script>
+(function () {
+  if (!window.AcadSRS || !AcadSRS.ok) return;
+  var st = AcadSRS.stats(); if (!st.total) return;                 // ещё нет ни одной ошибки — карточку не показываем
+  var a = document.getElementById("srs"); a.hidden = false;
+  document.getElementById("srs-n").textContent = st.dueToday ? "сегодня " + st.dueToday : "готово";
+  document.getElementById("srs-sub").textContent = st.dueToday
+    ? "вопросы, в которых вы ошибались, — пора повторить"
+    : "на сегодня всё повторено" + (st.next ? "; следующее — " + AcadSRS.fmtDate(st.next) : "") + " · запомнено " + st.learned + " из " + st.total;
 })();
 </script>
 <script src="offline.js"></script>

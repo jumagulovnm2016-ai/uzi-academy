@@ -28,6 +28,7 @@ async function sendToTeacher(text) {
 const MKEY = "acad-mistakes";
 const mistakes = () => store.get(MKEY, {});
 function markMistake(qid, wrong) {
+  if (window.AcadSRS) AcadSRS.rate(qid, !wrong);          // интервальное повторение (engine/srs.js)
   const m = mistakes();
   if (wrong) m[qid] = (m[qid] || 0) + 1; else delete m[qid];
   store.set(MKEY, m);
@@ -75,6 +76,21 @@ function applyVariant() { if (T.pool) T.questions = variant(T.pool, T.total, S.s
 const b64 = { enc: o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""),
               dec: s => JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/"))))) };
 function shortHash(str) { let h = 0x811c9dc5; for (const ch of str) { h ^= ch.codePointAt(0); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(36); }
+// Повторение по расписанию: вопросы из разных тестов, у которых подошёл срок (не больше 30 за раз)
+async function loadSrs() {
+  const KEYS = "acad-state-srs", saved = store.get(KEYS, null);
+  if (saved && saved.finished) store.del(KEYS);
+  const ids = saved && !saved.finished && saved.v === 1 && Array.isArray(saved.qids) ? saved.qids
+    : (window.AcadSRS ? AcadSRS.due(30).map(x => x.id) : []);
+  const tests = [...new Set(ids.map(id => id.replace(/-\d+$/, "")))].filter(id => /^[a-z0-9-]+$/.test(id));
+  const byId = {};
+  await Promise.all(tests.map(id => fetch(`data/tests/${id}.json`).then(r => r.ok ? r.json() : null).then(t => { if (t) t.questions.forEach(q => { byId[q.id] = q; }); })));
+  return { id: "srs", format: "quiz", srs: true, lock: "review", title: "Повторение", h1: "Повторение по расписанию", pageTitle: "Повторение · Академия УЗИ",
+           eyebrow: "Интервальное повторение · Академия УЗИ", about: ids.length ? `Сегодня к повторению: ${ids.length} вопр.` : "",
+           footer: "Расписание повторений хранится на этом устройстве. Алгоритм — FSRS (библиотека ts-fsrs, лицензия MIT).",
+           minutes: 60, salt: "acad-srs", questions: ids.map(id => byId[id]).filter(Boolean) };
+}
+
 async function loadExam(code) {
   let c; try { c = b64.dec(code); } catch (e) { throw new Error("Ссылка на экзамен повреждена."); }
   const ids = Array.isArray(c.t) ? c.t.filter(id => /^[a-z0-9-]+$/.test(id)) : [];
@@ -94,6 +110,7 @@ const reveal = () => S.mode !== "exam" || S.finished;   // можно ли по�
 
 function pickQuestions() {
   if (S.mode !== "review") { Q = T.questions; return; }
+  if (!S.qids && T.srs) S.qids = T.questions.map(q => q.id);
   if (!S.qids) { const m = mistakes(); S.qids = T.questions.filter(q => m[q.id]).map(q => q.id); }
   const set = new Set(S.qids); Q = T.questions.filter(q => set.has(q.id));
 }
@@ -144,6 +161,7 @@ function renderChrome() {
   const tail = `На тест отводится ${min} мин: отсчёт начинается с первого ответа, по истечении времени тест завершается автоматически. После завершения результат автоматически уходит преподавателю.`;
   $("rules").textContent = S.mode === "study" ? "После ответа сразу показывается правильный вариант и пояснение. " + tail
     : S.mode === "exam" ? "Правильные ответы и пояснения откроются после завершения теста. До конца теста ответ можно изменить. " + tail
+    : T.srs ? "Вопросы из всех тестов, в которых вы ошибались, — по расписанию интервального повторения (FSRS). Верный ответ отодвигает следующее повторение: через день, несколько дней, недели, месяцы. Ошибка возвращает вопрос в ближайшие повторения. Без таймера и без отправки преподавателю."
     : "Вопросы, в которых вы ошиблись в прошлых попытках. Без таймера и без отправки преподавателю. Вопрос, на который вы ответили верно, уходит из списка ошибок.";
   $("who").hidden = S.mode === "review";
   $("legend").innerHTML = reveal()
@@ -162,7 +180,10 @@ function setMode(m) {
 function renderQ() {
   const c = $("qcard"); c.innerHTML = "";
   if (!Q.length) {
-    c.innerHTML = "<p>В этом тесте у вас не осталось ошибок. Выберите учебный режим или экзамен.</p>";
+    const st = T.srs && window.AcadSRS ? AcadSRS.stats() : null;
+    c.innerHTML = T.srs
+      ? `<p>На сегодня повторять нечего.${st && st.next ? " Следующее повторение — " + esc(AcadSRS.fmtDate(st.next)) + "." : ""}</p><p><a href="./">Вернуться к тестам</a></p>`
+      : "<p>В этом тесте у вас не осталось ошибок. Выберите учебный режим или экзамен.</p>";
     renderMap(); return;
   }
   const x = Q[S.cur], v = S.ans[S.cur], answered = v !== null, show = reveal();
@@ -291,7 +312,13 @@ function showResult(auto) {
     : "<p>Все ответы верны.</p>";
   const r = $("result");
 
-  if (S.mode === "review") {
+  if (T.srs) {
+    const st = window.AcadSRS ? AcadSRS.stats() : { dueToday: 0, next: null, total: 0, learned: 0 };
+    r.innerHTML = `<h2>Повторение</h2><div class="score"><span class="big">${ok}/${Q.length}</span><span class="grade">верно</span></div>
+      <p class="stat">${st.dueToday ? `На сегодня осталось: ${st.dueToday}. <a href="quiz.html?srs=1" id="more">Продолжить</a>` : "На сегодня всё повторено."}${st.next ? " Следующее повторение — " + esc(AcadSRS.fmtDate(st.next)) + "." : ""}</p>
+      <p class="hint">Вопросов в повторении: ${st.total}, из них устойчиво запомнено (интервал 3 недели и больше): ${st.learned}.</p>${wrongList}`;
+    const more = r.querySelector("#more"); if (more) more.onclick = e => { e.preventDefault(); store.del(KEY); location.reload(); };
+  } else if (S.mode === "review") {
     r.innerHTML = `<h2>Работа над ошибками</h2><div class="score"><span class="big">${ok}/${Q.length}</span><span class="grade">исправлено</span></div>
       <p class="stat">Осталось ошибок в этом тесте: ${T.questions.filter(q => mistakes()[q.id]).length}</p>${wrongList}`;
   } else {
@@ -330,6 +357,7 @@ function showResult(auto) {
 }
 
 function restart() {
+  if (T.srs) { stopTimer(); store.del(KEY); location.reload(); return; }   // новый список вопросов к повторению
   const m = S.mode; stopTimer(); S = fresh(m); applyVariant(); pickQuestions();
   if (m === "review" && !Q.length) { S = fresh("study"); pickQuestions(); }
   sizeAnswers(); store.del(KEY); save(); fioReset(); $("restored").hidden = true;
@@ -349,7 +377,10 @@ function fail(text) {
 async function boot() {
   const params = new URLSearchParams(location.search), exam = params.get("exam");
   const id = params.get("t") || "";
-  if (exam) {
+  if (params.get("srs")) {
+    try { T = await loadSrs(); }
+    catch (e) { return fail(navigator.onLine ? "Не удалось загрузить вопросы для повторения." : "Нет интернета, и часть тестов для повторения ещё не сохранена на устройстве."); }
+  } else if (exam) {
     try { T = await loadExam(exam); }
     catch (e) { return fail(navigator.onLine ? e.message : "Нет интернета, и разделы этого экзамена ещё не сохранены на устройстве."); }
   } else {
