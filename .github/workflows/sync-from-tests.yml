@@ -1,0 +1,50 @@
+# Автоматический перенос из «Тестов» (jumagulovnm2016-ai/test) в «Академию УЗИ».
+# Запускается каждые 3 часа и вручную: вкладка Actions → «Перенос из Тестов» → Run workflow.
+# Что переносится — см. tools/sync-from-tests.py.
+name: Перенос из Тестов
+
+on:
+  schedule:
+    - cron: "17 */3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-from-tests
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Академия
+        uses: actions/checkout@v4
+
+      - name: Тесты
+        uses: actions/checkout@v4
+        with:
+          repository: jumagulovnm2016-ai/test
+          path: _src
+          lfs: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Перенос
+        run: |
+          python3 tools/sync-from-tests.py _src | tee "$RUNNER_TEMP/sync.log"
+          rm -rf _src
+
+      - name: Сохранить изменения
+        run: |
+          # офлайн-кэш пересобирается только если что-то перенеслось (иначе версия кэша менялась бы каждый запуск)
+          if [ -z "$(git status --porcelain)" ]; then echo "Изменений нет"; exit 0; fi
+          python3 build-sw.py
+          git config user.name "Академия УЗИ (перенос)"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "Перенос из Тестов" -m "$(head -c 4000 "$RUNNER_TEMP/sync.log")"
+          git push
