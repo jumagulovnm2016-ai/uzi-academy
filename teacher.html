@@ -318,8 +318,9 @@ function showStudent(id) {
   $("d-code").onclick = async () => {
     if (!confirm("Выдать новый код (пароль)? Старый перестанет работать.")) return;
     try { const r = await admin({ action: "reset_password", user_id: p.id }); const who = p.login || s.email;
+      let warn = ""; try { await revoke(p); } catch (e) { warn = e.message; }
       const t = credText(p.full_name, who, r.code);
-      out.innerHTML = `<div class="creds"><pre>${esc(t)}</pre><div class="row"><button class="btn sm" id="d-cc" type="button">Скопировать</button><a class="btn sm" href="${wa(t)}" target="_blank" rel="noopener">Отправить в WhatsApp</a></div><p class="small muted">Код виден только сейчас.</p></div>`;
+      out.innerHTML = `<div class="creds"><pre>${esc(t)}</pre><div class="row"><button class="btn sm" id="d-cc" type="button">Скопировать</button><a class="btn sm" href="${wa(t)}" target="_blank" rel="noopener">Отправить в WhatsApp</a></div><p class="small muted">Код виден только сейчас. Старый код больше не работает${warn ? "" : ", курсант вышел со всех устройств"}.</p>${warn ? `<p class="err small">${esc(warn)}</p>` : ""}</div>`;
       $("d-cc").onclick = e => copy(t, e.target);
     } catch (e) { fail(e); } };
   $("d-del").onclick = async () => {
@@ -327,9 +328,16 @@ function showStudent(id) {
     try { await admin({ action: "delete_student", user_id: p.id }); closeDlg(); await load(); } catch (e) { fail(e); } };
 }
 
+// выйти курсанта со всех устройств (скрипт 04-revoke-sessions.sql)
+async function revoke(p) {
+  const { error } = await sb.rpc("teacher_revoke_sessions", { p_user: p.id });
+  if (error) throw new Error(/function|not find|404|schema cache/i.test(error.message) ? "Чтобы курсант сразу вышел со всех устройств, запустите в Supabase скрипт 04-revoke-sessions.sql" : A.ru(error));
+}
+
 async function setStudent(p, status, gid) {
   const { error } = await sb.rpc("teacher_set_student", { p_user: p.id, p_status: status, p_group: gid });
   if (error) throw new Error(A.ru(error));
+  if (status === "blocked") await revoke(p);
   p.status = status; p.group_id = gid; renderAll(true);
 }
 

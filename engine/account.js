@@ -40,6 +40,17 @@ api.ru = ru;
 async function loadProfile() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { api.profile = null; LS.del(K.profile); return null; }
+  // проверить вход на сервере: если преподаватель завершил сеансы (новый код, отключение) — выйти на этом устройстве
+  if (navigator.onLine) {
+    try {
+      const { error: ue } = await sb.auth.getUser();
+      if (ue && (ue.status === 400 || ue.status === 401 || ue.status === 403 || /session|not found|missing|JWT/i.test(ue.message || ""))) {
+        try { await sb.auth.signOut({ scope: "local" }); } catch (x) {}
+        [K.profile, K.srs, K.owner, K.synced, K.dirty, "acad-mistakes"].forEach(LS.del);
+        api.profile = null; return null;
+      }
+    } catch (e) { /* нет связи — проверим в следующий раз */ }
+  }
   try {
     const { data, error } = await sb.from("profiles").select("id,full_name,login,role,status,group_id,groups(name)").eq("id", session.user.id).single();
     if (error) throw error;
@@ -47,7 +58,13 @@ async function loadProfile() {
     delete api.profile.groups;
     LS.set(K.profile, api.profile);
   } catch (e) {
-    const cached = LS.get(K.profile, null);                      // без интернета — последний известный профиль
+    // без интернета — последний известный профиль; если же сервер отклонил вход (сеанс завершён) — выйти
+    if (navigator.onLine && e && (e.status === 401 || e.code === "PGRST301" || /JWT|token/i.test(e.message || ""))) {
+      try { await sb.auth.signOut({ scope: "local" }); } catch (x) {}
+      [K.profile, K.srs, K.owner, K.synced, K.dirty, "acad-mistakes"].forEach(LS.del);
+      api.profile = null; return null;
+    }
+    const cached = LS.get(K.profile, null);
     api.profile = cached && cached.id === session.user.id ? cached : null;
   }
   return api.profile;
@@ -174,10 +191,20 @@ api.gate = async function (opts) {
   opts = opts || {};
   // быстрый путь: на устройстве есть сессия и последний известный профиль подтверждён — не ждём сеть
   const cached = LS.get(K.profile, null), hasSession = (() => { try { return !!localStorage.getItem("acad-auth"); } catch (e) { return false; } })();
-  if (hasSession && cached && cached.status === "active" && (!opts.teacher || cached.role === "teacher")) return true;
+  const allowed = p => !!(p && p.status === "active" && (!opts.teacher || p.role === "teacher"));
+  if (hasSession && allowed(cached)) {
+    // но проверяем и по серверу: если преподаватель отключил курсанта или сменил ему код — закрываем сразу
+    api.ready.then(p => { if (!allowed(p)) shutter(p, opts); });
+    return true;
+  }
   const p = await api.ready;
-  const ok = p && p.status === "active" && (!opts.teacher || p.role === "teacher");
-  if (ok) return true;
+  if (allowed(p)) return true;
+  shutter(p, opts);
+  return false;
+};
+
+function shutter(p, opts) {
+  if (document.getElementById("acad-gate")) return;
   const next = encodeURIComponent(location.pathname.split("/").pop() + location.search);
   const [title, text, btn] = !p
     ? ["Нужно войти", "Тесты Академии УЗИ доступны только курсантам. Войдите по логину и коду от преподавателя или по своей почте.", "Войти"]
@@ -185,6 +212,7 @@ api.gate = async function (opts) {
     : p.status === "blocked" ? ["Аккаунт отключён", "Обратитесь к преподавателю.", "Личный кабинет"]
     : ["Только для преподавателя", "Эта страница доступна только преподавателю курса.", "Личный кабинет"];
   const d = document.createElement("div");
+  d.id = "acad-gate";
   d.setAttribute("role", "dialog"); d.setAttribute("aria-modal", "true");
   d.style.cssText = "position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:16px;background:var(--bg,#f3f6f7)";
   d.innerHTML = `<div style="max-width:420px;width:100%;background:var(--paper,#fff);color:var(--ink,#18232f);border:1px solid var(--line,#d5e0e3);border-radius:12px;padding:22px;display:grid;gap:12px;font:16px/1.5 'PT Sans','Segoe UI',Arial,sans-serif">
@@ -195,8 +223,7 @@ api.gate = async function (opts) {
   d.querySelector("b").textContent = title; d.querySelector("p").textContent = text; d.querySelector("a").textContent = btn;
   document.body.appendChild(d);
   document.querySelectorAll("body > :not([role=dialog])").forEach(el => { el.setAttribute("aria-hidden", "true"); el.style.visibility = "hidden"; });
-  return false;
-};
+}
 
 async function afterLogin() {
   await loadProfile(); emit();
