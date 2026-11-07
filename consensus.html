@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Шпаргалка: IOTA, O-RADS, IETA, MUSA, FIGO</title>
+<style>
+:root{--bg:#f3f6f7;--paper:#fff;--ink:#18232f;--muted:#5b6b78;--line:#d5e0e3;--navy:#1f3864;--teal:#007a7a;--soft:#e2f1f1;--bad:#a3361f;--badsoft:#f6e4df;--zebra:#f5f8f9}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1519;--paper:#172027;--ink:#e5edf0;--muted:#9db0ba;--line:#2b3a43;--navy:#9cb6e6;--teal:#4cc3c3;--soft:#16302f;--bad:#f0a08c;--badsoft:#3a201b;--zebra:#1b262d}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "PT Sans","Segoe UI",Arial,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:28px 16px 48px;display:grid;gap:20px}
+.eyebrow{font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+h1{font:700 clamp(26px,5vw,36px)/1.15 Georgia,"Times New Roman",serif;color:var(--navy);margin:6px 0 0}
+h2{font:700 21px/1.3 Georgia,serif;color:var(--navy);margin:8px 0 0}
+h3{font-size:16px;margin:0 0 6px;color:var(--teal)}
+p{margin:0}
+.muted{color:var(--muted);font-size:14px}
+a{color:var(--teal)}
+nav{display:flex;flex-wrap:wrap;gap:8px}
+nav a{font:600 14px/1 "PT Sans",Arial,sans-serif;text-decoration:none;border:1.5px solid var(--line);background:var(--paper);border-radius:999px;padding:8px 14px;color:var(--ink)}
+nav a:hover,nav a:focus-visible{border-color:var(--teal);outline:none}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.card{background:var(--paper);border:1.5px solid var(--line);border-radius:10px;padding:14px 16px}
+.card ul{margin:0;padding-left:18px}
+.card li{margin:3px 0}
+.k{font:700 14px ui-monospace,Consolas,monospace}
+.pill{border-radius:8px;padding:10px 12px;background:var(--zebra)}
+.pill.ok{background:var(--soft)}
+.pill.bad{background:var(--badsoft)}
+.lever{border:1.5px solid var(--navy);border-radius:8px;padding:8px 10px;text-align:center;font-weight:700}
+.tbl{width:100%;border-collapse:collapse;background:var(--paper);border:1.5px solid var(--line);border-radius:10px;overflow:hidden;font-size:15px}
+.tbl th{background:var(--navy);color:#fff;text-align:left;padding:8px 10px}
+@media (prefers-color-scheme:dark){.tbl th{color:#0f1519}}
+.tbl td{padding:8px 10px;border-top:1px solid var(--line);vertical-align:top}
+.tbl tr:nth-child(even) td{background:var(--zebra)}
+.tbl tr.hi td{background:var(--badsoft)}
+.tbl td:first-child{font:700 14px ui-monospace,Consolas,monospace;white-space:nowrap}
+.scroll{overflow-x:auto}
+.red{color:var(--bad);font-weight:700}
+/* карточки */
+.fc{display:grid;gap:12px}
+.flip{display:block;width:100%;min-height:200px;text-align:left;font:inherit;color:inherit;background:var(--paper);border:1.5px solid var(--line);border-radius:12px;padding:20px;cursor:pointer}
+.flip:hover,.flip:focus-visible{border-color:var(--teal);outline:none}
+.flip .side{font:600 12px ui-monospace,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:10px}
+.flip .q{font-size:19px;font-weight:700}
+.flip .a{font-size:18px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:600 15px "PT Sans",Arial,sans-serif;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:10px 16px;cursor:pointer;min-height:44px}
+.btn:hover,.btn:focus-visible{border-color:var(--teal);outline:none}
+.btn.main{background:var(--navy);border-color:var(--navy);color:#fff}
+@media (prefers-color-scheme:dark){.btn.main{color:#0f1519}}
+.count{font:700 14px ui-monospace,Consolas,monospace;color:var(--muted);font-variant-numeric:tabular-nums;margin-left:auto}
+footer{font-size:13px;color:var(--muted)}
+@media print{
+  body{background:#fff;color:#000;font-size:11pt}
+  nav,#cards,.noprint{display:none}
+  .wrap{max-width:none;padding:0}
+  .card,.tbl{break-inside:avoid}
+  #uterus{break-before:page}
+}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a7b83">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+<div class="wrap">
+<header>
+<span class="eyebrow">Гинекология · шпаргалка и карточки</span>
+<h1>IOTA, O-RADS, IETA, MUSA, FIGO</h1>
+</header>
+<p class="muted noprint"><a href="index.html">← Все тесты</a> · Страницу можно распечатать: яичники и матка выйдут на двух листах.</p>
+
+<nav aria-label="Разделы">
+<a href="#iota">IOTA: B и M</a>
+<a href="#orads">O-RADS</a>
+<a href="#ieta">IETA</a>
+<a href="#musa">MUSA</a>
+<a href="#figo">FIGO 0–8</a>
+<a href="#cards">Карточки</a>
+</nav>
+
+<div class="card">
+<h3>Какая система на какой вопрос отвечает</h3>
+<ul>
+<li><b>Термины IOTA, IETA, MUSA</b> — как описать (единый язык).</li>
+<li><b>Простые правила IOTA</b> — доброкачественное или нет: да / нет / не знаю.</li>
+<li><b>ADNEX</b> — процент риска злокачественности.</li>
+<li><b>O-RADS US</b> — что делать дальше: категория и тактика.</li>
+<li><b>FIGO</b> — тип миомы; стадия рака (для клинициста).</li>
+</ul>
+</div>
+
+<section id="ovary" style="display:grid;gap:14px">
+<h2 id="iota">Простые правила IOTA (Timmerman, 2008)</h2>
+<div class="grid2">
+<div class="card">
+<h3>B — доброкачественность</h3>
+<ul>
+<li><span class="k">B1</span> Однокамерная киста</li>
+<li><span class="k">B2</span> Солидный компонент, наибольший размер &lt;7 мм</li>
+<li><span class="k">B3</span> Акустическая тень</li>
+<li><span class="k">B4</span> Гладкая многокамерная опухоль &lt;100 мм</li>
+<li><span class="k">B5</span> Нет кровотока (цветовая шкала 1)</li>
+</ul>
+</div>
+<div class="card">
+<h3 style="color:var(--bad)">M — злокачественность</h3>
+<ul>
+<li><span class="k">M1</span> Солидная опухоль с неровным контуром</li>
+<li><span class="k">M2</span> Асцит</li>
+<li><span class="k">M3</span> ≥4 папиллярных разрастания</li>
+<li><span class="k">M4</span> Неровная многокамерно-солидная опухоль ≥100 мм</li>
+<li><span class="k">M5</span> Очень сильный кровоток (шкала 4)</li>
+</ul>
+</div>
+</div>
+<div class="grid3">
+<div class="pill ok"><b>Только B</b> → доброкачественная</div>
+<div class="pill bad"><b>Только M</b> → злокачественная</div>
+<div class="pill"><b>B + M или ничего</b> → правила не работают: эксперт или ADNEX</div>
+</div>
+<p class="muted">Зеркальные пары: B1↔M3 · B2↔M1 · B4↔M4 · B5↔M5; без пары — B3 (тень) и M2 (асцит). Цветовая шкала: 1 — нет кровотока, 2 — минимальный, 3 — умеренный, 4 — очень сильный; оценивается в солидной части.</p>
+
+<h2 id="orads">O-RADS US v2022</h2>
+<p>Категорию поднимают четыре «рычага»:</p>
+<div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+<div class="lever">Размер ≥10 см</div>
+<div class="lever">Солидный компонент</div>
+<div class="lever">Кровоток 3–4</div>
+<div class="lever">Асцит / узлы → 5</div>
+</div>
+<div class="scroll">
+<table class="tbl">
+<tr><th style="width:14%">Категория</th><th>Типичные находки</th><th style="width:24%">Тактика</th></tr>
+<tr><td>0</td><td>Исследование неполноценное (газ кишки, неудачный доступ)</td><td>Повторить</td></tr>
+<tr><td>1<br>норма</td><td>Нормальный яичник в пременопаузе: фолликул или желтое тело ≤3 см</td><td>Не нужно</td></tr>
+<tr><td>2<br>&lt;1%</td><td>Простая киста &lt;10 см · однокамерная непростая (взвесь, неполные перегородки) или двухкамерная, гладкая, &lt;10 см · типичные доброкачественные &lt;10 см: геморрагическая киста, дермоид, эндометриома · внеяичниковые любого размера: параовариальная киста, перитонеальная псевдокиста, гидросальпинкс</td><td>Не нужно или контроль УЗИ (2–3 мес., 6 или 12 мес.) — по виду, размеру и менопаузе</td></tr>
+<tr><td>3<br>1–&lt;10%</td><td>Одно- или двухкамерная гладкая ≥10 см · типичные доброкачественные ≥10 см · однокамерная с неровной стенкой (выступы &lt;3 мм), любого размера · многокамерная гладкая &lt;10 см, кровоток 1–3 · гладкое солидное, кровоток 1 (с тенью или без) · гладкое солидное с тенью, кровоток 2–3</td><td>Если не удалено — контроль УЗИ в течение 6 мес.; солидное — УЗИ экспертом или МРТ; гинеколог</td></tr>
+<tr><td>4<br>10–&lt;50%</td><td>Двухкамерная с неровной стенкой без солидного · многокамерная без солидного: гладкая ≥10 см (кровоток 1–3), любая с кровотоком 4, любая с неровной стенкой · однокамерная с солидным: 1–3 папиллы или солидный компонент не папиллярного вида · двух- или многокамерная с солидным, кровоток 1–2 · гладкое солидное без тени, кровоток 2–3</td><td>УЗИ экспертом или МРТ (O-RADS MRI); гинеколог с консультацией онкогинеколога или онкогинеколог</td></tr>
+<tr class="hi"><td>5<br>≥50%</td><td>Однокамерная с ≥4 папиллами · двух- или многокамерная с солидным, кровоток 3–4 · солидное с неровным контуром, любой кровоток · гладкое солидное, кровоток 4 (с тенью или без) · <b>асцит и/или узлы по брюшине</b>, не объяснимые другой причиной</td><td><b>Онкогинеколог</b></td></tr>
+</table>
+</div>
+<p class="muted"><b>Определения O-RADS:</b> двухкамерная — 2 камеры, многокамерная — ≥3 · солидный компонент — выступ ≥3 мм; неровность стенки &lt;3 мм — это «неровная стенка», а не солидный компонент · папилла — солидный компонент, окружённый жидкостью с трёх сторон · солидное образование — ≥80% солидной ткани (кровь и содержимое дермоида не в счёт) · гладкий / неровный — внутренняя стенка у кисты, наружный контур у солидного · постменопауза — аменорея ≥1 года (при неясности — возраст &gt;50 лет). Несколько образований — категория по худшему. Сроки контроля для O-RADS 2 — по отдельной таблице ACR для каждого вида кисты.</p>
+</section>
+
+<section id="uterus" style="display:grid;gap:14px">
+<h2 id="ieta">IETA — эндометрий и полость (Leone, 2010)</h2>
+<div class="grid2">
+<div class="card">
+<h3>Что описать</h3>
+<ul>
+<li><b>Толщина</b> — двойной слой, сагиттальный срез, максимум; жидкость в полости не включать (сумма двух слоёв).</li>
+<li><b>Эхогенность</b> — однородная (гипер-, изо-, гипо-, трёхслойная) или неоднородная (с кистами или без).</li>
+<li><b>Срединная линия</b> — линейная, нелинейная, неровная, не видна.</li>
+<li><b>Граница с миометрием</b> — ровная, неровная, прерывистая, не видна.</li>
+</ul>
+</div>
+<div class="card">
+<h3>Кровоток: шкала 1–4 и тип сосудов</h3>
+<ul>
+<li><b>Одна сосудистая ножка</b> (с ветвлением или без) → полип.</li>
+<li><b>Много сосудов из одного места</b> → очаговое поражение.</li>
+<li><b>Много сосудов из разных мест</b> → <span class="red">подозрение на рак</span>.</li>
+<li><b>Кольцевой кровоток</b> → подслизистая миома.</li>
+<li><b>Рассеянные сосуды</b> — неспецифично.</li>
+</ul>
+</div>
+</div>
+
+<h2 id="musa">MUSA — миометрий (2015, пересмотр 2022)</h2>
+<div class="grid2">
+<div class="card">
+<h3>Миома</h3>
+<ul>
+<li>Чёткий округлый узел, тени по краю, иногда веерные тени внутри.</li>
+<li>Кровоток <b>по периферии</b> (кольцевой).</li>
+<li>Описать: число, размер, локализацию, тип по FIGO, отношение к полости и серозе.</li>
+</ul>
+</div>
+<div class="card">
+<h3>Аденомиоз</h3>
+<ul>
+<li><b>Прямые:</b> кисты в миометрии · гиперэхогенные островки · эхогенные субэндометриальные линии и почки.</li>
+<li><b>Косвенные:</b> шаровидная матка · асимметрия стенок · веерные тени · кровоток насквозь · неровная или прерывистая переходная зона.</li>
+<li>Без прямых признаков косвенные не доказывают аденомиоз — диагноз остаётся неопределённым. Описать: диффузный / очаговый, локализацию, распространённость.</li>
+</ul>
+</div>
+</div>
+
+<h2 id="figo">FIGO — типы миом (PALM-COEIN, 2011 / 2018)</h2>
+<div class="scroll">
+<table class="tbl">
+<tr><th style="width:12%">Тип</th><th>Расположение</th></tr>
+<tr><td>0</td><td>Подслизистая на ножке в полости</td></tr>
+<tr><td>1</td><td>Подслизистая, &lt;50% в миометрии</td></tr>
+<tr><td>2</td><td>Подслизистая, ≥50% в миометрии</td></tr>
+<tr><td>3</td><td>Интрамуральная, касается эндометрия</td></tr>
+<tr><td>4</td><td>Интрамуральная, не касается ни эндометрия, ни серозы</td></tr>
+<tr><td>5</td><td>Субсерозная, ≥50% в миометрии</td></tr>
+<tr><td>6</td><td>Субсерозная, &lt;50% в миометрии</td></tr>
+<tr><td>7</td><td>Субсерозная на ножке</td></tr>
+<tr><td>8</td><td>Прочие: шеечная, паразитарная и др.</td></tr>
+<tr><td>2–5</td><td>Гибридная: от эндометрия до серозы, пишется через дефис</td></tr>
+</table>
+</div>
+<p class="muted">Логика нумерации: от полости (0) через миометрий (3–4) к серозе (7). 0–2 — подслизистые, 3–4 — интрамуральные, 5–7 — субсерозные.</p>
+</section>
+
+<section id="cards" class="fc">
+<h2>Карточки для повторения</h2>
+<p class="muted">Нажмите на карточку, чтобы увидеть ответ. Клавиатура: пробел — перевернуть, ← → — листать. Повторяйте через 1, 3, 7 и 21 день.</p>
+<button class="flip" id="flip" type="button" aria-live="polite">
+<div class="side" id="side">Вопрос</div>
+<div id="text" class="q"></div>
+</button>
+<div class="bar">
+<button class="btn" id="prev" type="button">← Назад</button>
+<button class="btn main" id="next" type="button">Дальше →</button>
+<button class="btn" id="shuf" type="button">Перемешать</button>
+<span class="count" id="count"></span>
+</div>
+</section>
+
+<footer>Жумагулов Н.М. · АДЦ «Сономедплюс», г. Ош · Источники: Timmerman D. et al., 2008; ACR O-RADS US v2022; Leone F.P.G. et al., 2010; Van den Bosch T. et al., 2015; Harmsen M.J. et al., 2022; Munro M.G. et al., FIGO 2011/2018.</footer>
+</div>
+
+<script>
+var CARDS=[
+["Признак B2 простых правил IOTA","Солидный компонент, наибольший размер <7 мм. Зеркальная пара — M1, солидная опухоль с неровным контуром."],
+["Признак M4 простых правил IOTA","Неровная многокамерно-солидная опухоль ≥100 мм. Зеркало — B4, гладкая многокамерная <100 мм."],
+["Какие простые признаки IOTA не имеют зеркальной пары?","B3 — акустическая тень и M2 — асцит."],
+["Образование с признаками B1 и M2: вывод по простым правилам IOTA?","Правила не применимы (есть и B, и M) — эксперт или ADNEX; до решения эксперта образование считают подозрительным."],
+["Цветовая шкала IOTA 1–4","1 — нет кровотока, 2 — минимальный, 3 — умеренный, 4 — очень сильный (= M5)."],
+["Какая находка сразу даёт O-RADS 5?","Асцит и/или узлы по брюшине, не объяснимые другой причиной, — независимо от вида образования."],
+["Риск злокачественности по категориям O-RADS 2–5","2 — <1%, 3 — 1–<10%, 4 — 10–<50%, 5 — ≥50%."],
+["Типичная эндометриома 6 см в пременопаузе — категория O-RADS?","O-RADS 2 (типичные доброкачественные <10 см); ≥10 см — O-RADS 3."],
+["O-RADS 1 — какой размер фолликула или желтого тела?","≤3 см у женщины в пременопаузе."],
+["Четыре «рычага», которые поднимают категорию O-RADS","Размер ≥10 см · солидный компонент · кровоток 3–4 · асцит или узлы по брюшине (→ 5)."],
+["Как измерять толщину эндометрия по IETA?","Двойной слой в сагиттальном срезе, по максимуму; жидкость в полости не включать — сумма двух одиночных слоёв."],
+["IETA: тип сосудов при полипе и при раке","Полип — одна сосудистая ножка; рак — много сосудов из разных мест; кольцевой кровоток — подслизистая миома."],
+["MUSA: прямые признаки аденомиоза","Кисты в миометрии · гиперэхогенные островки · эхогенные субэндометриальные линии и почки."],
+["MUSA: косвенные признаки аденомиоза","Шаровидная матка · асимметрия стенок · веерные тени · кровоток насквозь · неровная или прерывистая переходная зона."],
+["Кровоток при миоме по MUSA","Периферический (кольцевой). Кровоток насквозь — признак аденомиоза."],
+["Миома FIGO типы 0, 1, 2","0 — на ножке в полости; 1 — подслизистая, <50% в миометрии; 2 — подслизистая, ≥50% в миометрии."],
+["Миома FIGO типы 3 и 4","3 — интрамуральная, касается эндометрия; 4 — интрамуральная, не касается ни эндометрия, ни серозы."],
+["Миома FIGO типы 5, 6, 7, 8","5 — субсерозная ≥50% в миометрии; 6 — <50%; 7 — на ножке; 8 — прочие (шеечная, паразитарная)."],
+["Какая система отвечает на вопрос «что делать дальше» с образованием придатков?","O-RADS US: категория и тактика. IOTA-термины — как описать, простые правила — да/нет, ADNEX — процент риска."]
+];
+var order=CARDS.map(function(_,i){return i}),pos=0,back=false;
+var elText=document.getElementById('text'),elSide=document.getElementById('side'),elCount=document.getElementById('count');
+function show(){
+  var c=CARDS[order[pos]];
+  elSide.textContent=back?'Ответ':'Вопрос';
+  elText.textContent=back?c[1]:c[0];
+  elText.className=back?'a':'q';
+  elCount.textContent=(pos+1)+' / '+CARDS.length;
+}
+function flip(){back=!back;show()}
+function go(d){pos=(pos+d+CARDS.length)%CARDS.length;back=false;show()}
+function shuffle(){for(var i=order.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=order[i];order[i]=order[j];order[j]=t}pos=0;back=false;show()}
+document.getElementById('flip').onclick=flip;
+document.getElementById('prev').onclick=function(){go(-1)};
+document.getElementById('next').onclick=function(){go(1)};
+document.getElementById('shuf').onclick=shuffle;
+document.addEventListener('keydown',function(e){
+  var t=e.target.tagName;if(t==='INPUT'||t==='TEXTAREA')return;
+  var r=document.getElementById('cards').getBoundingClientRect();
+  if(r.bottom<0||r.top>innerHeight)return;
+  if(e.key==='ArrowRight'){go(1)}else if(e.key==='ArrowLeft'){go(-1)}
+  else if(e.key===' '&&e.target.id!=='flip'&&t!=='BUTTON'){e.preventDefault();flip()}
+});
+show();
+</script>
+<script src="offline.js"></script>
+</body>
+</html>

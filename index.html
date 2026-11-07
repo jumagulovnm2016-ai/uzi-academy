@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Академия УЗИ</title>
+<style>
+:root{--bg:#f3f6f7;--paper:#fff;--ink:#18232f;--muted:#5b6b78;--line:#d5e0e3;--navy:#1f3864;--teal:#007a7a;--soft:#e2f1f1}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1519;--paper:#172027;--ink:#e5edf0;--muted:#9db0ba;--line:#2b3a43;--navy:#9cb6e6;--teal:#4cc3c3;--soft:#16302f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "PT Sans","Segoe UI",Arial,sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:28px 16px 48px;display:grid;gap:18px}
+.eyebrow{font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+h1{font:700 clamp(26px,5vw,36px)/1.15 Georgia,"Times New Roman",serif;color:var(--navy);margin:6px 0 0}
+p{margin:0;color:var(--muted)}
+h2{font:700 18px/1.3 Georgia,serif;color:var(--navy);margin:8px 0 0}
+.list{display:grid;gap:10px}
+a.t{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;text-decoration:none;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:10px;padding:14px 16px}
+a.t:hover,a.t:focus-visible{border-color:var(--teal);outline:none}
+a.t b{font-size:17px}
+a.t small{grid-column:1;color:var(--muted)}
+a.t span{grid-row:1/3;grid-column:2;font:700 13px ui-monospace,Consolas,monospace;color:var(--teal);background:var(--soft);border-radius:6px;padding:4px 8px;white-space:nowrap}
+.note{background:var(--paper);border-left:4px solid var(--teal);border-radius:8px;padding:12px 14px;color:var(--ink)}
+footer{font-size:13px;color:var(--muted)}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a7b83">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+<div class="wrap">
+<header><span class="eyebrow">Первичная специализация · УЗ-диагностика</span><h1>Тесты для курсантов</h1></header>
+<p class="note">Откройте нужный тест в браузере (Chrome, Safari). Введите ФИО полностью — после завершения результат автоматически уходит преподавателю.</p>
+<a class="t" href="guides.html"><b>Руководства</b><small>методички и лекции по темам курса — PDF</small><span>16 рук.</span></a>
+
+<h2>Вводный блок</h2>
+<div class="list">
+ <a class="t" href="entry.html"><b>Входной тест</b><small>физика УЗ и анатомия органов брюшной полости</small><span>20 вопр.</span></a>
+ <a class="t" href="physics-20.html"><b>Физика ультразвука</b><small>базовый уровень</small><span>20 вопр.</span></a>
+ <a class="t" href="physics-30.html"><b>Физика ультразвука — задачи на понимание</b><small>логические задачи</small><span>30 вопр.</span></a>
+</div>
+
+<h2>Органы брюшной полости</h2>
+<div class="list">
+ <a class="t" href="liver-anatomy.html"><b>УЗИ печени. Часть 1</b><small>анатомия и техника сканирования</small><span>30 вопр.</span></a>
+ <a class="t" href="liver.html"><b>Диффузные и очаговые заболевания печени</b><small>по руководству v2.0</small><span>30 вопр.</span></a>
+ <a class="t" href="gallbladder.html"><b>Желчный пузырь и протоки</b><small>клинические задачи</small><span>20 вопр.</span></a>
+ <a class="t" href="pancreas.html"><b>УЗИ поджелудочной железы</b><small></small><span>30 вопр.</span></a>
+ <a class="t" href="spleen.html"><b>УЗИ селезёнки</b><small></small><span>30 вопр.</span></a>
+</div>
+
+<h2>Мочевыделительная система</h2>
+<div class="list">
+ <a class="t" href="kidney.html"><b>УЗИ почек</b><small>методика, норма, кисты, камни, обструкция</small><span>30 вопр.</span></a>
+ <a class="t" href="kidney-quiz.html"><b>Квиз: УЗИ почек</b><small>на время: анатомия, варианты нормы, аномалии, кисты, ловушки</small><span>15 вопр.</span></a>
+ <a class="t" href="ureter-quiz.html"><b>Квиз: мочеточники и мочевой пузырь</b><small>на время: баллы за правильность и скорость</small><span>20 вопр.</span></a>
+ <a class="t" href="ureter-bladder.html"><b>УЗИ мочеточников и мочевого пузыря</b><small>клинические ситуации</small><span>30 вопр.</span></a>
+ <a class="t" href="kidney-guess.html"><b>Угадай снимок: почки</b><small>на время: 7 модулей — норма, аномалии, кисты, гидронефроз и МКБ, воспаление, паренхима, опухоли</small><span>40 снимк.</span></a>
+ <a class="t" href="uro-guess.html"><b>Угадай снимок: мочевой пузырь и мочеточники</b><small>на время: уретероцеле, камни, ДГПЖ, дивертикулы, опухоли</small><span>11 снимк.</span></a>
+ <a class="t" href="kidney-ums.html"><b>УЗИ почек, мочеточников и мочевого пузыря — итоговый</b><small>по лекции; 16 вопросов по эхограммам</small><span>50 вопр.</span></a>
+</div>
+<h2>Гинекология</h2>
+<div class="list">
+ <a class="t" href="uterus-quiz.html"><b>Квиз: матка и придатки</b><small>на время: баллы за правильность и скорость</small><span>30 вопр.</span></a>
+ <a class="t" href="uterus-adnexa.html"><b>УЗИ матки и придатков</b><small>MUSA, IETA, IOTA, ниша рубца, внематочная беременность, эндометриоз</small><span>40 вопр.</span></a>
+ <a class="t" href="gyn-guess.html"><b>Угадай снимок: гинекология</b><small>на время: матка, эндометрий и шейка, яичники, трубы и неотложные состояния</small><span>32 снимк.</span></a>
+ <a class="t" href="consensus.html"><b>Шпаргалка: IOTA, O-RADS, IETA, MUSA, FIGO</b><small>B- и M-признаки, категории O-RADS, типы миом; карточки для повторения</small><span>19 карт.</span></a>
+</div>
+<h2>Акушерство</h2>
+<div class="list">
+ <a class="t" href="early-quiz.html"><b>Квиз: УЗИ в ранние сроки беременности</b><small>на время: баллы за правильность и скорость</small><span>30 вопр.</span></a>
+ <a class="t" href="early-pregnancy.html"><b>УЗИ при малом сроке беременности</b><small>до 11 недель: КТР, хориальность, неразвивающаяся и эктопическая беременность (ISUOG)</small><span>30 вопр.</span></a>
+ <a class="t" href="screening-11-14-quiz.html"><b>Квиз: первый скрининг 11–14 недель</b><small>на время: по главам 1–3 Алтынник, Медведева с поправками FMF и ISUOG</small><span>20 вопр.</span></a>
+ <a class="t" href="first-trimester.html"><b>УЗИ в 11–14 недель: первый скрининг</b><small>КТР, ТВП, анатомия, маркеры, комбинированный скрининг, преэклампсия (ISUOG 2023)</small><span>30 вопр.</span></a>
+ <a class="t" href="screening-2-trimester.html"><b>УЗИ-скрининг II триместра</b><small>биометрия, мозг и лицо, кардиоскрининг, мягкие маркеры (SMFM), плацента, шейка (ISUOG 2022/2023); 6 вопросов по эхограммам</small><span>30 вопр.</span></a>
+ <a class="t" href="fetal-spine.html"><b>Позвоночник плода во II триместре</b><small>норма в трёх плоскостях, spina bifida и Киари II, MOMS, закрытые дизрафии, полупозвонок, тератома; 10 вопросов по эхограммам</small><span>30 вопр.</span></a>
+ <a class="t" href="fetal-spine-quiz.html"><b>Квиз: позвоночник плода</b><small>на время: ориентиры и оссификация, Киари II, профилактика ДНТ, тератома</small><span>15 вопр.</span></a>
+ <a class="t" href="fetal-thorax.html"><b>Органы грудной клетки плода во II триместре</b><small>ось сердца и биометрия, диафрагмальная грыжа и O/E LHR, ВКПМ и CVR, секвестрация, CHAOS, гидроторакс</small><span>30 вопр.</span></a>
+ <a class="t" href="screening-2-guess.html"><b>Угадай снимок: скрининг II триместра</b><small>на время: 30 эхограмм — нормальные срезы и пороки развития, мягкие маркеры</small><span>30 снимк.</span></a>
+ <a class="t" href="brain-guess.html"><b>Угадай снимок: головной мозг плода</b><small>на время: 30 эхограмм — нормальные срезы и пороки ЦНС (ISUOG)</small><span>30 снимк.</span></a>
+ <a class="t" href="face-guess.html"><b>Угадай снимок: лицо плода</b><small>на время: 30 эхограмм — срезы лица, расщелины, микрогнатия, пороки глаз</small><span>30 снимк.</span></a>
+ <a class="t" href="cns-face-spine.html"><b>Итоговый: мозг, лицо и позвоночник плода</b><small>II триместр: срезы ISUOG, вентрикуломегалия, ЗЧЯ, расщелины, микрогнатия, spina bifida, тератома; 18 вопросов по эхограммам</small><span>50 вопр.</span></a>
+</div>
+<h2>Обратная связь</h2>
+<div class="list">
+ <a class="t" href="anketa.html"><b>Анонимная анкета курсанта</b><small>оценка обучения, замечания и предложения — без ФИО</small><span>5–7 мин</span></a>
+</div>
+<footer>Жумагулов Н.М. · АДЦ «Сономедплюс», г. Ош</footer>
+</div>
+<script src="offline.js"></script>
+</body>
+</html>

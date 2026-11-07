@@ -1,0 +1,379 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Нормативы внутренних органов</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Раскладка: липкая панель «пациент» сверху, под ней сводка, затем органы карточками в две колонки; ввод справа, норма под названием. */
+:root{
+  --bg:#f2f5f7; --surface:#ffffff; --sunk:#e9eef2; --ink:#12263a; --muted:#586a7b; --line:#d3dce4;
+  --navy:#16324f; --teal:#0d7a82; --on-teal:#ffffff;
+  --ok:#17734a; --ok-bg:#dff3e8; --hi:#b0331c; --hi-bg:#fbe3dd; --lo:#8a5a00; --lo-bg:#fbeecb;
+  --sans:"Golos Text",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0d1720; --surface:#15222e; --sunk:#1c2c3a; --ink:#e3ebf1; --muted:#93a5b5; --line:#2a3c4d;
+  --navy:#a9cbea; --teal:#49bfc5; --on-teal:#06262a;
+  --ok:#62d19c; --ok-bg:#143626; --hi:#ff9079; --hi-bg:#44201a; --lo:#e8b955; --lo-bg:#3d2f10; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0d1720; --surface:#15222e; --sunk:#1c2c3a; --ink:#e3ebf1; --muted:#93a5b5; --line:#2a3c4d;
+  --navy:#a9cbea; --teal:#49bfc5; --on-teal:#06262a;
+  --ok:#62d19c; --ok-bg:#143626; --hi:#ff9079; --hi-bg:#44201a; --lo:#e8b955; --lo-bg:#3d2f10; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:flex;flex-direction:column;gap:18px}
+h1{font-size:26px;line-height:1.15;margin:0;color:var(--navy);font-weight:700;text-wrap:balance}
+.lead{margin:6px 0 0;color:var(--muted);max-width:65ch}
+h2{font-size:17px;margin:0;color:var(--navy);font-weight:700}
+h3{font-size:13px;margin:0;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{font:inherit;font-weight:600;border:0;background:transparent;color:var(--muted);padding:7px 14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--teal);color:var(--on-teal)}
+.fld{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:14px}
+input{font-family:var(--mono);font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:6px 8px;width:76px;text-align:right;font-variant-numeric:tabular-nums}
+.bar input{width:56px}
+.fld{flex-wrap:wrap}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.spacer{flex:1 1 0}
+.btn{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--navy);border-radius:8px;padding:7px 12px;cursor:pointer}
+.btn.primary{background:var(--navy);color:var(--surface);border-color:var(--navy)}
+
+.sum{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;border-left:3px solid var(--teal);padding:4px 0 4px 12px}
+.sum b{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.devs{display:flex;flex-wrap:wrap;gap:6px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px;align-items:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 14px 6px;min-width:0}
+.card h2{padding-bottom:8px;border-bottom:2px solid var(--teal)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row label{font-weight:500}
+.ref{grid-column:1;color:var(--muted);font-size:13px}
+.ref .n{font-family:var(--mono);color:var(--ink);font-variant-numeric:tabular-nums}
+.in{grid-row:1 / span 2;grid-column:2;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.in .u{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px}
+.out{font-family:var(--mono);font-weight:600;font-size:15px;min-width:76px;text-align:right;font-variant-numeric:tabular-nums}
+.pill{font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)}
+.pill.hi{background:var(--hi-bg);color:var(--hi)}
+.pill.lo{background:var(--lo-bg);color:var(--lo)}
+.pill.none{background:var(--sunk);color:var(--muted)}
+.calc{background:var(--sunk);margin-inline:-14px;padding-inline:14px}
+
+details{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+summary{cursor:pointer;font-weight:700;color:var(--navy)}
+.tw{overflow-x:auto;margin-top:10px}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:13.5px}
+th,td{padding:6px 8px;text-align:right;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+td{font-family:var(--mono)} td:first-child{font-family:var(--sans)}
+thead th{color:var(--muted);font-weight:600;border-bottom:2px solid var(--line)}
+tr.cur td{background:var(--ok-bg);color:var(--ink);font-weight:600}
+.src{color:var(--muted);font-size:13.5px;margin:10px 0 0;padding-left:18px;max-width:80ch}
+.src li{margin-bottom:4px}
+.warn{border:1px solid var(--lo);background:var(--lo-bg);color:var(--ink);border-radius:10px;padding:10px 14px;max-width:none}
+#toast{color:var(--ok);font-weight:600;font-size:13px}
+@media (max-width:520px){ h1{font-size:22px} .spacer{display:none} }
+</style>
+
+<div class="wrap">
+  <p style="margin:0"><a href="guides.html" style="color:var(--teal)">← К руководствам</a></p>
+  <header>
+    <h1>Нормативы внутренних органов</h1>
+    <p class="lead">УЗ-размеры у взрослых и детей. Введите измерения — справочник сравнит их с нормой для выбранного пациента и посчитает объёмы.</p>
+  </header>
+
+  <div class="bar" role="group" aria-label="Пациент">
+    <div class="seg" id="segMode">
+      <button type="button" id="modeA" data-mode="a">Взрослый</button>
+      <button type="button" id="modeC" data-mode="c">Ребёнок</button>
+    </div>
+    <div class="seg" id="segSex">
+      <button type="button" id="sexM" data-sex="m">М</button>
+      <button type="button" id="sexF" data-sex="f">Ж</button>
+    </div>
+    <div class="fld" id="ageBox">
+      <span>Возраст</span>
+      <input id="ageY" inputmode="numeric" aria-label="Возраст, лет"><span>лет</span>
+      <input id="ageM" inputmode="numeric" aria-label="Возраст, месяцев"><span>мес</span>
+      <span>Рост</span>
+      <input id="hgt" inputmode="decimal" aria-label="Рост, см"><span>см</span>
+    </div>
+    <div class="seg" id="segBasis" aria-label="Основа нормы">
+      <button type="button" id="basA" data-basis="a">Норма по возрасту</button>
+      <button type="button" id="basH" data-basis="h">по росту</button>
+    </div>
+    <span class="spacer"></span>
+    <span id="toast" role="status"></span>
+    <button type="button" class="btn" id="clr">Очистить</button>
+    <button type="button" class="btn primary" id="cp">Скопировать сводку</button>
+  </div>
+
+  <div class="sum" id="sum"></div>
+  <div class="grid" id="grid"></div>
+
+  <details id="tblBox" open>
+    <summary id="tblCap"></summary>
+    <div class="tw"><table id="tbl"></table></div>
+    <p class="ref" style="margin-top:8px" id="tblNote"></p>
+  </details>
+
+  <p class="warn"><b>Что сверено.</b> Детские таблицы печени, селезёнки и почек (Konuş), поджелудочной железы (Siegel), желчного пузыря (McGahan), формулы длины почки по росту (Obrycki), пороги желчного протока и остаточной мочи сверены с публикациями или их дословными воспроизведениями. Таблица по росту дана «по Пыкову» в том виде, как она опубликована на diagnoster.ru; саму книгу проверить не удалось. <b>Не сверены:</b> перцентили ВОЗ по щитовидной железе, толщина стенки мочевого пузыря и лоханки у детей, нормативы взрослых по Митькову — они помечены в строках. Оценка относится к одному размеру и не заменяет заключение.</p>
+
+  <details>
+    <summary>Источники</summary>
+    <ul class="src">
+      <li>Konuş O. L. et al. Normal liver, spleen, and kidney dimensions in neonates, infants, and children. AJR 1998;171:1693–1698 — нормы по возрасту; границы — «suggested limits of normal» авторов. Сверено.</li>
+      <li>Пыков М. И. Размеры внутренних органов у детей в зависимости от роста (M ± σ) — в изложении diagnoster.ru. Границы M ± 2σ рассчитаны в приложении; в исходной таблице приведён интервал M ± σ.</li>
+      <li>Obrycki Ł. et al. Kidney length normative values in children aged 0–19 years. Pediatr Nephrol 2022 — длина почки по росту: 2,5-й перцентиль 0,4 × рост + 20,4; медиана 0,5 × рост + 28,2; 97,5-й 0,5 × рост + 34,8 мм. Сверено.</li>
+      <li>Siegel M. J. et al. Radiology 1987;165:15–18 — поджелудочная железа по возрасту. Сверено по воспроизведению в Indian J Radiol Imaging 2018.</li>
+      <li>Chao H. C. et al. J Ultrasound Med 2000 — проток поджелудочной железы (по Caffey’s Pediatric Diagnostic Imaging).</li>
+      <li>McGahan J. P. et al. Radiology 1982 — желчный пузырь по возрасту (в изложении diagnoster.ru).</li>
+      <li>Hernanz-Schulman M. et al. Radiology 1995;195:193–195 — общий желчный проток: менее 3,3 мм до 13 лет, менее 1,2 мм до 3 месяцев. Сверено по реферату.</li>
+      <li>Rosenberg H. K. et al. AJR 1991 — верхняя граница длины селезёнки. Сверено по вторичному источнику.</li>
+      <li>ICCS: ожидаемая ёмкость мочевого пузыря (возраст + 1) × 30 мл для 4–12 лет, 390 мл старше; Chang S. J. et al. — остаточная моча. Сверено.</li>
+      <li>WHO / Zimmermann M. B. et al., 2004 — объём щитовидной железы у детей 6–12 лет. Не сверено.</li>
+      <li>Митьков В. В. Практическое руководство по ультразвуковой диагностике — нормативы взрослых. С книгой не сверено; общие пороги совпадают со сводными зарубежными справочниками.</li>
+    </ul>
+  </details>
+</div>
+
+<script>
+// ---------- Данные ----------
+// Konuş 1998: [верхняя граница группы, мес; подпись; печень; селезёнка; правая почка; левая почка] — [среднее, SD, мин, макс], мм
+const K=[
+ [3,'1–3 мес','48–64',[64,10.4,40,90],[53,7.8,30,70],[50,5.8,35,65],[50,5.5,35,65]],
+ [6,'4–6 мес','54–73',[73,10.8,45,95],[59,6.3,40,75],[53,5.3,40,70],[56,5.5,40,70]],
+ [11,'7–9 мес','65–78',[79,8.0,60,100],[63,7.6,45,80],[59,5.2,45,70],[61,4.6,45,75]],
+ [35,'1–2,5 года','71–92',[85,10.0,65,105],[70,9.6,50,85],[61,3.4,50,75],[66,5.3,50,80]],
+ [59,'3–5 лет','85–109',[86,11.8,65,115],[75,8.4,55,95],[67,5.1,55,80],[71,4.5,55,85]],
+ [83,'5–7 лет','100–130',[100,13.6,70,125],[84,9.0,60,105],[74,5.5,60,85],[79,5.9,60,95]],
+ [107,'7–9 лет','110–131',[105,10.6,75,130],[85,10.5,65,105],[80,6.6,65,95],[84,6.6,65,100]],
+ [131,'9–11 лет','124–149',[105,12.5,75,135],[86,10.7,65,110],[80,7.0,65,100],[84,7.4,65,105]],
+ [155,'11–13 лет','137–153',[115,14.0,85,140],[97,9.7,75,115],[89,6.2,70,105],[91,8.4,70,110]],
+ [179,'13–15 лет','143–168',[118,14.6,85,140],[101,11.7,80,120],[94,5.9,75,110],[96,8.9,75,115]],
+ [9999,'15–17 лет','152–175',[121,11.7,95,145],[101,10.3,85,120],[92,7.0,75,110],[99,7.5,80,120]]
+];
+// Пыков, по росту, M±σ, мм: [рост от, подпись, ПД КК, ЛД КК, головка, тело, хвост, селезёнка дл., шир., ПП дл., шир., ЛП дл., шир., ВВ, СВ, ПД ПЗ (M−σ, M+σ), ЛД ПЗ]
+const P=[
+ [45,'45–49',[43.7,7.7],[34.6,7.9],[8.0,1.8],[5.7,1.4],[6.8,1.2],[41.2,6.3],[22.3,4.2],[40.9,4.8],[20.4,2.6],[41.0,5.7],[21.6,3.0],null,null,null,null],
+ [50,'50–59',[53.6,5.3],[29.2,7.3],[7.5,1.3],[5.0,0.9],[8.4,1.1],[43.1,3.1],[24.7,4.8],[50.3,4.1],[24.9,2.8],[50.2,4.1],[24.5,2.8],[2.9,0.4],null,[51.3,61.3],[29.2,36.4]],
+ [60,'60–69',[59.5,6.5],[33.6,7.3],[7.7,1.3],[5.6,1.1],[9.4,1.3],[54.6,6.8],[26.2,3.6],[54.4,3.9],[27.1,2.6],[54.6,4.6],[27.1,2.5],[3.2,0.5],[3.27,0.64],[53.7,64.3],[30.0,36.6]],
+ [70,'70–79',[68.2,5.6],[40.4,7.7],[10.3,1.5],[7.4,1.5],[12.2,1.8],[62.1,5.8],[28.4,3.9],[59.6,4.1],[29.5,2.7],[59.9,4.1],[29.5,2.8],[3.5,0.6],[3.02,0.39],[61.2,70.6],[32.2,40.8]],
+ [80,'80–89',[73.2,5.7],[47.9,7.7],[10.8,2.1],[7.8,1.4],[12.9,2.4],[67.1,5.0],[31.2,3.5],[67.0,5.3],[31.4,2.3],[67.9,5.9],[32.1,3.3],[4.1,0.8],[3.06,0.42],[66.8,80.4],[32.3,43.3]],
+ [90,'90–99',[79.6,5.7],[55.6,8.3],[12.6,2.3],[8.7,1.3],[14.3,2.7],[70.9,7.1],[34.2,3.8],[69.0,5.1],[33.7,3.1],[69.2,4.9],[32.7,2.8],[4.7,0.7],[3.47,0.57],[68.2,81.2],[33.8,42.0]],
+ [100,'100–109',[86.1,6.3],[55.7,10.2],[14.2,1.6],[9.6,1.4],[15.4,2.4],[73.1,7.2],[36.3,3.7],[72.6,4.1],[34.6,3.3],[75.1,3.8],[34.1,2.9],[5.0,0.6],[3.96,0.76],[74.0,86.6],[33.2,43.0]],
+ [110,'110–119',[86.4,11.1],[65.0,8.0],[15.2,2.0],[9.3,1.4],[17.6,2.2],[76.9,6.1],[37.7,3.9],[76.8,4.9],[36.1,3.2],[79.0,4.5],[36.5,2.7],[5.6,0.7],[4.22,0.6],[77.1,87.7],[35.0,45.8]],
+ [120,'120–129',[95.3,6.9],[70.1,9.0],[16.9,1.8],[10.3,1.6],[18.7,2.3],[84.0,7.4],[40.6,3.9],[82.1,5.3],[37.5,3.2],[83.7,5.7],[38.0,3.5],[5.9,0.6],[4.62,0.75],[81.0,92.8],[36.4,47.7]],
+ [130,'130–139',[96.3,8.5],[74.5,7.3],[16.3,2.1],[10.1,1.4],[17.8,2.1],[88.9,9.3],[41.9,5.8],[85.6,4.4],[39.4,3.6],[86.5,4.2],[39.9,3.0],[6.5,0.8],[4.92,0.53],[82.5,99.2],[39.0,49.2]],
+ [140,'140–149',[104.9,7.7],[72.4,11.4],[16.8,2.3],[10.4,1.7],[18.3,2.5],[92.2,9.2],[45.0,5.5],[90.0,4.7],[41.4,4.1],[89.6,4.8],[42.0,3.5],[7.1,0.7],[5.40,0.68],[85.7,106.8],[42.0,55.2]],
+ [150,'150–159',[113.7,11.9],[76.9,10.2],[17.2,2.2],[11.0,1.5],[18.5,2.6],[98.1,9.6],[46.5,5.2],[94.4,7.8],[42.6,4.3],[96.7,7.9],[43.8,4.9],[7.3,1.0],[5.46,0.82],[93.1,108.5],[38.6,58.4]],
+ [160,'160–169',[116.5,11.2],[79.1,14.3],[17.9,2.4],[10.8,1.7],[19.9,2.1],[102.4,8.6],[49.0,5.6],[102.0,7.5],[45.6,4.6],[102.9,6.6],[45.9,3.7],[8.1,1.0],[5.76,0.91],[101.3,118.9],[47.7,53.9]],
+ [170,'170 и выше',[118.0,10.7],[81.2,11.1],[19.0,2.3],[11.3,1.5],[21.2,2.4],[108.5,9.3],[51.6,6.8],[104.2,5.9],[48.1,5.1],[107.3,5.9],[48.6,4.9],[8.3,1.2],[6.1,0.68],[105.0,125.8],[45.9,61.3]]
+];
+// McGahan 1982: по годам 0…15 — [длина мин, макс, ширина мин, макс], мм
+const GB=[[11.4,25.2,5.7,9.7],[19.8,40.0,7.8,15.5],[23.2,46.1,8.7,17.9],[25.8,50.8,9.3,19.8],[28.1,54.7,9.9,21.3],[30.0,58.2,10.4,22.7],[31.8,61.3,10.8,23.9],[33.4,64.2,11.3,25.1],[35.0,66.9,11.6,26.1],[36.4,69.5,12.0,27.1],[37.7,71.9,12.4,28.1],[39.0,74.1,12.7,29.0],[40.3,76.3,13.0,29.8],[41.4,78.4,13.3,30.6],[42.6,80.4,13.6,31.4],[43.7,82.3,13.9,32.2]];
+const f=(x,d)=>{ if(x==null||!isFinite(x)) return '—'; const p=d!=null?d:(Math.abs(x)<10&&x%1?1:(x%1?1:0)); return x.toFixed(p).replace('.',','); };
+const kg=m=>m<1?null:K.find(g=>m<=g[0]);
+const kon=i=>m=>{const g=kg(m); if(!g) return {note:'до 1 мес в таблице нет данных'}; const a=g[i+3]; return {min:a[2],max:a[3],note:`среднее ${f(a[0])} ± ${f(a[1],1)}; группа ${g[1]}`};};
+const prow=h=>h==null?null:P.filter(p=>h>=p[0]).pop();
+const py=i=>h=>{ if(h==null) return {note:'введите рост'}; const r=prow(h); if(!r) return {note:'таблица начинается с роста 45 см'};
+  let a=r[i]; if(!a) return {note:'для этого роста в таблице нет данных'}; if(i>=15) a=[(a[0]+a[1])/2,(a[1]-a[0])/2];
+  const d=a[0]<10?2:1; return {min:Math.max(a[0]-2*a[1],0),max:a[0]+2*a[1],note:`M ± σ ${f(a[0],d)} ± ${f(a[1],d)}; рост ${r[1]} см; границы M ± 2σ`};};
+const pyKid=i=>h=>{const r=py(i)(h); if(h!=null&&h>=50) r.note+=`; по Obrycki 2,5–97,5 перц. ${f(0.4*h+20.4,0)}–${f(0.5*h+34.8,0)} мм`; return r;};
+const gb=k=>m=>{const y=Math.min(Math.floor(m/12),15),a=GB[y]; return {min:a[k],max:a[k+1],note:(y?y+' '+(y===1?'год':y<5?'года':'лет'):'до 1 года')+', McGahan'};};
+// Siegel 1987, мм: [головка m, sd, тело m, sd, хвост m, sd]
+const SG=[[1,[10,4,6,2,10,4]],[12,[15,5,8,3,12,4]],[60,[17,3,10,2,18,4]],[120,[16,4,10,3,18,4]],[9999,[20,5,11,3,20,4]]];
+const sieg=i=>m=>{const a=SG.find(g=>m<g[0])[1], mu=a[i*2], sd=a[i*2+1]; return {min:Math.max(mu-2*sd,1),max:mu+2*sd,note:`среднее ${mu} ± ${sd} (границы ± 2 SD)`};};
+// ВОЗ 2004, P97 объёма ЩЖ, мл, возраст 6–12 лет
+const TH={m:[2.91,3.29,3.71,4.19,4.73,5.34,6.03],f:[2.84,3.26,3.76,4.32,4.98,5.73,6.59]};
+const vol=(ids,k)=>g=>{const v=ids.map(g); return v.every(x=>x!=null)?v[0]*v[1]*v[2]*k/1000:null;};
+const kid=(p,name,i)=>({name,items:[
+  {id:p+'l',label:'Длина',ad:[100,120],ch:kon(i),hh:pyKid(i===2?9:11)},
+  {id:p+'w',label:'Ширина',ad:[50,60],hh:py(i===2?10:12),dim:1},
+  {id:p+'t',label:'Толщина',ad:[40,50],dim:1},
+  {id:p+'p',label:'Толщина паренхимы',ad:[15,25],an:'у пожилых допустимо от 11 мм',dim:1},
+  {id:p+'pel',label:'Лоханка, переднезадний размер',ad:[null,10],ch:()=>({max:10,note:'не сверено'})},
+  {id:p+'v',label:'Объём почки',unit:'см³',calc:vol([p+'l',p+'w',p+'t'],0.523),info:'Д × Ш × Т × 0,523'},
+  ...(p==='kl'?[{id:'kdiff',label:'Разница длины почек',calc:g=>g('krl')!=null&&g('kll')!=null?Math.abs(g('krl')-g('kll')):null,ad:[null,20],ch:()=>({note:'у детей единого порога нет; обычно до 5–10 мм'})}]:[])
+]});
+
+const ORG=[
+ {name:'Печень',items:[
+  {id:'livcc',label:'ККР правой доли по среднеключичной линии',ad:[null,160],ch:kon(0),hh:py(2)},
+  {id:'livkvr',label:'КВР правой доли',ad:[null,150]},
+  {id:'livap',label:'Толщина (ПЗР) правой доли',ad:[null,125],hh:py(15)},
+  {id:'livlcc',label:'ККР левой доли',ad:[null,100],hh:py(3)},
+  {id:'livlap',label:'Толщина (ПЗР) левой доли',ad:[null,60],hh:py(16)},
+  {id:'pv',label:'Воротная вена',ad:[null,13],hh:py(13)},
+  {id:'hv',label:'Печёночные вены',ad:[null,10],an:'в 2 см от устья'}
+ ]},
+ {name:'Желчный пузырь и протоки',items:[
+  {id:'gbl',label:'Длина',ad:[null,100],an:'натощак обычно 60–100 мм',ch:gb(0)},
+  {id:'gbw',label:'Ширина',ad:[null,40],ch:gb(2)},
+  {id:'gbh',label:'Переднезадний размер',dim:1},
+  {id:'gbwall',label:'Толщина стенки',ad:[null,3],ch:()=>({max:3,note:'как у взрослых'})},
+  {id:'gbv',label:'Объём',unit:'мл',calc:vol(['gbl','gbw','gbh'],0.523),info:'Д × Ш × ПЗР × 0,523'},
+  {id:'cbd',label:'Общий желчный проток',ad:[null,6],an:'после холецистэктомии до 10 мм; после 60 лет +1 мм на десятилетие',
+   ch:m=>m<=3?{max:1.2,note:'до 3 мес, Hernanz-Schulman'}:m<156?{max:3.3,note:'до 13 лет, Hernanz-Schulman'}:{max:6,note:'старше 13 лет — как у взрослых'}}
+ ]},
+ {name:'Поджелудочная железа',items:[
+  {id:'panh',label:'Головка',ad:[null,30],ch:sieg(0),hh:py(4)},
+  {id:'panb',label:'Тело',ad:[null,25],ch:sieg(1),hh:py(5)},
+  {id:'pant',label:'Хвост',ad:[null,30],ch:sieg(2),hh:py(6)},
+  {id:'pand',label:'Вирсунгов проток',ad:[null,2],an:'в головке до 3 мм',ch:m=>m<84?{max:1.5,note:'1–6 лет, Chao'}:m<156?{max:1.9,note:'7–12 лет, Chao'}:{max:2.2,note:'13–18 лет, Chao'}}
+ ]},
+ {name:'Селезёнка',items:[
+  {id:'spl',label:'Длина',ad:[null,120],an:'у высоких — до 130 мм',ch:kon(1),hh:py(7)},
+  {id:'spw',label:'Ширина',ad:[null,70],hh:py(8),dim:1},
+  {id:'spt',label:'Толщина',ad:[null,50],dim:1},
+  {id:'spv',label:'Объём',unit:'см³',calc:vol(['spl','spw','spt'],0.523),info:'Д × Ш × Т × 0,523'},
+  {id:'sv',label:'Селезёночная вена',ad:[null,10],hh:py(14)}
+ ]},
+ kid('kr','Правая почка',2), kid('kl','Левая почка',3),
+ {name:'Мочевой пузырь',items:[
+  {id:'bla',label:'Длина',dim:1},{id:'blb',label:'Ширина',dim:1},{id:'blc',label:'Переднезадний размер',dim:1},
+  {id:'blv',label:'Объём',unit:'мл',calc:vol(['bla','blb','blc'],0.52),ad:()=>({note:'Д × Ш × ПЗР × 0,52; обычная ёмкость 300–500 мл'}),
+   ch:m=>{const y=Math.floor(m/12);return {note:y<4?'формула ожидаемой ёмкости ICCS применима с 4 лет':'ожидаемая ёмкость ≈ '+(y<=12?(y+1)*30:390)+' мл (ICCS: (возраст + 1) × 30; старше 12 лет — 390)'};}},
+  {id:'blwall',label:'Толщина стенки',ad:[null,3],an:'при наполнении; в опорожнённом до 5 мм',ch:()=>({max:3,note:'при наполнении; в опорожнённом до 5 мм; не сверено'})},
+  {id:'blres',label:'Остаточная моча',unit:'мл',ad:[null,50],ch:m=>m<48?{note:'до 4 лет порог не установлен'}:m<84?{max:20,note:'4–6 лет: при повторных измерениях; или до 10 % ёмкости; однократно до 30 мл'}:m<156?{max:10,note:'7–12 лет: при повторных измерениях; или до 6 % ёмкости; однократно до 20 мл'}:{max:50,note:'старше 12 лет — как у взрослых'}}
+ ]},
+ {name:'Сосуды',only:'a',items:[
+  {id:'ao',label:'Брюшная аорта',ad:[null,29],an:'инфраренально обычно до 20 мм; ≥ 30 мм — аневризма'},
+  {id:'ivc',label:'Нижняя полая вена',ad:[null,25],an:'по ASE ≤ 21 мм с коллапсом на вдохе > 50 %'}
+ ]},
+ {name:'Щитовидная железа',items:[
+  {id:'thrl',label:'Правая доля: длина',dim:1},{id:'thrw',label:'Правая доля: ширина',dim:1},{id:'thrt',label:'Правая доля: толщина',dim:1},
+  {id:'thll',label:'Левая доля: длина',dim:1},{id:'thlw',label:'Левая доля: ширина',dim:1},{id:'thlt',label:'Левая доля: толщина',dim:1},
+  {id:'thi',label:'Перешеек',ad:[null,5]},
+  {id:'thv',label:'Суммарный объём',unit:'мл',
+   calc:g=>{const a=vol(['thrl','thrw','thrt'],0.479)(g),b=vol(['thll','thlw','thlt'],0.479)(g);return a!=null&&b!=null?a+b:null;},
+   ad:(m,s)=>({max:s==='f'?18:25,note:'Д × Ш × Т × 0,479 на долю; '+(s==='f'?'женщины':'мужчины')}),
+   ch:(m,s)=>{const y=Math.floor(m/12);return y>=6&&y<=12?{max:TH[s][y-6],note:`97-й перцентиль ВОЗ, ${y} лет, ${s==='f'?'девочки':'мальчики'}; не сверено`}:{note:'нормативы ВОЗ даны для 6–12 лет'};}}
+ ]},
+ {name:'Предстательная железа',only:'a',sex:'m',items:[
+  {id:'pra',label:'Длина',dim:1},{id:'prb',label:'Ширина',dim:1},{id:'prc',label:'Переднезадний размер',dim:1},
+  {id:'prv',label:'Объём',unit:'см³',calc:vol(['pra','prb','prc'],0.52),ad:()=>({max:30,note:'Д × Ш × ПЗР × 0,52'})}
+ ]}
+];
+
+// ---------- Состояние ----------
+let S={mode:'a',sex:'m',y:'5',mo:'0',h:'110',basis:'h',v:{}};
+try{const j=JSON.parse(localStorage.getItem('acad-norm-organ')||'null'); if(j) S=Object.assign(S,j);}catch(e){}
+const save=()=>{try{localStorage.setItem('acad-norm-organ',JSON.stringify(S));}catch(e){}};
+const $=id=>document.getElementById(id);
+const num=s=>{if(s==null||String(s).trim()==='')return null;const n=parseFloat(String(s).replace(',','.'));return isFinite(n)&&n>=0?n:null;};
+const months=()=>Math.min((num(S.y)||0)*12+(num(S.mo)||0),215);
+const get=id=>num(S.v[id]);
+const height=()=>{const h=num(S.h);return h!=null&&h>=30&&h<=220?h:null;};
+
+function ref(it){
+  let r;
+  if(S.mode==='a') r=it.ad;
+  else if(S.basis==='h'&&it.hh) r=it.hh(height());
+  else if(it.ch) r=it.ch;
+  else if(it.hh) r={note:'норматив есть только по росту'};
+  if(r===undefined) return undefined;
+  if(typeof r==='function') r=r(months(),S.sex);
+  if(Array.isArray(r)) r={min:r[0],max:r[1],note:it.an};
+  return r;
+}
+function refText(r,it){
+  if(!r) return it.info||'без норматива';
+  let t='';
+  if(r.min!=null&&r.max!=null) t=`<span class="n">${f(r.min)}–${f(r.max)}</span>`;
+  else if(r.max!=null) t=`<span class="n">≤ ${f(r.max)}</span>`;
+  else if(r.min!=null) t=`<span class="n">≥ ${f(r.min)}</span>`;
+  if(t) t='Норма '+t+' '+(it.unit||'мм');
+  return [t,r.note].filter(Boolean).join(' · ');
+}
+function status(v,r){
+  if(v==null) return null;
+  if(!r||(r.min==null&&r.max==null)) return 'none';
+  if(r.max!=null&&v>r.max) return 'hi';
+  if(r.min!=null&&v<r.min) return 'lo';
+  return 'ok';
+}
+const ST={ok:'норма',hi:'выше нормы',lo:'ниже нормы',none:'справочно'};
+function visible(){
+  return ORG.filter(o=>(!o.only||o.only===S.mode)&&(!o.sex||o.sex===S.sex))
+    .map(o=>({name:o.name,items:o.items.filter(it=>it.dim||it.calc&&(it.info||ref(it)!==undefined)||ref(it)!==undefined)}))
+    .filter(o=>o.items.length);
+}
+const val=it=>it.calc?it.calc(get):get(it.id);
+
+function render(){
+  $('modeA').setAttribute('aria-pressed',S.mode==='a'); $('modeC').setAttribute('aria-pressed',S.mode==='c');
+  $('sexM').setAttribute('aria-pressed',S.sex==='m'); $('sexF').setAttribute('aria-pressed',S.sex==='f');
+  $('ageBox').hidden=S.mode!=='c'; $('tblBox').hidden=S.mode!=='c'; $('segBasis').hidden=S.mode!=='c';
+  $('basA').setAttribute('aria-pressed',S.basis==='a'); $('basH').setAttribute('aria-pressed',S.basis==='h');
+  $('grid').innerHTML=visible().map(o=>`<section class="card"><h2>${o.name}</h2>`+o.items.map(it=>{
+    const u=it.unit||'мм';
+    const ctl=it.calc?`<span class="out" id="o_${it.id}">—</span>`
+      :`<input id="i_${it.id}" data-id="${it.id}" inputmode="decimal" autocomplete="off" value="${S.v[it.id]??''}">`;
+    return `<div class="row${it.calc?' calc':''}"><label ${it.calc?'':`for="i_${it.id}"`}>${it.label}</label>
+      <div class="in"><span class="u">${ctl}<span>${u}</span></span><span id="p_${it.id}"></span></div>
+      <div class="ref" id="r_${it.id}"></div></div>`;}).join('')+`</section>`).join('');
+  if(S.mode==='c'&&S.basis==='a'){
+    const g=kg(months());
+    $('tblCap').textContent='Таблица по возрасту: длина печени, селезёнки, почек, мм (Konuş, 1998)';
+    $('tblNote').textContent='В ячейке: рекомендуемые авторами границы (среднее ± SD). «Рост» — диапазон роста детей в группе. Верхняя граница длины селезёнки по Rosenberg: 3 мес — 60, 6 мес — 65, 1 год — 70, 2 года — 80, 4 года — 90, 6 лет — 95, 8 лет — 100, 10 лет — 110, 12 лет — 115, с 15 лет — 120 (девочки) и 130 (мальчики) мм.';
+    $('tbl').innerHTML='<thead><tr><th>Возраст</th><th>Рост, см</th><th>Печень</th><th>Селезёнка</th><th>Правая почка</th><th>Левая почка</th></tr></thead><tbody>'+
+      K.map(k=>`<tr class="${k===g?'cur':''}"><td>${k[1]}</td><td>${k[2]}</td>`+[3,4,5,6].map(i=>`<td>${k[i][2]}–${k[i][3]} (${f(k[i][0])} ± ${f(k[i][1],1)})</td>`).join('')+'</tr>').join('')+'</tbody>';
+  } else if(S.mode==='c'){
+    const g=prow(height()), c=[[2,'Печень, ПД'],[3,'Печень, ЛД'],[4,'ПЖ, головка'],[5,'тело'],[6,'хвост'],[7,'Селезёнка, длина'],[9,'Правая почка'],[11,'Левая почка'],[13,'Воротная вена']];
+    $('tblCap').textContent='Таблица по росту: размеры органов, мм, M ± σ (по Пыкову)';
+    $('tblNote').textContent='В таблице M ± σ, как в источнике. Приложение оценивает размер по границам M ± 2σ: интервал M ± σ отнёс бы к отклонениям около трети здоровых детей. Печень — краниокаудальный размер долей, почки — длина.';
+    $('tbl').innerHTML='<thead><tr><th>Рост, см</th>'+c.map(x=>`<th>${x[1]}</th>`).join('')+'</tr></thead><tbody>'+
+      P.map(p=>`<tr class="${p===g?'cur':''}"><td>${p[1]}</td>`+c.map(x=>`<td>${p[x[0]]?f(p[x[0]][0],1)+' ± '+f(p[x[0]][1],1):'—'}</td>`).join('')+'</tr>').join('')+'</tbody>';
+  }
+  update();
+}
+function update(){
+  let n=0,ok=0,dev=[];
+  visible().forEach(o=>o.items.forEach(it=>{
+    const r=ref(it), v=val(it), st=status(v,r);
+    $('r_'+it.id).innerHTML=refText(r,it);
+    if(it.calc) $('o_'+it.id).textContent=f(v,v!=null&&v<10?1:(it.unit?1:0));
+    $('p_'+it.id).innerHTML=st?`<span class="pill ${st}">${ST[st]}</span>`:'';
+    if(st&&st!=='none'){n++; if(st==='ok')ok++; else dev.push([o.name,it,st]);}
+  }));
+  const who=S.mode==='a'?`Взрослый, ${S.sex==='f'?'Ж':'М'}`:`Ребёнок, ${S.sex==='f'?'Ж':'М'}, ${ageText()}${height()?', рост '+f(height())+' см':''}; норма ${S.basis==='h'?'по росту':'по возрасту'}`;
+  $('sum').innerHTML=`<span><b>${who}</b></span><span>Оценено: <b>${n}</b></span><span>В норме: <b>${ok}</b></span><span>Отклонений: <b>${dev.length}</b></span>`+
+    (dev.length?`<span class="devs">${dev.map(d=>`<span class="pill ${d[2]}">${d[0]}: ${d[1].label.toLowerCase()}</span>`).join('')}</span>`
+      :(n?'':'<span style="color:var(--muted)">Введите размеры в миллиметрах — оценка появится рядом с полем.</span>'));
+}
+function ageText(){const m=months(),y=Math.floor(m/12),r=Math.round(m%12);return (y?y+' лет ':'')+(r||!y?r+' мес':'').trim();}
+function summary(){
+  const L=[S.mode==='a'?`Пациент: взрослый, пол ${S.sex==='f'?'Ж':'М'}`:`Пациент: ребёнок, пол ${S.sex==='f'?'Ж':'М'}, возраст ${ageText()}${height()?', рост '+f(height())+' см':''}; нормы ${S.basis==='h'?'по росту (Пыков), остальное по возрасту':'по возрасту'}`];
+  visible().forEach(o=>{
+    const rows=o.items.map(it=>{const v=val(it); if(v==null) return null; const r=ref(it),st=status(v,r),u=it.unit||'мм';
+      let nt=''; if(r&&(r.min!=null||r.max!=null)) nt=' (норма '+(r.min!=null&&r.max!=null?`${f(r.min)}–${f(r.max)}`:r.max!=null?`≤ ${f(r.max)}`:`≥ ${f(r.min)}`)+` ${u}) — ${ST[st]}`;
+      return `  ${it.label}: ${f(v,it.calc?1:undefined)} ${u}${nt}`;}).filter(Boolean);
+    if(rows.length) L.push(o.name+':',...rows);
+  });
+  return L.join('\n');
+}
+
+$('grid').addEventListener('input',e=>{const id=e.target.dataset.id; if(!id) return; S.v[id]=e.target.value; save(); update();});
+$('segMode').addEventListener('click',e=>{const m=e.target.dataset.mode; if(m){S.mode=m; save(); render();}});
+$('segSex').addEventListener('click',e=>{const s=e.target.dataset.sex; if(s){S.sex=s; save(); render();}});
+$('ageY').value=S.y; $('ageM').value=S.mo; $('hgt').value=S.h;
+$('hgt').addEventListener('input',e=>{S.h=e.target.value; save(); render();});
+$('segBasis').addEventListener('click',e=>{const b=e.target.dataset.basis; if(b){S.basis=b; save(); render();}});
+$('ageY').addEventListener('input',e=>{S.y=e.target.value; save(); render();});
+$('ageM').addEventListener('input',e=>{S.mo=e.target.value; save(); render();});
+const toast=t=>{$('toast').textContent=t; setTimeout(()=>{$('toast').textContent='';},2500);};
+$('clr').addEventListener('click',()=>{S.v={}; save(); render(); toast('Поля очищены');});
+$('cp').addEventListener('click',()=>{
+  const t=summary();
+  const fb=()=>{const a=document.createElement('textarea');a.value=t;a.style.cssText='width:100%;height:160px;font-family:var(--mono)';a.id='fbText';
+    const old=$('fbText'); if(old) old.remove(); $('sum').after(a); a.select(); toast('Выделено — скопируйте вручную');};
+  try{navigator.clipboard.writeText(t).then(()=>toast('Сводка скопирована'),fb);}catch(e){fb();}
+});
+render();
+</script>
+
+</body></html>

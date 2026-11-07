@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Квиз: УЗИ в ранние сроки беременности</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@600;700&family=PT+Sans:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{
+  --bg:#f3f6f7; --paper:#fff; --ink:#18232f; --muted:#5b6b78; --line:#d5e0e3;
+  --navy:#1f3864; --teal:#007a7a; --soft:#e2f1f1; --ok:#1e7a46; --okbg:#e3f3e9; --bad:#b3261e; --badbg:#fbe7e5;
+  --c0:#d2304a; --c1:#1f63c6; --c2:#c98a00; --c3:#2a8a2a;
+  --f-d:"Spectral",Georgia,serif; --f-b:"PT Sans","Segoe UI",Arial,sans-serif; --f-m:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1519;--paper:#172027;--ink:#e5edf0;--muted:#9db0ba;--line:#2b3a43;--navy:#9cb6e6;--teal:#4cc3c3;--soft:#16302f;--ok:#6ad19a;--okbg:#163024;--bad:#ff8a80;--badbg:#3a1d1b}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 var(--f-b);min-height:100dvh}
+.wrap{max-width:720px;margin:0 auto;padding:18px 16px 40px;display:grid;gap:14px}
+.eyebrow{font:600 12px/1 var(--f-m);letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+h1{font:700 clamp(26px,6vw,36px)/1.1 var(--f-d);color:var(--navy);margin:6px 0 0;text-wrap:balance}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px clamp(14px,4vw,24px);display:grid;gap:12px}
+.muted{color:var(--muted);margin:0}
+label{font-weight:700;color:var(--navy)}
+input{font:inherit;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:9px;padding:12px 13px;width:100%}
+input:focus-visible{outline:3px solid var(--teal);outline-offset:1px}
+.err{color:var(--bad);font-size:14px;margin:0}
+.btn{font:700 17px var(--f-b);border:0;border-radius:10px;padding:13px 18px;cursor:pointer;background:var(--navy);color:var(--paper)}
+.btn.ghost{background:transparent;color:var(--navy);border:1.5px solid var(--navy)}
+.btn:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.rules{margin:0;padding-left:20px;display:grid;gap:4px}
+/* верхняя строка игры */
+.hud{display:flex;justify-content:space-between;align-items:center;gap:10px;font:700 14px var(--f-m);color:var(--muted)}
+.hud b{color:var(--navy);font-size:18px}
+.timebar{height:10px;background:var(--line);border-radius:6px;overflow:hidden}
+.timebar i{display:block;height:100%;width:100%;background:var(--teal);transform-origin:left;transition:background .3s}
+.timebar i.low{background:var(--c0)}
+.secs{font:700 34px/1 var(--f-m);color:var(--navy);text-align:center;font-variant-numeric:tabular-nums}
+.q{font:600 clamp(20px,4.6vw,26px)/1.28 var(--f-d);margin:0;text-wrap:pretty}
+.tag{font:600 12px var(--f-m);text-transform:uppercase;letter-spacing:.06em;color:var(--teal)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.grid{grid-template-columns:1fr}}
+.tile{display:grid;grid-template-columns:34px 1fr;align-items:center;gap:10px;text-align:left;font:700 16px/1.3 var(--f-b);color:#fff;border:0;border-radius:12px;padding:14px;min-height:68px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.tile:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.tile:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.tile svg{width:28px;height:28px}
+.t0{background:var(--c0)}.t1{background:var(--c1)}.t2{background:var(--c2)}.t3{background:var(--c3)}
+.tile.dim{opacity:.28}
+.tile.right{outline:4px solid var(--ok);outline-offset:2px;opacity:1}
+.tile:disabled{cursor:default}
+.tile.picked{opacity:.75;outline:4px solid var(--bad);outline-offset:2px}
+.tile.picked span::after{content:"  ✕ ваш ответ";font-weight:400}
+.verdict{border-radius:10px;padding:12px 14px;display:grid;gap:4px}
+.verdict.ok{background:var(--okbg)} .verdict.bad{background:var(--badbg)}
+.verdict strong{font-size:19px}.verdict.ok strong{color:var(--ok)}.verdict.bad strong{color:var(--bad)}
+.pts{font:700 15px var(--f-m)}
+.src{font:12px var(--f-m);color:var(--muted)}
+/* итог */
+.big{font:700 54px/1 var(--f-d);color:var(--navy);font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{background:var(--soft);border-radius:10px;padding:10px 12px}
+.stat span{display:block;font-size:13px;color:var(--muted)}.stat b{font:700 22px var(--f-m);color:var(--navy)}
+.list{margin:0;padding-left:22px;display:grid;gap:3px;font-size:15px}
+.list .x{color:var(--bad)} .list .v{color:var(--ok)}
+.send{font-weight:700}.send.ok{color:var(--ok)}.send.bad{color:var(--bad)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+footer{font-size:13px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a7b83">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+<div class="wrap">
+  <header><span class="eyebrow">Первичная специализация · УЗ-диагностика</span><h1>Квиз: УЗИ в ранние сроки беременности</h1></header>
+
+  <section class="card" id="start">
+    <p class="muted">30 вопросов на время. Баллы зависят от правильности и скорости: верный ответ — от 500 до 1000 баллов, чем быстрее, тем больше. Неверный ответ или истекшее время — 0.</p>
+    <ul class="rules muted"><li>На каждый вопрос — 20 секунд.</li><li>Ответ выбирается одним касанием, изменить его нельзя.</li><li>После ответа — правильный вариант и короткое пояснение; пауза между вопросами в зачёт времени не идёт.</li><li>В конце результат автоматически уходит преподавателю.</li></ul>
+    <label for="fio">ФИО курсанта</label>
+    <input id="fio" autocomplete="name" maxlength="120" placeholder="Иванов Иван Иванович">
+    <p class="err" id="fioerr" hidden>Введите хотя бы фамилию и имя, буквами.</p>
+    <button class="btn" id="go" type="button">Начать</button>
+  </section>
+
+  <section class="card" id="game" hidden aria-live="polite">
+    <div class="hud"><span>Вопрос <b id="qn">1</b> / 30</span><span>Баллы <b id="score">0</b></span></div>
+    <div class="timebar" aria-hidden="true"><i id="bar"></i></div>
+    <div class="secs" id="secs" role="timer">20</div>
+    <span class="tag" id="tag"></span>
+    <p class="q" id="qtext"></p>
+    <div class="grid" id="tiles"></div>
+    <div id="fb" hidden></div>
+    <button class="btn" id="next" type="button" hidden>Следующий вопрос →</button>
+  </section>
+
+  <section class="card" id="result" hidden></section>
+
+  <footer>Вопросы составлены по руководству «УЗИ при малом сроке беременности» (2026) и источникам: ISUOG 2013, 2021, 2023, 2025; NICE NG126; ESHRE 2020; Doubilet et al., NEJM 2013; Preisler et al., BMJ 2015; ACOG № 700; Дубиле П.М., Бенсон К.Б. Атлас по УЗД в акушерстве и гинекологии. Жумагулов Н.М. · АДЦ «Сономедплюс».</footer>
+</div>
+
+<script>
+const TG_TOKEN="proxy", TG_CHAT="188183172"; const TG_PROXY="https://script.google.com/macros/s/AKfycbznrtw3Wd7QBRhQaMlrCIp86oLemxjc_LlaIVomj-9rcXiyMYpmP_OCtc8u4lgQbaXKpg/exec";
+const TITLE="Квиз: УЗИ в ранние сроки беременности";
+const LIMIT=20;   // секунд на вопрос
+const Q=[
+ {t:"Норма", q:"С какого срока плодное яйцо обычно видно при ТВУЗИ?", o:["≈6,5 нед.", "≈8 нед.", "≈4,5–5 нед.", "≈3 нед."], a:2,
+  e:"В 5 нед. плодное яйцо имеет диаметр около 2–3 мм; при ТВУЗИ его видят на 4,5–5-й неделе, примерно при ХГЧ около 1000 мМЕ/мл.", s:"Руководство, раздел 4; Дубиле, гл. 1.1"},
+ {t:"Норма", q:"С какой скоростью растёт средний диаметр плодного яйца в ранние сроки?", o:["≈0,2 мм в сутки", "≈5 мм в сутки", "≈3 мм в сутки", "≈1 мм в сутки"], a:3,
+  e:"Около 1 мм в сутки. Это помогает оценить динамику на повторном исследовании.", s:"Руководство, раздел 4.1"},
+ {t:"Норма", q:"Какова средняя ЧСС эмбриона в 10 недель?", o:["≈110 уд/мин", "≈140 уд/мин", "≈170 уд/мин", "≈200 уд/мин"], a:2,
+  e:"ЧСС растёт до 10 нед. (в среднем ≈171 уд/мин), затем снижается к 14 нед. (≈156 уд/мин).", s:"ISUOG 2023"},
+ {t:"Норма", q:"Где расположен желточный мешок?", o:["В децидуальной оболочке", "В пуповине", "В амниотической полости", "В экзоцеломе (хориальной полости)"], a:3,
+  e:"Желточный мешок лежит вне амниона, в экзоцеломе, и связан с эмбрионом желточным протоком.", s:"Руководство, раздел 4.2"},
+ {t:"Норма", q:"С какого срока амнион хорошо виден тонкой мембраной вокруг эмбриона?", o:["С 11 нед.", "С 14 нед.", "С 7 нед.", "С 5 нед."], a:2,
+  e:"Амнион хорошо виден с 7 нед.; до этого он плотно прилежит к эмбриону.", s:"Руководство, раздел 4.3; Дубиле, гл. 1.2"},
+ {t:"Норма", q:"К какому сроку обычно сливаются амнион и хорион?", o:["К 14–16 нед.", "К 10 нед.", "К 8 нед.", "К 24 нед."], a:0,
+  e:"До 12–14 нед. амнион и хорион не слиты: экзоцелом — нормальная находка.", s:"Руководство, раздел 4.3; ISUOG 2023"},
+ {t:"Норма", q:"Что формируется из ромбэнцефалона?", o:["Мозолистое тело", "IV желудочек и задний мозг", "Боковые желудочки", "Таламусы"], a:1,
+  e:"Ромбовидный мозг даёт IV желудочек, мост, мозжечок и продолговатый мозг. В 7–10 нед. он виден как «киста» в голове — это норма.", s:"Руководство, раздел 4.4"},
+ {t:"Норма", q:"До какого срока ISUOG использует термин «эмбрион»?", o:["До 8+0 нед.", "До 14+0 нед.", "До 10+0 нед.", "До 12+0 нед."], a:2,
+  e:"С 10 нед. — «плод»: к этому сроку заканчивается органогенез.", s:"ISUOG 2013"},
+ {t:"Биометрия", q:"Включают ли желточный мешок в измерение КТР?", o:["Нет", "Да, всегда", "Только до 7 нед.", "Только при ТАУЗИ"], a:0,
+  e:"Калиперы ставят на темя и крестец; желточный мешок и конечности в КТР не входят — иначе срок завышается.", s:"ISUOG 2023; Дубиле, рис. 1.2-4"},
+ {t:"Биометрия", q:"Какие нормативы КТР рекомендует ISUOG 2023?", o:["Нормативы по БПР", "Robinson 1975", "Hadlock 1992", "INTERGROWTH-21st"], a:3,
+  e:"Рекомендованы современные международные предписывающие нормативы (INTERGROWTH-21st); в протоколе указывают формулу.", s:"ISUOG 2023; Papageorghiou 2014"},
+ {t:"Биометрия", q:"При каком расхождении сроков по КТР и по менструации до 9+0 нед. переходят на УЗ-срок (ACOG)?", o:["Больше 14 дней", "Больше 2 дней", "Больше 5 дней", "Больше 10 дней"], a:2,
+  e:"До 9+0 нед. — больше 5 дней, в 9+0–13+6 нед. — больше 7 дней. ISUOG своих порогов не даёт.", s:"ACOG № 700, 2017"},
+ {t:"Безопасность", q:"Сколько обычно длится допплерография в I триместре по ISUOG?", o:["Не ограничено", "Не дольше 5–10 мин", "1–2 мин", "20–30 мин"], a:1,
+  e:"TI ≤ 1,0, экспозиция как можно короче — обычно не дольше 5–10 минут.", s:"ISUOG 2023; ISUOG 2021"},
+ {t:"Безопасность", q:"При каком условии допплер маточных артерий безопасен в I триместре?", o:["TI меньше 3", "Только после 9 нед.", "Эмбрион вне луча", "Только ТАУЗИ"], a:2,
+  e:"Пока эмбрион не попадает в ультразвуковой луч, допплер маточных артерий не несёт риска для него.", s:"ISUOG 2023"},
+ {t:"Неразвивающаяся", q:"СВД меньше 12 мм, эмбриона нет. Диагноз ставят, если через ≥ 14 дней СВД…", o:["Изменил форму", "Уменьшился вдвое", "Увеличился на 2 мм", "Не удвоился и эмбриона с сердцебиением нет"], a:3,
+  e:"Критерий Preisler (BMJ 2015): маленькое плодное яйцо, не удвоившееся за 14 дней и без эмбриона с сердцебиением, — 100% специфичность.", s:"Preisler, BMJ 2015"},
+ {t:"Неразвивающаяся", q:"СВД ≥ 12 мм без эмбриона. Через сколько дней отсутствие эмбриона с сердцебиением — диагноз?", o:["≥ 1 месяца", "≥ 21 дня", "≥ 7 дней", "≥ 3 дней"], a:2,
+  e:"При СВД ≥ 12 мм достаточно повторного ТВУЗИ через ≥ 7 дней.", s:"Preisler, BMJ 2015"},
+ {t:"Неразвивающаяся", q:"Эмбрион без сердцебиения. Минимальный интервал повторного УЗИ для диагноза при любом КТР?", o:["24 часа", "3 дня", "7 дней", "21 день"], a:2,
+  e:"Нет сердцебиения на исходном и повторном исследовании через ≥ 7 дней — диагноз независимо от КТР.", s:"Preisler, BMJ 2015; NICE NG126"},
+ {t:"Неразвивающаяся", q:"Малое плодное яйцо — подозрительный признак, если СВД минус КТР меньше…", o:["5 мм", "10 мм", "15 мм", "20 мм"], a:0,
+  e:"Разница меньше 5 мм — признак, подозрительный на неблагоприятный исход, но не диагноз.", s:"SRU, Doubilet 2013"},
+ {t:"Неразвивающаяся", q:"Что такое «пустой амнион»?", o:["Плодное яйцо без желточного мешка", "Двойня с одним амнионом", "Желточный мешок без амниона", "Амнион без эмбриона рядом с желточным мешком"], a:3,
+  e:"Видимый амнион без эмбриона — подозрительный признак неразвивающейся беременности; нужен контроль.", s:"SRU, Doubilet 2013"},
+ {t:"Неразвивающаяся", q:"Что рекомендует NICE после постановки диагноза по пороговым значениям?", o:["Ничего не нужно", "МРТ малого таза", "Подтвердить по ХГЧ", "Второе мнение или повторное УЗИ"], a:3,
+  e:"Диагноз подтверждает второй специалист или повторное УЗИ: ошибка стоит жизни желанной беременности.", s:"NICE NG126"},
+ {t:"Выкидыш", q:"Какой признак лучше говорит об остатках плодного яйца?", o:["Жидкость в полости", "Эндометрий толще 15 мм", "Неоднородное содержимое полости с кровотоком при ЦДК", "Тонкий эндометрий"], a:2,
+  e:"Единого порога толщины эндометрия нет; значимо неоднородное содержимое с кровотоком, сливающееся с эндометрием.", s:"Руководство, раздел 8.2; ESHRE"},
+ {t:"Гематома", q:"Субхориальное скопление какого размера ISUOG рекомендует отметить и наблюдать?", o:["Больше 2 см", "Больше 5 см", "Больше 1 см", "Больше 10 см"], a:1,
+  e:"Крупное субхориальное скопление (> 5 см) отмечают в протоколе и наблюдают.", s:"ISUOG 2023"},
+ {t:"Многоплодие", q:"Зигота разделилась в первые 3 дня после оплодотворения. Какая будет двойня?", o:["Дихориальная диамниотическая", "Монохориальная диамниотическая", "Монохориальная моноамниотическая", "Сросшиеся близнецы"], a:0,
+  e:"До 4 дней — ДХДА, 4–8 дней — МХДА, позже 8 дней — МХМА, ещё позже — сросшиеся.", s:"Дубиле, гл. 19.2"},
+ {t:"Многоплодие", q:"Какая часть монозиготных двоен — монохориальные диамниотические?", o:["≈1/3", "≈2/3", "Все", "≈1–3%"], a:1,
+  e:"≈1/3 — дихориальные, ≈2/3 — МХДА, 1–3% — МХМА. Все дизиготные двойни — дихориальные.", s:"Дубиле, гл. 19.2"},
+ {t:"Многоплодие", q:"Что такое «исчезающий близнец»?", o:["Гибель и резорбция одного эмбриона в I триместре", "Второй плод не виден из-за артефакта", "Акардиальный близнец", "Сросшиеся близнецы"], a:0,
+  e:"Один эмбрион перестаёт развиваться и рассасывается; второй обычно развивается нормально.", s:"Дубиле, рис. 19.1-4"},
+ {t:"Эктопическая", q:"Как ESHRE 2020 называет эктопическую беременность с признаками регресса?", o:["Хроническая эктопическая", "Выкидыш", "Прерывающаяся эктопическая беременность", "Резидуальная"], a:2,
+  e:"Термин «выкидыш» к эктопической беременности не применяют; «хроническая эктопическая» — тоже не рекомендован.", s:"ESHRE 2020"},
+ {t:"Эктопическая", q:"Что ESHRE называет «резидуальной эктопической беременностью»?", o:["Эктопию в культе трубы", "Образование при отрицательном тесте на беременность", "Эктопию после метотрексата при росте ХГЧ", "Двойную эктопию"], a:1,
+  e:"Это сохраняющееся эктопическое образование, когда тест на беременность уже отрицательный.", s:"ESHRE 2020"},
+ {t:"Эктопическая", q:"Жидкость в каком кармане при ТАУЗИ говорит о значительном гемоперитонеуме?", o:["В полости матки", "В гепаторенальном (Морисона)", "В пузырно-маточном", "Только в позадиматочном"], a:1,
+  e:"Кровь, дошедшая до гепаторенального кармана, — признак большого внутреннего кровотечения: нужна срочная помощь.", s:"Руководство, раздел 3.2"},
+ {t:"Эктопическая", q:"Ниже какой толщины миометрия вокруг плодного яйца подозревают интерстициальную беременность?", o:["15 мм", "5 мм", "10 мм", "20 мм"], a:1,
+  e:"Миометрий снаружи меньше 5 мм или отсутствует. Окружённое миометрием ≥ 5 мм яйцо — эксцентричная маточная беременность.", s:"Дубиле, гл. 28.2; ESHRE 2020"},
+ {t:"Эктопическая", q:"Где типично располагается беременность в рубце после кесарева сечения?", o:["Передняя стенка нижнего сегмента, в нише рубца", "Задняя стенка шейки", "Интерстициальный отдел трубы", "Дно матки"], a:0,
+  e:"Плодное яйцо в нише рубца, полость тела и канал шейки пусты, миометрий к мочевому пузырю истончён. Ранняя диагностика улучшает исходы.", s:"Руководство, раздел 10.2; ISUOG 2023"},
+ {t:"Трофобласт", q:"Как часто выглядит ранний полный пузырный занос (до 10 нед.)?", o:["Классическая «снежная буря»", "Неоднородная ткань с мелкими кистами, без эмбриона", "Плодное яйцо с живым эмбрионом", "Пустая полость матки"], a:1,
+  e:"Классической «снежной бури» в ранние сроки часто нет. Ищут и тека-лютеиновые кисты яичников; диагноз ставит гистология.", s:"Руководство, раздел 11.1; Дубиле, гл. 26.4"}
+];
+const SHAPES=['<svg viewBox="0 0 24 24"><path fill="#fff" d="M12 3 22 20H2z"/></svg>','<svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2 22 12 12 22 2 12z"/></svg>',
+  '<svg viewBox="0 0 24 24"><circle fill="#fff" cx="12" cy="12" r="9.5"/></svg>','<svg viewBox="0 0 24 24"><rect fill="#fff" x="3.5" y="3.5" width="17" height="17" rx="1"/></svg>'];
+const $=id=>document.getElementById(id);
+let fio="", i=0, score=0, streak=0, best=0, log=[], perm=[], t0=0, raf=0, locked=false, sent=false;
+const shuffle=a=>{a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]];}return a;};
+function fioOk(v){v=v.trim().replace(/\s+/g," ");return v.split(" ").length>=2&&/^[A-Za-zА-Яа-яЁёӨөҮүҢң'\- ]+$/.test(v)?v:null;}
+$("go").onclick=()=>{const v=fioOk($("fio").value); if(!v){$("fioerr").hidden=false;$("fio").focus();return;} fio=v; begin();};
+$("fio").addEventListener("keydown",e=>{if(e.key==="Enter")$("go").click();});
+function begin(){i=0;score=0;streak=0;best=0;log=[];sent=false;$("start").hidden=true;$("result").hidden=true;$("game").hidden=false;window.scrollTo(0,0);show();}
+function show(){
+  const x=Q[i]; locked=false; perm=shuffle([0,1,2,3]);
+  $("qn").textContent=i+1; $("score").textContent=score; $("tag").textContent=x.t; $("qtext").textContent=x.q;
+  $("fb").hidden=true; $("next").hidden=true;
+  const g=$("tiles"); g.innerHTML="";
+  perm.forEach((oi,pos)=>{const b=document.createElement("button");b.type="button";b.className="tile t"+pos;b.dataset.oi=oi;
+    b.innerHTML=SHAPES[pos]+"<span></span>"; b.lastChild.textContent=x.o[oi]; b.setAttribute("aria-label",(pos+1)+": "+x.o[oi]);
+    b.onclick=()=>answer(oi); g.appendChild(b);});
+  t0=performance.now(); cancelAnimationFrame(raf); tick();
+}
+function tick(){
+  const left=Math.max(0,LIMIT-(performance.now()-t0)/1000);
+  $("bar").style.transform=`scaleX(${left/LIMIT})`; $("bar").classList.toggle("low",left<=5);
+  $("secs").textContent=Math.ceil(left);
+  if(left<=0){answer(null);return;}
+  raf=requestAnimationFrame(tick);
+}
+function answer(oi){
+  if(locked) return; locked=true; cancelAnimationFrame(raf);
+  const x=Q[i], el=Math.min(LIMIT,(performance.now()-t0)/1000), ok=oi===x.a;
+  const pts= ok? Math.round(500+500*(1-el/LIMIT)) : 0;
+  if(ok){streak++;best=Math.max(best,streak);} else streak=0;
+  score+=pts; log.push({ok,el,pts,timeout:oi===null});
+  $("score").textContent=score;
+  [...$("tiles").children].forEach(b=>{b.disabled=true; const k=+b.dataset.oi; if(k===x.a) b.classList.add("right"); else if(k===oi) b.classList.add("picked"); else b.classList.add("dim");});
+  const fb=$("fb"); fb.hidden=false;
+  fb.className="verdict "+(ok?"ok":"bad");
+  fb.innerHTML=`<strong></strong><span class="pts"></span><span class="e"></span><span class="src"></span>`;
+  fb.children[0].textContent= ok? "Верно!" : (oi===null? "Время вышло" : "Неверно");
+  fb.children[1].textContent= ok? `+${pts} баллов · ${el.toFixed(1)} с${streak>=3?` · серия ${streak} 🔥`:""}` : `Правильно: ${x.o[x.a]}`;
+  fb.children[2].textContent=x.e; fb.children[3].textContent="Источник: "+x.s;
+  $("next").hidden=false; $("next").textContent= i===Q.length-1? "Показать результат" : "Следующий вопрос →"; $("next").focus({preventScroll:true});
+}
+$("next").onclick=()=>{ if(i<Q.length-1){i++;show();window.scrollTo(0,0);} else finish(); };
+document.addEventListener("keydown",e=>{ if($("game").hidden) return;
+  if(!locked && /^[1-4]$/.test(e.key)){ answer(perm[+e.key-1]); } else if(locked && e.key==="Enter" && document.activeElement!==$("next")){ $("next").click(); } });
+
+function grade(p){return p>=90?"Отлично":p>=75?"Хорошо":p>=60?"Удовлетворительно":"Неудовлетворительно";}
+function stamp(d){const z=n=>String(n).padStart(2,"0");return `${z(d.getDate())}.${z(d.getMonth()+1)}.${d.getFullYear()} ${z(d.getHours())}:${z(d.getMinutes())}`;}
+function hash(s){let h=0x811c9dc5;for(const ch of s+"|early-quiz"){h^=ch.codePointAt(0);h=Math.imul(h,0x01000193)>>>0;}return h.toString(36).toUpperCase().padStart(6,"0").slice(-6);}
+function attemptNo(){try{const k="acad-early-quiz-attempts";const n=(+localStorage.getItem(k)||0)+1;localStorage.setItem(k,n);return n;}catch(e){return null;}}
+let cspBlocked=false;
+document.addEventListener("securitypolicyviolation",e=>{ if(String(e.blockedURI||"").includes("script.google")) cspBlocked=true; });
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+// Несколько способов доставки: если один заблокирован браузером или сетью, пробуем следующий
+async function sendTG(text){
+  const url=`${TG_PROXY}`;
+  try{ await fetch(url,{method:"POST",mode:"no-cors",body:new URLSearchParams({chat_id:TG_CHAT,text})}); return true; }catch(e){}
+  cspBlocked=false;
+  try{ const img=new Image(); img.referrerPolicy="no-referrer"; img.src=url+"?"+new URLSearchParams({chat_id:TG_CHAT,text,_:Date.now()}); }catch(e){}
+  await wait(1500); if(!cspBlocked) return true;
+  cspBlocked=false;
+  try{ const fr=document.createElement("iframe"); fr.name="tgsink"; fr.hidden=true; document.body.appendChild(fr);
+    const f=document.createElement("form"); f.method="POST"; f.target="tgsink"; f.action=url; f.hidden=true;
+    for(const [k,v] of [["chat_id",TG_CHAT],["text",text]]){ const i=document.createElement("input"); i.name=k; i.value=v; f.appendChild(i); }
+    document.body.appendChild(f); f.submit(); }catch(e){ return false; }
+  await wait(1500); return !cspBlocked;
+}
+function finish(){
+  $("game").hidden=true;
+  const n=Q.length, ok=log.filter(r=>r.ok).length, p=Math.round(ok/n*100);
+  const answered=log.filter(r=>!r.timeout), avg=answered.length? answered.reduce((s,r)=>s+r.el,0)/answered.length : 0;
+  const okT=log.filter(r=>r.ok).map(r=>r.el), fastest=okT.length? Math.min(...okT):null;
+  const wrong=log.map((r,k)=>r.ok?null:k+1).filter(Boolean);
+  const att=attemptNo();
+  const lines=[`${TITLE} — результат`,`ФИО: ${fio}`,`Дата: ${stamp(new Date())}`].concat(att?[`Попытка на этом устройстве: ${att}`]:[]).concat([
+    `Баллы: ${score} из ${n*1000}`,`Верно: ${ok} из ${n} (${p}%) — ${grade(p)}`,`Среднее время ответа: ${avg.toFixed(1)} с`,
+    `Лучшая серия: ${best}`,`Ошибки в вопросах: ${wrong.length?wrong.join(", "):"нет"}`]);
+  const text=lines.join("\n")+"\nКод: "+hash(lines.join("\n"));
+  const r=$("result"); r.hidden=false;
+  r.innerHTML=`<span class="eyebrow">Результат</span><div class="big">${score}</div><p class="muted">баллов из ${n*1000}</p>
+   <div class="stats"><div class="stat"><span>Верных ответов</span><b>${ok} / ${n}</b></div><div class="stat"><span>Оценка</span><b style="font-size:17px">${grade(p)}</b></div>
+   <div class="stat"><span>Среднее время</span><b>${avg.toFixed(1)} с</b></div><div class="stat"><span>Самый быстрый верный</span><b>${fastest!==null?fastest.toFixed(1)+" с":"—"}</b></div>
+   <div class="stat"><span>Лучшая серия</span><b>${best}</b></div></div>
+   <p class="send" id="send">Отправляем результат преподавателю…</p>
+   <ol class="list">${log.map((rr,k)=>`<li class="${rr.ok?"v":"x"}">${rr.ok?"верно":rr.timeout?"время вышло":"неверно"} · ${rr.el.toFixed(1)} с · +${rr.pts}</li>`).join("")}</ol>
+   <div class="row"><button class="btn" id="again" type="button">Пройти ещё раз</button><button class="btn ghost" id="share" type="button">Отправить через Telegram</button></div>`;
+  $("again").onclick=()=>{ r.hidden=true; r.innerHTML=""; begin(); };
+  $("share").onclick=()=>window.open("https://t.me/share/url?url="+encodeURIComponent(" ")+"&text="+encodeURIComponent(text),"_blank","noopener");
+  window.scrollTo(0,0);
+  sendTG(text).then(okS=>{const s=$("send"); if(!s) return; s.className="send "+(okS?"ok":"bad");
+    s.textContent= okS? "Результат отправлен преподавателю." : "Автоматически отправить не удалось — нажмите «Отправить через Telegram» и выберите чат преподавателя.";});
+}
+</script>
+<script src="offline.js"></script>
+</body>
+</html>

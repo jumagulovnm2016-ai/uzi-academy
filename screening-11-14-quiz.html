@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Квиз: первый скрининг 11–14 недель</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@600;700&family=PT+Sans:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{
+  --bg:#f3f6f7; --paper:#fff; --ink:#18232f; --muted:#5b6b78; --line:#d5e0e3;
+  --navy:#1f3864; --teal:#007a7a; --soft:#e2f1f1; --ok:#1e7a46; --okbg:#e3f3e9; --bad:#b3261e; --badbg:#fbe7e5;
+  --c0:#d2304a; --c1:#1f63c6; --c2:#c98a00; --c3:#2a8a2a;
+  --f-d:"Spectral",Georgia,serif; --f-b:"PT Sans","Segoe UI",Arial,sans-serif; --f-m:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1519;--paper:#172027;--ink:#e5edf0;--muted:#9db0ba;--line:#2b3a43;--navy:#9cb6e6;--teal:#4cc3c3;--soft:#16302f;--ok:#6ad19a;--okbg:#163024;--bad:#ff8a80;--badbg:#3a1d1b}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 var(--f-b);min-height:100dvh}
+.wrap{max-width:720px;margin:0 auto;padding:18px 16px 40px;display:grid;gap:14px}
+.eyebrow{font:600 12px/1 var(--f-m);letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+h1{font:700 clamp(26px,6vw,36px)/1.1 var(--f-d);color:var(--navy);margin:6px 0 0;text-wrap:balance}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px clamp(14px,4vw,24px);display:grid;gap:12px}
+.muted{color:var(--muted);margin:0}
+label{font-weight:700;color:var(--navy)}
+input{font:inherit;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:9px;padding:12px 13px;width:100%}
+input:focus-visible{outline:3px solid var(--teal);outline-offset:1px}
+.err{color:var(--bad);font-size:14px;margin:0}
+.btn{font:700 17px var(--f-b);border:0;border-radius:10px;padding:13px 18px;cursor:pointer;background:var(--navy);color:var(--paper)}
+.btn.ghost{background:transparent;color:var(--navy);border:1.5px solid var(--navy)}
+.btn:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.rules{margin:0;padding-left:20px;display:grid;gap:4px}
+/* верхняя строка игры */
+.hud{display:flex;justify-content:space-between;align-items:center;gap:10px;font:700 14px var(--f-m);color:var(--muted)}
+.hud b{color:var(--navy);font-size:18px}
+.timebar{height:10px;background:var(--line);border-radius:6px;overflow:hidden}
+.timebar i{display:block;height:100%;width:100%;background:var(--teal);transform-origin:left;transition:background .3s}
+.timebar i.low{background:var(--c0)}
+.secs{font:700 34px/1 var(--f-m);color:var(--navy);text-align:center;font-variant-numeric:tabular-nums}
+.q{font:600 clamp(20px,4.6vw,26px)/1.28 var(--f-d);margin:0;text-wrap:pretty}
+.tag{font:600 12px var(--f-m);text-transform:uppercase;letter-spacing:.06em;color:var(--teal)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.grid{grid-template-columns:1fr}}
+.tile{display:grid;grid-template-columns:34px 1fr;align-items:center;gap:10px;text-align:left;font:700 16px/1.3 var(--f-b);color:#fff;border:0;border-radius:12px;padding:14px;min-height:68px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.tile:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.tile:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.tile svg{width:28px;height:28px}
+.t0{background:var(--c0)}.t1{background:var(--c1)}.t2{background:var(--c2)}.t3{background:var(--c3)}
+.tile.dim{opacity:.28}
+.tile.right{outline:4px solid var(--ok);outline-offset:2px;opacity:1}
+.tile:disabled{cursor:default}
+.tile.picked{opacity:.75;outline:4px solid var(--bad);outline-offset:2px}
+.tile.picked span::after{content:"  ✕ ваш ответ";font-weight:400}
+.verdict{border-radius:10px;padding:12px 14px;display:grid;gap:4px}
+.verdict.ok{background:var(--okbg)} .verdict.bad{background:var(--badbg)}
+.verdict strong{font-size:19px}.verdict.ok strong{color:var(--ok)}.verdict.bad strong{color:var(--bad)}
+.pts{font:700 15px var(--f-m)}
+.src{font:12px var(--f-m);color:var(--muted)}
+/* итог */
+.big{font:700 54px/1 var(--f-d);color:var(--navy);font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{background:var(--soft);border-radius:10px;padding:10px 12px}
+.stat span{display:block;font-size:13px;color:var(--muted)}.stat b{font:700 22px var(--f-m);color:var(--navy)}
+.list{margin:0;padding-left:22px;display:grid;gap:3px;font-size:15px}
+.list .x{color:var(--bad)} .list .v{color:var(--ok)}
+.send{font-weight:700}.send.ok{color:var(--ok)}.send.bad{color:var(--bad)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+footer{font-size:13px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a7b83">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+<div class="wrap">
+  <header><span class="eyebrow">Первичная специализация · УЗ-диагностика</span><h1>Квиз: первый скрининг 11–14 недель</h1></header>
+
+  <section class="card" id="start">
+    <p class="muted">20 вопросов на время по главам 1–3 пособия Н.А. Алтынник и М.В. Медведева: протокол, анатомия плода, маркеры ХА. Там, где позиция книги расходится с FMF и ISUOG, ответ дан по международным рекомендациям, а в пояснении указано мнение авторов. Баллы зависят от правильности и скорости: верный ответ — от 500 до 1000 баллов, чем быстрее, тем больше. Неверный ответ или истекшее время — 0.</p>
+    <ul class="rules muted"><li>На каждый вопрос — 30 секунд.</li><li>Ответ выбирается одним касанием, изменить его нельзя.</li><li>После ответа — правильный вариант и короткое пояснение; пауза между вопросами в зачёт времени не идёт.</li><li>В конце результат автоматически уходит преподавателю.</li></ul>
+    <label for="fio">ФИО курсанта</label>
+    <input id="fio" autocomplete="name" maxlength="120" placeholder="Иванов Иван Иванович">
+    <p class="err" id="fioerr" hidden>Введите хотя бы фамилию и имя, буквами.</p>
+    <button class="btn" id="go" type="button">Начать</button>
+  </section>
+
+  <section class="card" id="game" hidden aria-live="polite">
+    <div class="hud"><span>Вопрос <b id="qn">1</b> / 20</span><span>Баллы <b id="score">0</b></span></div>
+    <div class="timebar" aria-hidden="true"><i id="bar"></i></div>
+    <div class="secs" id="secs" role="timer">30</div>
+    <span class="tag" id="tag"></span>
+    <p class="q" id="qtext"></p>
+    <div class="grid" id="tiles"></div>
+    <div id="fb" hidden></div>
+    <button class="btn" id="next" type="button" hidden>Следующий вопрос →</button>
+  </section>
+
+  <section class="card" id="result" hidden></section>
+
+  <footer>Источники: Алтынник Н.А., Медведев М.В. Скрининговое ультразвуковое исследование в 11–14 недель беременности. М.: Реал Тайм, 2016 (гл. 1–3); FMF; ISUOG Practice Guidelines (2013, 2023); WFUMB/ISUOG Statement on the Safe Use of Doppler at 11–14 weeks. Жумагулов Н.М. · АДЦ «Сономедплюс», г. Ош</footer>
+</div>
+
+<script>
+const TG_TOKEN="proxy", TG_CHAT="188183172"; const TG_PROXY="https://script.google.com/macros/s/AKfycbznrtw3Wd7QBRhQaMlrCIp86oLemxjc_LlaIVomj-9rcXiyMYpmP_OCtc8u4lgQbaXKpg/exec";
+const TITLE="Квиз: первый скрининг 11–14 недель";
+const LIMIT=30;   // секунд на вопрос
+const Q=[
+ {t:"Гл. 1 · Протокол",q:"С какого срока гестации изучаемый объект корректно называть «плодом», а не «эмбрионом»?",
+  o:["С 9+0 недель","С 10+0 недель","С 11+0 недель","С 12+0 недель"],a:1,
+  e:"До 9+6 недель — эмбрион, с 10+0 — плод: органогенез по существу завершён, дальше идёт преимущественно рост и созревание органов. Так же делит термины и ISUOG.",s:"Алтынник, Медведев, с. 10; ISUOG 2013"},
+ {t:"Гл. 1 · Протокол",q:"Какой критерий ISUOG считается главным для правильного измерения КТР и чаще всего нарушается на практике?",
+  o:["Измерение только трансвагинальным доступом","Нейтральное положение плода: между подбородком и грудью виден карман жидкости","Измерение в режиме объёмной эхографии","Плод расположен вертикально к лучу"],a:1,
+  e:"Критерии ISUOG: срединный сагиттальный срез, плод горизонтально, увеличение на весь экран, нейтральное положение, калиперы на коже темени и копчика. При сгибании КТР занижается, при разгибании — завышается. В книге дополнительно: расстояние подбородок–грудина 2–4 мм; из трёх измерений берут наибольшее.",s:"ISUOG 2013; Алтынник, Медведев, с. 13–14"},
+ {t:"Гл. 1 · Протокол",q:"Для каких хромосомных аномалий в 11–14 недель характерна тахикардия плода?",
+  o:["Трисомия 18 и триплоидия","Трисомия 21 и трисомия 18","Трисомия 13 и синдром Тернера","Триплоидия и синдром Дауна"],a:2,
+  e:"Тахикардия — трисомия 13 и синдром Тернера; брадикардия — трисомия 18 и триплоидия (так же и по данным FMF). Тахикардию может давать и многократное обвитие пуповины.",s:"Алтынник, Медведев, с. 18; FMF"},
+ {t:"Гл. 1 · Протокол",q:"В срезе через мочевой пузырь один сосуд резко преобладает и уходит к ноге; ПССК в нём 17 см/с. Как это трактовать?",
+  o:["Норма: ПССК в пупочных артериях в этом сроке 15–20 см/с","Это наружная подвздошная / бедренная артерия; в пупочных артериях ПССК 40–60 см/с","Признак обратной артериальной перфузии","Единственная артерия пуповины подтверждена, допплер не нужен"],a:1,
+  e:"В подвздошной и бедренной артериях ПССК в ранние сроки не выше 20 см/с, в пупочных — 40–60 см/с. Бедренную артерию легко принять за вторую пупочную и пропустить единственную артерию пуповины.",s:"Алтынник, Медведев, с. 29–30"},
+ {t:"Гл. 1 · Протокол",q:"Двойня, 17 недель: признак «лямбды» не определяется. Какой вывод корректен?",
+  o:["Двойня достоверно монохориальная","Двойня дихориальная","Отсутствие «лямбды» в этом сроке не доказывает монохориальность","Двойня моноамниотическая"],a:2,
+  e:"Ткань хориона между листками перегородки регрессирует, поэтому позже 16 недель «лямбда» может исчезнуть и при дихориальной двойне. Хориальность устанавливают до 14 недель (до 13+6): «лямбда» — дихориальная, «Т» — монохориальная.",s:"Алтынник, Медведев, с. 26–27; ISUOG по двойням"},
+ {t:"Гл. 1 · Безопасность",q:"Что рекомендует заявление WFUMB/ISUOG о допплере в 11–14 недель?",
+  o:["Допплер в каждом исследовании, TI не ограничен","Допплер — по показаниям; отображаемый TI ≤ 1,0; время воздействия минимальное (обычно 5–10 мин, не более 60)","Допплер запрещён до 14 недель","Ограничивается только MI ≤ 0,3"],a:1,
+  e:"Импульсный, цветовой и энергетический допплер не применяют рутинно — только по клиническим показаниям, например для уточнения риска трисомий. В книге также указано, что TIs, TIb и MI не должны превышать 1,0; в заявлении WFUMB/ISUOG MI не упомянут.",s:"WFUMB/ISUOG; Алтынник, Медведев, с. 10"},
+ {t:"Гл. 2 · Анатомия",q:"Что помогает дифференцировать экзэнцефалию и анэнцефалию в ранние сроки?",
+  o:["Измерение бипариетального размера","ЦДК: при экзэнцефалии в мозговой ткани регистрируются сосуды","Оценка IV желудочка","Только наблюдение до 20 недель"],a:1,
+  e:"При анэнцефалии сосудистой картины мозга нет из-за окклюзии на уровне внутренних сонных артерий. Акрания, экзэнцефалия и анэнцефалия — этапы одного порока.",s:"Алтынник, Медведев, с. 38–39"},
+ {t:"Гл. 2 · Анатомия",q:"В средней сагиттальной плоскости в 12 недель не виден IV желудочек (интракраниальная прозрачность). Что заподозрить в первую очередь?",
+  o:["Мальформацию Денди — Уокера","Алобарную голопрозэнцефалию","Открытую spina bifida","Затылочное энцефалоцеле"],a:2,
+  e:"При открытой spina bifida (Арнольд — Киари II) IV желудочек сдавлен. Прямой осмотр позвоночника в 11–14 недель выявляет около 50% случаев, оценка IV желудочка — до 80%. При Денди — Уокере IV желудочек, наоборот, расширен.",s:"Алтынник, Медведев, с. 46, 62; Chaoui 2009"},
+ {t:"Гл. 2 · Анатомия",q:"С какого момента петли кишечника вне брюшной полости у основания пуповины следует расценивать как омфалоцеле?",
+  o:["С 10+0 недель","С 11+0 недель","С 12 недель (КТР ≥ 45 мм)","С 14+0 недель"],a:2,
+  e:"Физиологическая пупочная грыжа содержит только кишечник и исчезает к 12 неделям (КТР около 45 мм). Печень вне брюшной полости — омфалоцеле в любом сроке.",s:"Алтынник, Медведев, с. 80–81; ISUOG 2013"},
+ {t:"Гл. 2 · Анатомия",q:"Какое сочетание признаков указывает на гастрошизис, а не на омфалоцеле?",
+  o:["Грыжевой мешок с печенью, пуповина прикрепляется к нему","Петли кишечника свободно в амниотической жидкости, без мембраны; пуповина прикреплена обычно","Высокий риск ХА — показано кариотипирование","Дефект строго по средней линии в пупочном кольце"],a:1,
+  e:"Гастрошизис — дефект справа от пупка, органы не покрыты мембраной, риск ХА низкий. Омфалоцеле почти в 70% сочетается с другими аномалиями и ХА.",s:"Алтынник, Медведев, с. 82–84"},
+ {t:"Гл. 2 · Анатомия",q:"Продольный размер мочевого пузыря плода в 12 недель — 12 мм. Как его оценить по критериям FMF / ISUOG?",
+  o:["Норма: мегацистис — только свыше 15 мм","Мегацистис; риск ХА около 20–25%, при нормальном кариотипе в ~90% разрешается сам","Обструктивная уропатия без риска ХА","Синдром prune-belly"],a:1,
+  e:"Мегацистис в 11–14 недель — продольный размер ≥ 7 мм. 7–15 мм: ХА около 20–25%, у эуплоидных плодов чаще спонтанное разрешение. Свыше 15 мм: ХА около 10%, высокий риск прогрессирующей обструктивной уропатии. В книге авторы предлагают свой порог — более 10 мм.",s:"Liao, Sebire et al. 2003 (FMF); ISUOG; Алтынник, Медведев, с. 90–91"},
+ {t:"Гл. 2 · Анатомия",q:"В 12 недель виден «открытый» червь мозжечка, IV желудочек и большая цистерна не расширены. Интерпретация?",
+  o:["Мальформация Денди — Уокера","Вариант нормы: червь формируется примерно к 20 неделям","Признак открытой spina bifida","Признак голопрозэнцефалии"],a:1,
+  e:"До 18–20 недель «открытый» червь — норма. Ранний диагноз Денди — Уокера возможен только при полной агенезии червя с расширением IV желудочка и большой цистерны.",s:"Алтынник, Медведев, с. 49"},
+ {t:"Гл. 2 · Анатомия",q:"По мнению авторов, до какого КТР трансвагинальная ЭхоКГ имеет преимущество перед трансабдоминальной?",
+  o:["До 45 мм","До 60 мм","До 70 мм","До 84 мм"],a:2,
+  e:"До КТР около 70 мм (≈13 недель). Позже плод чаще лежит вертикально и лучше трансабдоминальный высокочастотный датчик. Это опыт авторов; международные рекомендации порога не задают.",s:"Алтынник, Медведев, с. 69"},
+ {t:"Гл. 3 · Маркеры ХА",q:"По критерию FMF носовая кость оценивается как «отсутствующая», если:",
+  o:["Её длина ниже 5-го процентиля","Она не видна или её эхогенность равна эхогенности кожи носа либо ниже","Видна только одна из двух костей","Лицевой угол больше 85°"],a:1,
+  e:"FMF оценивает кость качественно: «есть / нет» при угле около 45° к кости. Длину FMF не использует. Авторы книги дополнительно предлагают считать гипоплазией длину ниже 5-го процентиля и смотреть обе кости.",s:"FMF; Алтынник, Медведев, с. 127–131"},
+ {t:"Гл. 3 · Маркеры ХА",q:"Как по правилам FMF ставят калиперы при измерении ТВП?",
+  o:["На наружные края эхогенных линий","На внутренние края линий, горизонтальная планка калипера сливается с белой линией; записывают наибольшее значение","На середину толщины линий","Используют калиперы в виде точек, берут среднее трёх измерений"],a:1,
+  e:"Срок 11+0–13+6 (КТР 45–84 мм), срединный срез, нейтральное положение, на экране только голова и верх грудной клетки (шаг калипера 0,1 мм). Калиперы «+» на внутренних краях линий, фиксируют максимальное значение. Авторы также советуют снизить усиление и отключить тканевую гармонику.",s:"FMF; Алтынник, Медведев, с. 108–115"},
+ {t:"Гл. 3 · Маркеры ХА",q:"Пуповина обвивает шею плода. Как получить ТВП для расчёта риска?",
+  o:["Взять наибольшее из измерений выше и ниже пуповины","Взять наименьшее","Измерить с обеих сторон от пуповины и взять среднее","Перенести исследование на 14 недель"],a:2,
+  e:"Обвитие встречается в 5–7% исследований. ТВП измеряют выше и ниже пуповины, для расчёта берут среднее.",s:"FMF; Алтынник, Медведев, с. 115–116"},
+ {t:"Гл. 3 · Маркеры ХА",q:"Какова частота аномального кариотипа при ТВП 6,5 мм и более?",
+  o:["Около 20%","Около 45%","Около 65%","Около 85%"],a:2,
+  e:"При ТВП ниже 95-го процентиля — около 0,2%, при 6,5 мм и более — около 65%. При нормальном кариотипе с такой ТВП риск гибели плода около 20%, пороков — около 45%.",s:"FMF (Souka et al.); Алтынник, Медведев, с. 119–120"},
+ {t:"Гл. 3 · Маркеры ХА",q:"Какой ориентир показывает, что срез при оценке носовой кости ушёл из срединной сагиттальной плоскости?",
+  o:["Появилась скуловая кость (скуловой отросток верхней челюсти)","Исчез IV желудочек","Видны обе носовые кости","Кончик носа сливается с кожей"],a:0,
+  e:"В срединной плоскости скуловая кость не видна. Отклонение даже на 10° занижает длину носовой кости и даёт ложную «гипоплазию».",s:"FMF; Алтынник, Медведев, с. 125–126"},
+ {t:"Гл. 3 · Маркеры ХА",q:"Что чаще всего даёт ложный реверс a-волны в венозном протоке?",
+  o:["Фильтр 50–70 Гц","Широкий контрольный объём с захватом нижней полой вены","Угол инсонации меньше 30°","Высокая скорость развёртки 2–3 см/с"],a:1,
+  e:"В нижней полой вене реверс в позднюю диастолу — норма. Правильно: КО 0,5–1,0 мм, угол < 30°, фильтр 50–70 Гц, развёртка 2–3 см/с. С 2013 г. FMF учитывает в расчёте риска пульсационный индекс (PIV) как непрерывную величину; авторы книги рекомендуют фиксировать и реверс, и ПИ.",s:"FMF; Алтынник, Медведев, с. 131–138"},
+ {t:"Гл. 3 · Маркеры ХА",q:"Какую трикуспидальную регургитацию FMF считает значимой в 11–14 недель?",
+  o:["Любой обратный поток в систолу","Обратный поток не менее половины систолы со скоростью более 60 см/с","Поток со скоростью более 30 см/с в начале систолы","Регургитацию, видимую только в режиме ЦДК"],a:1,
+  e:"Четырёхкамерный срез, угол к межжелудочковой перегородке < 30°, КО 2–3 мм, клапан проходят трижды. Порог 60 см/с отсекает сигналы аорты и лёгочной артерии. FMF использует ТР как дополнительный маркер; авторы книги не включают её в обязательный протокол.",s:"FMF; Алтынник, Медведев, с. 141–145"}
+];
+const SHAPES=['<svg viewBox="0 0 24 24"><path fill="#fff" d="M12 3 22 20H2z"/></svg>','<svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2 22 12 12 22 2 12z"/></svg>',
+  '<svg viewBox="0 0 24 24"><circle fill="#fff" cx="12" cy="12" r="9.5"/></svg>','<svg viewBox="0 0 24 24"><rect fill="#fff" x="3.5" y="3.5" width="17" height="17" rx="1"/></svg>'];
+const $=id=>document.getElementById(id);
+let fio="", i=0, score=0, streak=0, best=0, log=[], perm=[], t0=0, raf=0, locked=false, sent=false;
+const shuffle=a=>{a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]];}return a;};
+function fioOk(v){v=v.trim().replace(/\s+/g," ");return v.split(" ").length>=2&&/^[A-Za-zА-Яа-яЁёӨөҮүҢң'\- ]+$/.test(v)?v:null;}
+$("go").onclick=()=>{const v=fioOk($("fio").value); if(!v){$("fioerr").hidden=false;$("fio").focus();return;} fio=v; begin();};
+$("fio").addEventListener("keydown",e=>{if(e.key==="Enter")$("go").click();});
+function begin(){i=0;score=0;streak=0;best=0;log=[];sent=false;$("start").hidden=true;$("result").hidden=true;$("game").hidden=false;window.scrollTo(0,0);show();}
+function show(){
+  const x=Q[i]; locked=false; perm=shuffle([0,1,2,3]);
+  $("qn").textContent=i+1; $("score").textContent=score; $("tag").textContent=x.t; $("qtext").textContent=x.q;
+  $("fb").hidden=true; $("next").hidden=true;
+  const g=$("tiles"); g.innerHTML="";
+  perm.forEach((oi,pos)=>{const b=document.createElement("button");b.type="button";b.className="tile t"+pos;b.dataset.oi=oi;
+    b.innerHTML=SHAPES[pos]+"<span></span>"; b.lastChild.textContent=x.o[oi]; b.setAttribute("aria-label",(pos+1)+": "+x.o[oi]);
+    b.onclick=()=>answer(oi); g.appendChild(b);});
+  t0=performance.now(); cancelAnimationFrame(raf); tick();
+}
+function tick(){
+  const left=Math.max(0,LIMIT-(performance.now()-t0)/1000);
+  $("bar").style.transform=`scaleX(${left/LIMIT})`; $("bar").classList.toggle("low",left<=5);
+  $("secs").textContent=Math.ceil(left);
+  if(left<=0){answer(null);return;}
+  raf=requestAnimationFrame(tick);
+}
+function answer(oi){
+  if(locked) return; locked=true; cancelAnimationFrame(raf);
+  const x=Q[i], el=Math.min(LIMIT,(performance.now()-t0)/1000), ok=oi===x.a;
+  const pts= ok? Math.round(500+500*(1-el/LIMIT)) : 0;
+  if(ok){streak++;best=Math.max(best,streak);} else streak=0;
+  score+=pts; log.push({ok,el,pts,timeout:oi===null});
+  $("score").textContent=score;
+  [...$("tiles").children].forEach(b=>{b.disabled=true; const k=+b.dataset.oi; if(k===x.a) b.classList.add("right"); else if(k===oi) b.classList.add("picked"); else b.classList.add("dim");});
+  const fb=$("fb"); fb.hidden=false;
+  fb.className="verdict "+(ok?"ok":"bad");
+  fb.innerHTML=`<strong></strong><span class="pts"></span><span class="e"></span><span class="src"></span>`;
+  fb.children[0].textContent= ok? "Верно!" : (oi===null? "Время вышло" : "Неверно");
+  fb.children[1].textContent= ok? `+${pts} баллов · ${el.toFixed(1)} с${streak>=3?` · серия ${streak} 🔥`:""}` : `Правильно: ${x.o[x.a]}`;
+  fb.children[2].textContent=x.e; fb.children[3].textContent=x.s?"Источник: "+x.s:"";
+  $("next").hidden=false; $("next").textContent= i===Q.length-1? "Показать результат" : "Следующий вопрос →"; $("next").focus({preventScroll:true});
+}
+$("next").onclick=()=>{ if(i<Q.length-1){i++;show();window.scrollTo(0,0);} else finish(); };
+document.addEventListener("keydown",e=>{ if($("game").hidden) return;
+  if(!locked && /^[1-4]$/.test(e.key)){ answer(perm[+e.key-1]); } else if(locked && e.key==="Enter" && document.activeElement!==$("next")){ $("next").click(); } });
+
+function grade(p){return p>=90?"Отлично":p>=75?"Хорошо":p>=60?"Удовлетворительно":"Неудовлетворительно";}
+function stamp(d){const z=n=>String(n).padStart(2,"0");return `${z(d.getDate())}.${z(d.getMonth()+1)}.${d.getFullYear()} ${z(d.getHours())}:${z(d.getMinutes())}`;}
+function hash(s){let h=0x811c9dc5;for(const ch of s+"|uzmp-quiz"){h^=ch.codePointAt(0);h=Math.imul(h,0x01000193)>>>0;}return h.toString(36).toUpperCase().padStart(6,"0").slice(-6);}
+function attemptNo(){try{const k="acad-uzmp-quiz-attempts";const n=(+localStorage.getItem(k)||0)+1;localStorage.setItem(k,n);return n;}catch(e){return null;}}
+let cspBlocked=false;
+document.addEventListener("securitypolicyviolation",e=>{ if(String(e.blockedURI||"").includes("script.google")) cspBlocked=true; });
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+// Несколько способов доставки: если один заблокирован браузером или сетью, пробуем следующий
+async function sendTG(text){
+  const url=`${TG_PROXY}`;
+  try{ await fetch(url,{method:"POST",mode:"no-cors",body:new URLSearchParams({chat_id:TG_CHAT,text})}); return true; }catch(e){}
+  cspBlocked=false;
+  try{ const img=new Image(); img.referrerPolicy="no-referrer"; img.src=url+"?"+new URLSearchParams({chat_id:TG_CHAT,text,_:Date.now()}); }catch(e){}
+  await wait(1500); if(!cspBlocked) return true;
+  cspBlocked=false;
+  try{ const fr=document.createElement("iframe"); fr.name="tgsink"; fr.hidden=true; document.body.appendChild(fr);
+    const f=document.createElement("form"); f.method="POST"; f.target="tgsink"; f.action=url; f.hidden=true;
+    for(const [k,v] of [["chat_id",TG_CHAT],["text",text]]){ const i=document.createElement("input"); i.name=k; i.value=v; f.appendChild(i); }
+    document.body.appendChild(f); f.submit(); }catch(e){ return false; }
+  await wait(1500); return !cspBlocked;
+}
+function finish(){
+  $("game").hidden=true;
+  const n=Q.length, ok=log.filter(r=>r.ok).length, p=Math.round(ok/n*100);
+  const answered=log.filter(r=>!r.timeout), avg=answered.length? answered.reduce((s,r)=>s+r.el,0)/answered.length : 0;
+  const okT=log.filter(r=>r.ok).map(r=>r.el), fastest=okT.length? Math.min(...okT):null;
+  const wrong=log.map((r,k)=>r.ok?null:k+1).filter(Boolean);
+  const att=attemptNo();
+  const lines=[`${TITLE} — результат`,`ФИО: ${fio}`,`Дата: ${stamp(new Date())}`].concat(att?[`Попытка на этом устройстве: ${att}`]:[]).concat([
+    `Баллы: ${score} из ${n*1000}`,`Верно: ${ok} из ${n} (${p}%) — ${grade(p)}`,`Среднее время ответа: ${avg.toFixed(1)} с`,
+    `Лучшая серия: ${best}`,`Ошибки в вопросах: ${wrong.length?wrong.join(", "):"нет"}`]);
+  const text=lines.join("\n")+"\nКод: "+hash(lines.join("\n"));
+  const r=$("result"); r.hidden=false;
+  r.innerHTML=`<span class="eyebrow">Результат</span><div class="big">${score}</div><p class="muted">баллов из ${n*1000}</p>
+   <div class="stats"><div class="stat"><span>Верных ответов</span><b>${ok} / ${n}</b></div><div class="stat"><span>Оценка</span><b style="font-size:17px">${grade(p)}</b></div>
+   <div class="stat"><span>Среднее время</span><b>${avg.toFixed(1)} с</b></div><div class="stat"><span>Самый быстрый верный</span><b>${fastest!==null?fastest.toFixed(1)+" с":"—"}</b></div>
+   <div class="stat"><span>Лучшая серия</span><b>${best}</b></div></div>
+   <p class="send" id="send">Отправляем результат преподавателю…</p>
+   <ol class="list">${log.map((rr,k)=>`<li class="${rr.ok?"v":"x"}">${rr.ok?"верно":rr.timeout?"время вышло":"неверно"} · ${rr.el.toFixed(1)} с · +${rr.pts}</li>`).join("")}</ol>
+   <div class="row"><button class="btn" id="again" type="button">Пройти ещё раз</button><button class="btn ghost" id="share" type="button">Отправить через Telegram</button></div>`;
+  $("again").onclick=()=>{ r.hidden=true; r.innerHTML=""; begin(); };
+  $("share").onclick=()=>window.open("https://t.me/share/url?url="+encodeURIComponent(" ")+"&text="+encodeURIComponent(text),"_blank","noopener");
+  window.scrollTo(0,0);
+  sendTG(text).then(okS=>{const s=$("send"); if(!s) return; s.className="send "+(okS?"ok":"bad");
+    s.textContent= okS? "Результат отправлен преподавателю." : "Автоматически отправить не удалось — нажмите «Отправить через Telegram» и выберите чат преподавателя.";});
+}
+</script>
+<script src="offline.js"></script>
+</body>
+</html>

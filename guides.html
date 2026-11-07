@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Руководства по УЗД</title>
+<style>
+:root{--bg:#f3f6f7;--paper:#fff;--ink:#18232f;--muted:#5b6b78;--line:#d5e0e3;--navy:#1f3864;--teal:#007a7a;--soft:#e2f1f1}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1519;--paper:#172027;--ink:#e5edf0;--muted:#9db0ba;--line:#2b3a43;--navy:#9cb6e6;--teal:#4cc3c3;--soft:#16302f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "PT Sans","Segoe UI",Arial,sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:28px 16px 48px;display:grid;gap:18px}
+.eyebrow{font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+h1{font:700 clamp(26px,5vw,36px)/1.15 Georgia,"Times New Roman",serif;color:var(--navy);margin:6px 0 0}
+p{margin:0;color:var(--muted)}
+h2{font:700 18px/1.3 Georgia,serif;color:var(--navy);margin:8px 0 0}
+.list{display:grid;gap:10px}
+a.t{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;text-decoration:none;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:10px;padding:14px 16px}
+a.t:hover,a.t:focus-visible{border-color:var(--teal);outline:none}
+a.t b{font-size:17px}
+a.t small{grid-column:1;color:var(--muted)}
+a.t span{grid-row:1/3;grid-column:2;font:700 13px ui-monospace,Consolas,monospace;color:var(--teal);background:var(--soft);border-radius:6px;padding:4px 8px;white-space:nowrap}
+.note{background:var(--paper);border-left:4px solid var(--teal);border-radius:8px;padding:12px 14px;color:var(--ink)}
+footer{font-size:13px;color:var(--muted)}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a7b83">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+<div class="wrap">
+<header><span class="eyebrow">Первичная специализация · УЗ-диагностика</span><h1>Руководства для курсантов</h1></header>
+<p class="note">Руководства открываются в формате PDF прямо в браузере; их можно сохранить на телефон. <a href="./">← К тестам</a></p>
+
+<h2>Органы брюшной полости</h2>
+<div class="list">
+ <a class="t" href="guides/liver-gallbladder.pdf" target="_blank" rel="noopener"><b>Печень и желчный пузырь</b><small>расширенное руководство: LI-RADS, Baveno VII, TG18, сосудистая патология</small><span>27 стр.</span></a>
+ <a class="t" href="guides/pancreas.pdf" target="_blank" rel="noopener"><b>УЗИ поджелудочной железы</b><small>v3: Atlanta 2012, Kyoto 2024, NCCN, протокол, ошибки</small><span>27 стр.</span></a>
+ <a class="t" href="guides/spleen.pdf" target="_blank" rel="noopener"><b>УЗИ селезёнки</b><small>v1.3: нормативы, аномалии, эхинококкоз (ВОЗ), травма AAST</small><span>34 стр.</span></a>
+</div>
+
+<h2>Гинекология</h2>
+<div class="list">
+ <a class="t" href="guides/uterus-adnexa.pdf" target="_blank" rel="noopener"><b>УЗИ матки и придатков</b><small>норма, пороки, MUSA, IETA, IOTA/ADNEX, трубы, неотложные состояния</small><span>65 стр.</span></a>
+ <a class="t" href="guides/endometriosis-bmus-bsge.pdf" target="_blank" rel="noopener"><b>Ультразвуковая оценка эндометриоза (BMUS/BSGE, 2026)</b><small>перевод на русский; методика, поверхностный и глубокий эндометриоз, протокол</small><span>37 стр.</span></a>
+ <p class="note" style="margin:0;font-size:14px">Неофициальный учебный перевод. Оригинал: British Medical Ultrasound Society, British Society for Gynaecological Endoscopy. <a href="https://www.bmus.org/static/uploads/resources/BMUS__BSGE_Guidance_for_Ultrasound_Assessment_of_Endometriosis__with_Cover.pdf" target="_blank" rel="noopener">Guidance for Ultrasound Assessment of Endometriosis</a> (2026). При расхождениях верен оригинал.</p>
+ <a class="t" href="guides/pid-inflam.pdf" target="_blank" rel="noopener"><b>Воспалительные заболевания матки и придатков</b><small>лекция: эндометрит, пиосальпинкс, тубоовариальный абсцесс</small><span>21 стр.</span></a>
+</div>
+
+<h2>Акушерство</h2>
+<div class="list">
+ <a class="t" href="guides/early-pregnancy.pdf" target="_blank" rel="noopener"><b>УЗИ при малом сроке беременности</b><small>до 11+0 недель: локализация, жизнеспособность, датировка, многоплодие (ISUOG)</small><span>25 стр.</span></a>
+ <a class="t" href="guides/screening-11-14.pdf" target="_blank" rel="noopener"><b>УЗИ в 11–14 недель: первый скрининг</b><small>ISUOG 2023 и международные консенсусы</small><span>34 стр.</span></a>
+ <a class="t" href="guides/screening-2-trimester.pdf" target="_blank" rel="noopener"><b>Ультразвуковой скрининг II триместра</b><small>18–22 недели: биометрия, анатомия, сердце, плацента, шейка, мягкие маркеры (ISUOG 2022)</small><span>33 стр.</span></a>
+ <a class="t" href="guides/fetal-spine.pdf" target="_blank" rel="noopener"><b>Позвоночник плода во II триместре</b><small>версия 2.3: норма, спинальные дизрафии, аномалии позвонков, каудальные пороки</small><span>26 стр.</span></a>
+ <a class="t" href="guides/fetal-thorax.pdf" target="_blank" rel="noopener"><b>Органы грудной клетки плода во II триместре</b><small>норма и биометрия, ВДГ (O/E LHR, FETO), ВКПМ (CVR), секвестрация, гидроторакс, протокол</small><span>28 стр.</span></a>
+ <a class="t" href="guides/cns-hemimegalencephaly.pdf" target="_blank" rel="noopener"><b>Аномалии развития головного мозга плода</b><small>лекция: гемимегалэнцефалия, нарушения миграции нейронов</small><span>18 стр.</span></a>
+ <a class="t" href="guides/uterine-scar.pdf" target="_blank" rel="noopener"><b>УЗИ рубца на матке</b><small>лекция: до и во время беременности, ниша, PAS, беременность в рубце</small><span>27 стр.</span></a>
+</div>
+
+<h2>Мочевыделительная система и мошонка</h2>
+<div class="list">
+ <a class="t" href="guides/kidney.pdf" target="_blank" rel="noopener"><b>УЗИ почек</b><small>методика, норма, Bosniak 2019, камни, обструкция, допплер</small><span>48 стр.</span></a>
+ <a class="t" href="guides/ureter-bladder.pdf" target="_blank" rel="noopener"><b>УЗИ мочеточников и мочевого пузыря</b><small>анатомия, методика, SFU, UTD, ПМР, мегауретер, протокол</small><span>45 стр.</span></a>
+ <a class="t" href="guides/scrotum.pdf" target="_blank" rel="noopener"><b>УЗИ органов мошонки</b><small>лекция: анатомия, аномалии, патология (EAU 2023, EFSUMB, ESUR)</small><span>29 стр.</span></a>
+</div>
+
+<h2>Справочник</h2>
+<div class="list">
+ <a class="t" href="normy.html"><b>Нормативы внутренних органов</b><small>калькулятор: размеры у взрослых и детей по возрасту и росту, объёмы</small><span>онлайн</span></a>
+</div>
+<footer>Жумагулов Н.М. · АДЦ «Сономедплюс», г. Ош · Материалы для внутреннего учебного использования</footer>
+</div>
+<script src="offline.js"></script>
+</body>
+</html>

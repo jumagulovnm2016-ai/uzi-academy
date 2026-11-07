@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Тест: УЗИ мочеточников и мочевого пузыря</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600;700&family=PT+Sans:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{
+  --bg:#f3f6f7; --paper:#ffffff; --ink:#18232f; --muted:#5b6b78; --line:#d5e0e3;
+  --navy:#1f3864; --teal:#007a7a; --teal-soft:#e2f1f1;
+  --ok:#1e7a46; --ok-soft:#e3f3e9; --bad:#b3261e; --bad-soft:#fbe7e5;
+  --f-display:"Spectral", Georgia, "Times New Roman", serif;
+  --f-body:"PT Sans", "Segoe UI", Arial, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1519; --paper:#172027; --ink:#e5edf0; --muted:#9db0ba; --line:#2b3a43;
+  --navy:#9cb6e6; --teal:#4cc3c3; --teal-soft:#16302f;
+  --ok:#6ad19a; --ok-soft:#163024; --bad:#ff8a80; --bad-soft:#3a1d1b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1519; --paper:#172027; --ink:#e5edf0; --muted:#9db0ba; --line:#2b3a43;
+  --navy:#9cb6e6; --teal:#4cc3c3; --teal-soft:#16302f;
+  --ok:#6ad19a; --ok-soft:#163024; --bad:#ff8a80; --bad-soft:#3a1d1b; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:24px 48px;display:grid;gap:18px}
+header{display:grid;gap:6px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,5vw,38px);line-height:1.1;margin:0;color:var(--navy);text-wrap:balance}
+.sub{color:var(--muted);margin:0;max-width:62ch}
+.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.track{flex:1 1 220px;height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.fill{height:100%;width:0;background:var(--teal);transition:width .25s}
+.stat{font-family:var(--f-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:22px clamp(16px,4vw,28px);display:grid;gap:14px}
+.qmeta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.tag{color:var(--teal);text-transform:uppercase;letter-spacing:.06em}
+.qtext{font-family:var(--f-display);font-weight:600;font-size:clamp(19px,3.2vw,23px);line-height:1.3;margin:0;text-wrap:pretty}
+.opts{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.opt{width:100%;display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:start;text-align:left;font:inherit;color:var(--ink);
+  background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:11px 12px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--teal)}
+.opt:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.opt:disabled{cursor:default}
+.letter{font-family:var(--f-mono);font-weight:700;width:28px;height:28px;display:grid;place-items:center;border-radius:6px;background:var(--teal-soft);color:var(--teal)}
+.opt.correct{border-color:var(--ok);background:var(--ok-soft)}
+.opt.correct .letter{background:var(--ok);color:var(--paper)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.wrong .letter{background:var(--bad);color:var(--paper)}
+.fb{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:6px}
+.verdict{font-weight:700}
+.verdict.ok{color:var(--ok)} .verdict.bad{color:var(--bad)}
+.src{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.nav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:700;border-radius:8px;padding:10px 16px;cursor:pointer;border:1.5px solid var(--navy);background:var(--paper);color:var(--navy)}
+.btn.primary{background:var(--navy);color:var(--paper)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.maphead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+h2{font-family:var(--f-display);font-size:18px;margin:0;color:var(--navy)}
+.legend{font-size:13px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.map{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px}
+@media (max-width:480px){.map{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.cell{font-family:var(--f-mono);font-size:13px;font-weight:700;aspect-ratio:1;max-width:100%;border-radius:6px;border:1.5px solid var(--line);background:var(--paper);color:var(--muted);cursor:pointer;font-variant-numeric:tabular-nums}
+.cell.cur{border-color:var(--navy);color:var(--navy)}
+.cell.ok{background:var(--ok);border-color:var(--ok);color:var(--paper)}
+.cell.bad{background:var(--bad);border-color:var(--bad);color:var(--paper)}
+.cell:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.result{display:grid;gap:12px}
+.score{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.big{font-family:var(--f-display);font-size:52px;font-weight:700;line-height:1;color:var(--navy);font-variant-numeric:tabular-nums}
+.grade{font-weight:700;font-size:18px}
+.scale{width:100%;border-collapse:collapse;font-size:14px}
+.scale td{border-top:1px solid var(--line);padding:6px 4px}
+.scale td:last-child{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.scale tr.me td{color:var(--teal);font-weight:700}
+.wrongs{margin:0;padding-left:20px;display:grid;gap:4px}
+.wrongs button{font:inherit;background:none;border:0;padding:0;color:var(--teal);cursor:pointer;text-align:left;text-decoration:underline}
+footer{font-size:13px;color:var(--muted)}
+.timer{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-mono);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums;color:var(--navy);
+  border:1.5px solid var(--line);border-radius:8px;padding:4px 12px;background:var(--paper)}
+.timer small{font-family:var(--f-body);font-weight:400;font-size:12px;color:var(--muted)}
+.timer.warn{color:var(--bad);border-color:var(--bad);background:var(--bad-soft)}
+.timer.stop{color:var(--muted)}
+.who{display:grid;gap:6px}
+.who label{font-weight:700;color:var(--navy)}
+.who input,.report,.verify textarea{font:inherit;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+.who input:focus-visible,.report:focus-visible,.verify textarea:focus-visible{outline:3px solid var(--teal);outline-offset:1px;border-color:var(--teal)}
+.who input[readonly]{background:var(--teal-soft)}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.hint.err{color:var(--bad)}
+.report{font-family:var(--f-mono);font-size:13px;line-height:1.5;min-height:200px;resize:vertical}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ok-msg{color:var(--ok);font-weight:700} .bad-msg{color:var(--bad);font-weight:700}
+.verify{display:grid;gap:8px;margin-top:8px}
+.verify textarea{font-family:var(--f-mono);font-size:13px;min-height:140px}
+details summary{cursor:pointer;color:var(--teal);font-weight:700}
+.notice{margin:0;padding:10px 12px;border-radius:8px;background:var(--bad-soft);color:var(--bad);font-weight:700}
+@media (prefers-reduced-motion:reduce){.fill{transition:none}}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a7b83">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Первичная специализация · УЗ-диагностика</span>
+    <h1>Тест: УЗИ мочеточников и мочевого пузыря</h1>
+    <p class="sub">30 вопросов по анатомии, методике, мочеточниковым выбросам и RI, объёму и стенке пузыря, камням, мегауретеру, аномалиям, рефлюксу, беременности, образованиям, урахусу и шейке пузыря. Большинство вопросов — клинические ситуации. После ответа сразу показывается правильный вариант и пояснение. На тест отводится 20 минут: отсчёт начинается с первого ответа, по истечении времени тест завершается автоматически. После завершения результат автоматически уходит преподавателю.</p>
+    <div class="bar"><div class="track" aria-hidden="true"><div class="fill" id="fill"></div></div><span class="stat" id="stat">0 / 30 отвечено · верно 0</span><span class="timer" id="timer" role="timer" aria-live="off"><span id="clock">20:00</span><small id="tnote">старт с первым ответом</small></span></div>
+  </header>
+
+  <section class="card who">
+    <label for="fio">ФИО курсанта</label>
+    <input id="fio" type="text" autocomplete="name" placeholder="Например: Иванов Иван Иванович" maxlength="120">
+    <p class="hint" id="fiohint">Введите фамилию, имя и отчество. Без ФИО ответы не принимаются; после первого ответа ФИО изменить нельзя.</p>
+  </section>
+
+  <section class="card" id="qcard" aria-live="polite"></section>
+  <section class="card result" id="result" hidden></section>
+
+  <section class="card">
+    <div class="maphead"><h2>Карта вопросов</h2>
+      <div class="legend"><span><i style="background:var(--ok)"></i>верно</span><span><i style="background:var(--bad)"></i>неверно</span><span><i style="border:1.5px solid var(--line)"></i>без ответа</span></div></div>
+    <div class="map" id="map"></div>
+    <div class="nav"><button class="btn" id="restart" type="button">Начать заново</button><button class="btn primary" id="finish" type="button">Показать результат</button></div>
+  </section>
+
+  <footer>Ответы сверены с руководством «УЗИ мочеточников и мочевого пузыря» (2026) и пособиями: Капустин С.В. и соавт., 2017; Глазун Л.О., Полухина Е.В., 2014; руководство под ред. П.Ф. Фулхэма, Б.Р. Гилберта. Клавиши: 1–4 — выбор ответа, ← → — переход.
+    <details><summary>Проверка отчёта (для преподавателя)</summary>
+      <div class="verify"><label for="vin">Вставьте текст отчёта, полученный от курсанта:</label>
+        <textarea id="vin" spellcheck="false"></textarea>
+        <div class="actions"><button class="btn" id="vbtn" type="button">Проверить код</button><span id="vout" role="status"></span></div>
+        <p class="hint">Код показывает, что текст отчёта не редактировали после теста. Защита простая: курсант, разбирающийся в коде страницы, может её обойти.</p>
+      </div></details>
+  </footer>
+</div>
+<script>
+const Q = [
+ {t:"Анатомия", q:"Где чаще всего задерживаются камни мочеточника?",
+  o:["В лоханочно-мочеточниковом сегменте, у перекреста с подвздошными сосудами и в мочеточнико-пузырном сегменте","В средней трети брюшного отдела, где мочеточник шире всего","В местах перекреста с гонадными сосудами и у нижнего полюса почки","Равномерно по всей длине мочеточника, без преимущественной локализации"], a:0,
+  e:"Это три физиологических сужения, диаметр мочеточника в них 3–4 мм. Конкременты верхней трети могут мигрировать обратно в ЧЛС.", s:"Глазун, с. 9; Капустин, с. 110; руководство, раздел 1.1"},
+ {t:"Анатомия", q:"Как располагается правый мочеточник в брюшном отделе относительно нижней полой вены?",
+  o:["Медиальнее НПВ, между веной и аортой","Позади НПВ, под её задней стенкой","Латеральнее НПВ","Кпереди от НПВ, перекрещивая её"], a:2,
+  e:"НПВ лежит медиальнее правого мочеточника, а левый мочеточник находится латеральнее аорты. Эти ориентиры используют при поиске расширенного мочеточника.", s:"Капустин, с. 101–102; руководство, разделы 1.1 и 3.4"},
+ {t:"Анатомия", q:"После тупой травмы таза у пациента с полным пузырём выявлена свободная жидкость в брюшной полости, пузырь почти пуст. О каком разрыве это говорит в первую очередь?",
+  o:["О внебрюшинном разрыве шейки пузыря","О внутрибрюшинном разрыве в области верхушки","О разрыве уретры ниже мочеполовой диафрагмы","Об отрыве мочеточника от лоханки"], a:1,
+  e:"Брюшина покрывает только верхнюю и частично заднюю стенку, поэтому разрыв верхушки открывается в брюшную полость и пузырь может опорожниться почти полностью. При внебрюшинном разрыве жидкость скапливается над пузырём, отграниченная брюшиной. Подтверждают КТ-цистографией.", s:"Капустин, с. 134–135; руководство, разделы 1.2 и 6.9"},
+ {t:"Методика", q:"При каком наполнении оптимально оценивать стенки и содержимое мочевого пузыря у взрослого?",
+  o:["При объёме, соответствующем первому позыву, — 150–250 мл","При максимальном наполнении, до императивного позыва","При объёме 50–80 мл, сразу после мочеиспускания","Наполнение не влияет на оценку стенки"], a:0,
+  e:"Слишком малый объём даёт ложное утолщение стенки, слишком большой — артефакты и дискомфорт. Для осмотра нижних отделов мочеточников пузырь наполняют до 200–400 мл.", s:"Капустин, с. 102, 126; Фулхэм, с. 180"},
+ {t:"Методика", q:"При переполненном мочевом пузыре выявлено двустороннее лёгкое расширение ЧЛС. Ваши действия?",
+  o:["Записать в заключение двусторонний гидронефроз I степени","Направить на КТ-урографию","Измерить RI и закончить исследование","Повторить осмотр почек и мочеточников после мочеиспускания"], a:3,
+  e:"Высокое внутрипузырное давление само вызывает расширение верхних мочевых путей. Функциональное расширение после опорожнения исчезает или уменьшается, истинная обструкция сохраняется.", s:"Капустин, с. 121; руководство, раздел 3.1"},
+ {t:"Методика", q:"Как отличить расширенный тазовый отдел мочеточника от подвздошной вены?",
+  o:["Мочеточник пульсирует синхронно с сердцем, вена — нет","Подвздошная вена расширяется при пробе Вальсальвы, мочеточник — нет","Мочеточник всегда шире вены и имеет толстую стенку","Отличить их по УЗИ невозможно, нужна КТ"], a:1,
+  e:"Помогают также ЦДК (в мочеточнике кровотока нет) и прослеживание структуры до лоханки или до пузыря с видимой перистальтикой.", s:"Руководство, раздел 3.4"},
+ {t:"Методика", q:"Пациент с почечной коликой, камня в почке нет. С какого отдела мочеточника начинают поиск?",
+  o:["С нижней трети — устья и тазового отдела при наполненном пузыре","Со средней трети брюшного отдела, затем вверх","С лоханочно-мочеточникового сегмента, нижнюю треть не осматривают","Мочеточник не осматривают, достаточно оценки ЧЛС"], a:0,
+  e:"Нижняя треть доступна через наполненный пузырь, затем осматривают верхнюю и среднюю трети. Средняя треть видна хуже всего из-за газа кишечника.", s:"Капустин, с. 108; руководство, раздел 5.2"},
+ {t:"Допплерография", q:"Сколько нужно наблюдать устье, чтобы утверждать, что мочеточникового выброса нет?",
+  o:["Достаточно 1–2 минут","Не менее 10 минут","Ровно 3 минуты при любом диурезе","Время наблюдения значения не имеет"], a:1,
+  e:"Глазун и Полухина рекомендуют 10–15 минут, Фулхэм — не менее 10. Для доказательства асимметрии частоты может потребоваться до 30 минут.", s:"Глазун, с. 38; Фулхэм, с. 275"},
+ {t:"Допплерография", q:"Какое направление мочеточникового выброса характерно для обструктивного мочеточнико-пузырного сегмента?",
+  o:["Каудально-медиально, к внутреннему отверстию уретры","Косо к противоположной стенке под углом 30–70°","Кпереди и краниально; угол между выбросом и МПС менее 120°","Выброс при обструкции всегда направлен строго вертикально вниз"], a:2,
+  e:"В норме выброс направлен каудально-медиально к шейке, угол с МПС обычно более 120°. Отклонение выброса кпереди и вверх — признак обструктивного МПС.", s:"Капустин, с. 104; руководство, раздел 3.5"},
+ {t:"Допплерография", q:"Беременная 32 недель лежит на спине, справа мочеточниковый выброс за 10 минут не зарегистрирован, камня не видно. Как поступить?",
+  o:["Диагностировать обструкцию правого мочеточника","Повернуть пациентку на противоположный бок и повторить наблюдение","Сразу направить на нативную КТ","Измерить RI: у беременных он всегда повышен"], a:1,
+  e:"В положении на спине выбросы отсутствуют у 33–50% беременных. На боку давление матки уменьшается. RI при беременности обычно не меняется.", s:"Фулхэм, с. 271, 275; руководство, раздел 5.7"},
+ {t:"Допплерография", q:"Пациент с коликой за час до УЗИ принял НПВС. Расширение ЧЛС справа, RI с обеих сторон 0,62. Какой вывод верен?",
+  o:["Нормальный RI исключает обструкцию","RI выше 0,60 доказывает обструкцию","Расширение без повышения RI всегда функциональное","НПВС маскируют повышение RI, нормальный RI обструкцию не исключает"], a:3,
+  e:"Признаки обструкции — RI ≥ 0,70 и разница между почками более 0,1 (у Капустина — более 0,06–0,08). RI повышается в течение 6 часов от начала обструкции, НПВС этот рост подавляют.", s:"Фулхэм, с. 271; Капустин, с. 42"},
+ {t:"Объём и стенка", q:"Размеры пузыря: длина 10 см, ширина 8 см, переднезадний 7 см. Каков объём при k = 0,6?",
+  o:["336 мл","560 мл","168 мл","672 мл"], a:0,
+  e:"V = 10 × 8 × 7 × 0,6 = 336 мл. Коэффициент берут 0,52–0,7, у Фулхэма — 0,625. Погрешность формулы составляет 15–30%.", s:"Капустин, с. 129; Фулхэм, с. 183–184"},
+ {t:"Объём и стенка", q:"Исходный объём пузыря 300 мл, сразу после мочеиспускания осталось 45 мл. Как трактовать?",
+  o:["Норма: у взрослых допустимо до 100 мл","Хроническая задержка мочи","Выше нормы; повторить измерение после повторной микции","Норма, если пациент старше 60 лет"], a:2,
+  e:"У взрослых норма — не более 20 мл или 10% исходного объёма. После повторной микции через 5–10 минут моча в пузыре должна отсутствовать. Хроническая задержка по AUA — ОМ более 300 мл, выявленный не менее двух раз и сохраняющийся 6 месяцев и дольше.", s:"Капустин, с. 129; Stoffel, 2017"},
+ {t:"Объём и стенка", q:"Толщина стенки пузыря 6 мм измерена при объёме 60 мл. Ваша оценка?",
+  o:["Диффузное утолщение стенки, признак цистита","Признак инфравезикальной обструкции","Утолщение, требующее цистоскопии","Измерение неинформативно: пузырь недостаточно наполнен"], a:3,
+  e:"Спавшийся пузырь всегда выглядит толстостенным. В норме стенка заполненного пузыря не более 3 мм, опорожнённого — не более 5 мм. Измеряют при объёме не менее 150 мл и указывают объём в протоколе.", s:"Капустин, с. 126; Фулхэм, с. 183–184"},
+ {t:"Объём и стенка", q:"Внутрипузырное выбухание простаты (IPP) 12 мм при объёме пузыря 150 мл. Какая это степень?",
+  o:["I степень","II степень","III степень","Норма"], a:2,
+  e:"I степень — менее 5 мм, II — 5–10 мм, III — более 10 мм. IPP измеряют в сагиттальной плоскости перпендикулярно линии основания пузыря; показатель коррелирует с инфравезикальной обструкцией.", s:"Chia, 2003; Фулхэм, с. 190–191"},
+ {t:"Норма", q:"Как выглядит неизменённый юкставезикальный отдел мочеточника при хорошо наполненном пузыре?",
+  o:["Постоянно открытая трубка диаметром 6–7 мм","Щелевидная структура, раскрывающаяся при болюсе до 2–4 мм","Не визуализируется никогда","Гиперэхогенный тяж без просвета"], a:1,
+  e:"Мочеточник расширен, если стенки стойко не смыкаются, а внутренний диаметр превышает 5 мм. Диаметр оценивают в динамике: на отдельном кадре болюс может имитировать расширение.", s:"Капустин, с. 102, 106; Глазун, с. 86"},
+ {t:"Камни", q:"Выявлен камень нижней трети мочеточника; мочеточник расширен и ниже камня. Что это означает?",
+  o:["Это типичная картина, дообследование не нужно","Камень, вероятно, уже отошёл в пузырь","Мочеточник ниже камня всегда расширен при колике","Нужно искать дополнительную причину обструкции дистальнее"], a:3,
+  e:"Обычно мочеточник расширен выше камня, и его диаметр не превышает поперечного размера конкремента. Расширение ниже камня наводит на мысль о стриктуре, уретероцеле или другой причине.", s:"Капустин, с. 107–108"},
+ {t:"Камни", q:"В малом тазу видна гиперэхогенная структура 5 мм с тенью. Какой признак главный в разграничении камня мочеточника и флеболита?",
+  o:["Эхогенность: флеболит всегда менее яркий","Форма: камень всегда угловатый, флеболит округлый","Отношение к мочеточнику: камень в его просвете, выше — дилатация","Наличие акустической тени"], a:2,
+  e:"По эхоструктуре флеболит неотличим от камня. Флеболит лежит вне хода мочеточника, по ходу тазовых вен. При сомнении выполняют нативную КТ.", s:"Капустин, с. 110, рис. 4.28"},
+ {t:"Камни", q:"Какое утверждение о twinkling-артефакте верно?",
+  o:["Он вспомогательный: ложноположительно бывает при кальцинатах стенки, газе, стенте","Он доказывает камень и заменяет поиск акустической тени","Он возникает только за мягкотканными образованиями с кровотоком","Он лучше виден при низкой шкале скоростей и максимальном фильтре"], a:0,
+  e:"Артефакт возникает на шероховатой поверхности и особенно полезен, когда тень слабая. Его выявляют при высокой шкале скоростей, фокус ставят ниже камня.", s:"Руководство, разделы 3.2 и 3.5"},
+ {t:"Мегауретер", q:"Какой ретровезикальный диаметр мочеточника у ребёнка считают критерием мегауретера?",
+  o:["3 мм и более","5 мм и более","7 мм и более","12 мм и более"], a:2,
+  e:"В пользу органического расширения у детей говорят также диаметр 10 мм и более, отсутствие перистальтики, истончение паренхимы до 5 мм и менее и изменённое направление выбросов.", s:"Руководство, раздел 5.3; Глазун, с. 107"},
+ {t:"Мегауретер", q:"Мальчик 2 месяцев: двусторонний мегауретер, толстостенный трабекулярный пузырь, расширенная задняя уретра. Что заподозрить?",
+  o:["Первичный обструктивный мегауретер с двух сторон","Клапан задней уретры","Двустороннее уретероцеле","Физиологическую дилатацию новорождённого"], a:1,
+  e:"При первичном обструктивном мегауретере пузырь и уретра нормальные. Изменения пузыря и задней уретры указывают на инфравезикальную причину — вторичный мегауретер.", s:"Капустин, с. 117; руководство, раздел 5.3"},
+ {t:"Аномалии", q:"Полное удвоение почки и мочеточника. Где открывается устье мочеточника верхнего сегмента по правилу Вейгерта–Мейера?",
+  o:["Ниже и медиальнее; часто эктопия или уретероцеле с обструкцией","Выше и латеральнее; характерен рефлюкс","В типичном месте, рядом с устьем нижнего сегмента","Всегда в верхушке пузыря"], a:0,
+  e:"Мочеточник нижнего сегмента открывается выше и латеральнее и склонен к ПМР. Поэтому верхний сегмент чаще обструктивно расширен, а нижний — рефлюксирует.", s:"Руководство, раздел 5.4"},
+ {t:"Аномалии", q:"Девочка 5 лет: нормальное мочеиспускание, но постоянное подтекание мочи между мочеиспусканиями. Что искать при УЗИ?",
+  o:["Дивертикул пузыря","Нейрогенный атонический пузырь","Эктопию устья мочеточника, обычно верхнего сегмента удвоенной почки","Камень интрамурального отдела"], a:2,
+  e:"У девочек эктопическое устье может открываться дистальнее сфинктера — в уретру, преддверие или влагалище. У мальчиков эктопия всегда проксимальнее наружного сфинктера, поэтому недержания нет.", s:"Руководство, раздел 5.4"},
+ {t:"Аномалии", q:"При переполненном мочевом пузыре уретероцеле не видно. Почему и что делать?",
+  o:["Уретероцеле спадается только после лечения; повторный осмотр не нужен","Пузырь сдавливает уретероцеле; осмотреть устья при умеренном наполнении и после частичного мочеиспускания","Уретероцеле видно только на пустом пузыре — осмотреть после полного мочеиспускания","Уретероцеле выявляется только при КТ-урографии, УЗИ малоинформативно"], a:1,
+  e:"Размер уретероцеле меняется с фазой уродинамики. Найти устье на его вершине или у основания помогают выбросы при ЦДК.", s:"Капустин, с. 118; руководство, раздел 5.4"},
+ {t:"ПМР", q:"У ребёнка с рецидивирующим пиелонефритом при УЗИ почки и мочеточники не расширены. Какой вывод верен?",
+  o:["Пузырно-мочеточниковый рефлюкс исключён","Можно исключить рефлюкс выше II степени","Нормальное УЗИ не исключает ПМР; стандарт — МЦУГ или контрастная уросонография","Нужно повторить УЗИ на пустом пузыре"], a:2,
+  e:"При ПМР III–IV степени почки могут выглядеть нормальными. Точность УЗИ в диагностике ПМР — 60–70%.", s:"Фулхэм, с. 262; Глазун, с. 110"},
+ {t:"Беременность", q:"Беременная, III триместр: справа расширены ЧЛС и мочеточник до уровня подвздошных сосудов, ниже мочеточник нормального диаметра. Это скорее:",
+  o:["Камень юкставезикального отдела","Физиологическая дилатация от сдавления маткой","Пузырно-мочеточниковый рефлюкс","Опухоль мочеточника"], a:1,
+  e:"Физиологическое расширение встречается у 90% беременных в III триместре, в 80–90% справа. Расширение мочеточника ниже пограничной линии таза, до уровня камня, говорит об обструкции.", s:"Капустин, с. 120; Фулхэм, с. 273"},
+ {t:"Образования", q:"По задней стенке пузыря несмещаемое образование 15 мм с кровотоком в ножке при ЦДК. Какая формулировка заключения корректна?",
+  o:["Рак мочевого пузыря T1","Папиллома мочевого пузыря","Сгусток крови","Пристеночное образование задней стенки с кровотоком — требует исключения опухоли"], a:3,
+  e:"УЗ-заключение описывает признаки, а не морфологический диагноз. Стадию и мышечную инвазию оценивают по МРТ (VI-RADS) и после ТУР. При гематурии УЗИ не заменяет цистоскопию.", s:"Руководство, разделы 6.3 и 7.2"},
+ {t:"Образования", q:"В области шейки у мужчины видно образование, выступающее в просвет пузыря. Какой срез помогает отличить среднюю долю простаты от опухоли?",
+  o:["Сагиттальный — видна непрерывность с паренхимой простаты","Только поперечный срез","Косой срез по ходу мочеточника","Срез значения не имеет, нужна только ЦДК"], a:0,
+  e:"При осмотре только в поперечном срезе средняя доля может выглядеть как отдельное образование. Кровоток в ней — продолжение кровотока простаты.", s:"Руководство, табл. 18 и 21; Фулхэм, рис. 8.21"},
+ {t:"Урахус", q:"У взрослого по средней линии над верхушкой пузыря образование с солидным компонентом, кальцинатами и кровотоком. О чём подумать?",
+  o:["Об инволютивном остатке урахуса — варианте нормы","Об аденокарциноме урахуса; нужны МРТ/КТ и онкоуролог","О неосложнённой кисте урахуса","О дивертикуле пузыря"], a:1,
+  e:"Остаток урахуса — овоидное утолщение стенки у верхушки без кровотока. Киста урахуса анэхогенная, с задним усилением.", s:"Капустин, с. 126, 132–133; руководство, раздел 6.6"},
+ {t:"Шейка пузыря", q:"У женщины со стрессовым недержанием при натуживании: пубоуретральный угол 110°, задний уретровезикальный угол 160°, воронка шейки. Как оценить?",
+  o:["Норма: углы при натуживании всегда увеличиваются","Признаки нейрогенного спастического пузыря","Признак только цистоцеле, к недержанию не относится","Признаки гипермобильности шейки, характерные для стрессового недержания"], a:3,
+  e:"В норме пубоуретральный угол около 45°, задний уретровезикальный — 90–100°. При стрессовом недержании пубоуретральный угол превышает 90°, задний уретровезикальный — 150°.", s:"Капустин, с. 128–129; Фулхэм, с. 197"}
+];
+const TITLE="УЗИ мочеточников и мочевого пузыря";
+// Автоотправка результата преподавателю в Telegram
+const TG_TOKEN="proxy", TG_CHAT="188183172"; const TG_PROXY="https://script.google.com/macros/s/AKfycbznrtw3Wd7QBRhQaMlrCIp86oLemxjc_LlaIVomj-9rcXiyMYpmP_OCtc8u4lgQbaXKpg/exec";
+const tgOn = !TG_TOKEN.startsWith("__") && !TG_CHAT.startsWith("__");
+function attemptNo(){ try{ const k="acad-uzmp-attempts"; const n=(+localStorage.getItem(k)||0)+1; localStorage.setItem(k,n); return n; }catch(e){ return null; } }
+// Несколько способов доставки: страница по ссылке может блокировать часть запросов
+let cspBlocked=false;
+document.addEventListener("securitypolicyviolation",e=>{ if(String(e.blockedURI||"").includes("script.google")) cspBlocked=true; });
+const tgURL=text=>`${TG_PROXY}?`+new URLSearchParams({chat_id:TG_CHAT, text, _:Date.now()+"-"+Math.random().toString(36).slice(2)});
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function sendToTeacher(text){
+  if(!tgOn) return "off";
+  try{
+    await fetch(`${TG_PROXY}`, {method:"POST", mode:"no-cors", body:new URLSearchParams({chat_id:TG_CHAT, text})});
+    sendWay=1; return "sent";
+  }catch(e){}
+  return "fail";
+}
+const L=["А","Б","В","Г"];
+const ans=Array(Q.length).fill(null); let cur=0; let reportText=null;
+const LIMIT=20*60*1000; let startAt=null, endAt=null, finished=false, timedOut=false, tick=null;
+const fmt=ms=>{const t=Math.max(0,Math.ceil(ms/1000)); return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0");};
+const $=id=>document.getElementById(id);
+function startTimer(){ startAt=Date.now(); tick=setInterval(updateClock,250); updateClock(); }
+function stopTimer(){ if(tick){clearInterval(tick); tick=null;} endAt=endAt||Date.now(); }
+function updateClock(){
+  const el=$("timer"), left = startAt===null ? LIMIT : LIMIT-((endAt||Date.now())-startAt);
+  $("clock").textContent=fmt(left);
+  $("tnote").textContent = startAt===null ? "старт с первым ответом" : finished ? (timedOut?"время вышло":"тест завершён") : "осталось";
+  el.classList.toggle("warn", !finished && startAt!==null && left<=2*60*1000);
+  el.classList.toggle("stop", finished);
+  if(!finished && startAt!==null && left<=0){ timedOut=true; showResult(); }
+}
+function grade(p){ if(p>=90) return ["Отлично",0]; if(p>=75) return ["Хорошо",1]; if(p>=60) return ["Удовлетворительно",2]; return ["Неудовлетворительно",3]; }
+function stats(){ const done=ans.filter(v=>v!==null).length, ok=ans.filter((v,i)=>v===Q[i].a).length; return {done,ok}; }
+function renderQ(){
+  const x=Q[cur], v=ans[cur], answered=v!==null;
+  const c=$("qcard"); c.innerHTML="";
+  const meta=document.createElement("div"); meta.className="qmeta";
+  meta.innerHTML=`<span class="tag">${x.t}</span><span>Вопрос ${cur+1} из ${Q.length}</span>`;
+  const h=document.createElement("p"); h.className="qtext"; h.textContent=x.q;
+  const ul=document.createElement("ul"); ul.className="opts";
+  x.o.forEach((o,i)=>{ const li=document.createElement("li"); const b=document.createElement("button"); b.type="button"; b.className="opt"; b.id=`opt-${cur}-${i}`;
+    b.innerHTML=`<span class="letter">${L[i]}</span><span></span>`; b.lastChild.textContent=o;
+    if(answered || finished){ b.disabled=true; if(i===x.a) b.classList.add("correct"); else if(i===v) b.classList.add("wrong"); }
+    b.addEventListener("click",()=>choose(i)); li.appendChild(b); ul.appendChild(li); });
+  c.append(meta,h,ul);
+  if(answered){ const fb=document.createElement("div"); fb.className="fb"; const ok=v===x.a;
+    fb.innerHTML=`<span class="verdict ${ok?"ok":"bad"}">${ok?"Верно.":"Неверно. Правильный ответ — "+L[x.a]+"."}</span><span></span><span class="src"></span>`;
+    fb.children[1].textContent=x.e; fb.children[2].textContent="Источник: "+x.s; c.appendChild(fb); }
+  const nav=document.createElement("div"); nav.className="nav";
+  nav.innerHTML=`<button class="btn" type="button" id="prev">← Назад</button><button class="btn primary" type="button" id="next">${cur===Q.length-1?"К результату":"Далее →"}</button>`;
+  c.appendChild(nav);
+  $("prev").disabled=cur===0; $("prev").onclick=()=>go(cur-1);
+  $("next").onclick=()=> cur===Q.length-1? showResult(): go(cur+1);
+  renderMap();
+}
+function fioOk(){ const v=$("fio").value.trim().replace(/\s+/g," "); return v.split(" ").length>=2 && /^[A-Za-zА-Яа-яЁёӨөҮүҢң'\- ]+$/.test(v) ? v : null; }
+function choose(i){ if(finished || ans[cur]!==null) return;
+  if(!fioOk()){ const h=$("fiohint"); h.textContent="Сначала введите ФИО полностью — хотя бы фамилию и имя, буквами."; h.classList.add("err"); $("fio").focus(); return; }
+  if(startAt===null){ startTimer(); $("fio").value=fioOk(); $("fio").readOnly=true; const h=$("fiohint"); h.classList.remove("err"); h.textContent="ФИО зафиксировано до конца попытки."; }
+  ans[cur]=i; renderQ(); }
+$("fio").addEventListener("input",()=>{ const h=$("fiohint"); if(h.classList.contains("err") && fioOk()){ h.classList.remove("err"); h.textContent="ФИО принято. Можно отвечать."; } });
+const SALT="sono-ureter-bladder-30";
+function hash(str){ let h=0x811c9dc5; for(const ch of str){ h^=ch.codePointAt(0); h=Math.imul(h,0x01000193)>>>0; } let h2=0x9e3779b9; for(const ch of (str+SALT)){ h2^=ch.codePointAt(0); h2=Math.imul(h2,0x85ebca6b)>>>0; }
+  const a=h.toString(36).toUpperCase().padStart(7,"0").slice(-4), b=h2.toString(36).toUpperCase().padStart(7,"0").slice(-4); return a+"-"+b; }
+const body=t=>t.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).filter(x=>!x.startsWith("Код проверки:")).join("\n");
+function stamp(d){ const z=n=>String(n).padStart(2,"0"); return `${z(d.getDate())}.${z(d.getMonth()+1)}.${d.getFullYear()} ${z(d.getHours())}:${z(d.getMinutes())}`; }
+let sendState=null, sendWay=0;
+function showSend(){ const el=document.getElementById("autosend"); if(!el) return;
+  if(sendState==="pending"){ el.className="hint"; el.textContent="Отправляем результат преподавателю…"; }
+  else if(sendState==="sent"){ el.className="ok-msg"; el.textContent="Результат отправлен преподавателю. Если преподаватель его не получил, нажмите «Отправить через Telegram»."; }
+  else if(sendState==="fail"){ el.className="bad-msg"; el.textContent="На этой странице автоматическая отправка недоступна. Нажмите «Отправить через Telegram» и выберите чат преподавателя (или скопируйте отчёт)."; }
+  else el.textContent=""; }
+let downloads=null; (async()=>{ try{ downloads = window.claude && await window.claude.use("downloads"); }catch(e){ downloads=null; } const b=document.getElementById("dl"); if(b) b.hidden=!downloads; })();
+function go(i){ if(i<0||i>=Q.length) return; cur=i; $("result").hidden=true; $("qcard").hidden=false; renderQ(); }
+function renderMap(){
+  const m=$("map"); m.innerHTML="";
+  Q.forEach((x,i)=>{ const b=document.createElement("button"); b.type="button"; b.className="cell"; b.textContent=i+1; b.id=`cell-${i}`;
+    b.setAttribute("aria-label",`Вопрос ${i+1}`);
+    if(ans[i]!==null) b.classList.add(ans[i]===x.a?"ok":"bad"); if(i===cur && !$("qcard").hidden) b.classList.add("cur");
+    b.onclick=()=>go(i); m.appendChild(b); });
+  const {done,ok}=stats(); $("fill").style.width=(done/Q.length*100)+"%";
+  $("stat").textContent=`${done} / ${Q.length} отвечено · верно ${ok}`;
+}
+function showResult(){
+  if(!finished){ finished=true; stopTimer(); } updateClock();
+  const used = startAt===null ? 0 : Math.min(LIMIT,(endAt||Date.now())-startAt);
+  const {done,ok}=stats(), p=Math.round(ok/Q.length*100), [g,gi]=grade(p);
+  const r=$("result"); const wrong=Q.map((x,i)=>i).filter(i=>ans[i]!==Q[i].a);
+  const rows=[["Отлично","90–100%"],["Хорошо","75–89%"],["Удовлетворительно","60–74%"],["Неудовлетворительно","менее 60%"]];
+  r.innerHTML=`<h2>Результат</h2>${timedOut?`<p class="notice">Время вышло — тест завершён автоматически.</p>`:""}<div class="score"><span class="big">${ok}/${Q.length}</span><span class="grade">${p}% · ${g}</span></div><p class="stat">Затрачено времени: ${fmt(used)} из 20:00</p>
+    ${done<Q.length?`<p class="sub">Без ответа осталось вопросов: ${Q.length-done}. Они засчитаны как неверные.</p>`:""}
+    <table class="scale"><tbody>${rows.map((rw,i)=>`<tr class="${i===gi?"me":""}"><td>${rw[0]}</td><td>${rw[1]}</td></tr>`).join("")}</tbody></table>
+    <h2>Отправка результата</h2>
+    <p id="autosend" role="status"></p>
+    <p class="hint">${tgOn?"Копия отчёта — на случай, если преподаватель попросит прислать его вручную.":"Скопируйте отчёт и отправьте его преподавателю в Telegram или WhatsApp."} Не редактируйте текст — иначе код проверки не совпадёт.</p>
+    <textarea class="report" id="report" readonly spellcheck="false"></textarea>
+    <div class="actions"><button class="btn primary" id="copy" type="button">Скопировать отчёт</button>${tgOn?`<button class="btn" id="resend" type="button">Отправить ещё раз</button>`:""}<button class="btn" id="share" type="button">Отправить через Telegram</button><button class="btn" id="dl" type="button" ${downloads?"":"hidden"}>Скачать файл</button><span id="sendmsg" role="status"></span></div>
+    ${wrong.length?`<h2>Повторить</h2><ol class="wrongs">${wrong.map(i=>`<li><button type="button" data-i="${i}">Вопрос ${i+1}: ${Q[i].t.toLowerCase()}</button></li>`).join("")}</ol>`:"<p>Все ответы верны.</p>"}`;
+  r.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>go(+b.dataset.i));
+  if(!reportText){ const lines=[`Тест «${TITLE}» — результат`, `ФИО: ${fioOk()||"не указано"}`, `Дата: ${stamp(new Date(endAt||Date.now()))}`,
+      `Результат: ${ok} из ${Q.length} (${p}%) — ${g}`, `Время: ${fmt(used)} из 20:00${timedOut?" (время вышло)":""}`,
+      `Без ответа: ${Q.length-done}`, `Ошибки в вопросах: ${wrong.length?wrong.map(i=>i+1).join(", "):"нет"}`];
+    const att=attemptNo(); if(att) lines.splice(3,0,`Попытка на этом устройстве: ${att}`);
+    reportText = lines.join("\n")+"\nКод проверки: "+hash(body(lines.join("\n")));
+    sendState="pending";
+    sendToTeacher(reportText).then(st=>{ sendState=st; showSend(); }); }
+  $("report").value=reportText; showSend();
+  const msg=t=>{ const m=$("sendmsg"); m.textContent=t; m.className="ok-msg"; };
+  $("copy").onclick=()=>{ const ta=$("report"); try{ navigator.clipboard.writeText(reportText).then(()=>msg("Скопировано. Вставьте в чат с преподавателем."),()=>{ ta.focus(); ta.select(); msg("Текст выделен — нажмите Ctrl+C (или «Копировать»)."); }); }catch(e){ ta.focus(); ta.select(); msg("Текст выделен — нажмите Ctrl+C (или «Копировать»)."); } };
+  if($("resend")) $("resend").onclick=()=>{ sendState="pending"; showSend(); sendToTeacher(reportText+"\n(повторная отправка)").then(st=>{ sendState=st; showSend(); }); };
+  $("share").onclick=()=>{ window.open("https://t.me/share/url?url="+encodeURIComponent(" ")+"&text="+encodeURIComponent(reportText),"_blank","noopener"); };
+  $("dl").onclick=async()=>{ if(!downloads) return; const name="УЗИ_мочеточников_МП_"+(fioOk()||"курсант").replace(/[^A-Za-zА-Яа-яЁёӨөҮүҢң0-9]+/g,"_")+".txt";
+    try{ const res=await downloads.save({filename:name, data:reportText}); msg(res.status==="saved"?"Файл сохранён.":"Файл передан."); }
+    catch(e){ const m=$("sendmsg"); m.className="bad-msg"; m.textContent = e&&e.code==="declined" ? "Сохранение отменено." : "Скачать не удалось — скопируйте отчёт."; } };
+  $("qcard").hidden=true; r.hidden=false; renderMap(); r.scrollIntoView({block:"start"});
+}
+$("finish").onclick=showResult;
+$("restart").onclick=()=>{ ans.fill(null); stopTimer(); startAt=null; endAt=null; finished=false; timedOut=false; reportText=null; sendState=null; $("fio").readOnly=false; const h=$("fiohint"); h.classList.remove("err"); h.textContent="Введите фамилию, имя и отчество. Без ФИО ответы не принимаются; после первого ответа ФИО изменить нельзя."; updateClock(); go(0); window.scrollTo(0,0); };
+$("vbtn").onclick=()=>{ const t=$("vin").value, o=$("vout"); const m=t.match(/Код проверки:\s*([0-9A-Z]{4}-[0-9A-Z]{4})/);
+  if(!m){ o.className="bad-msg"; o.textContent="В тексте нет строки «Код проверки»."; return; }
+  const good = hash(body(t))===m[1]; o.className=good?"ok-msg":"bad-msg"; o.textContent= good ? "Код верный: отчёт не изменён." : "Код не совпадает: текст отчёта изменён."; };
+document.addEventListener("keydown",e=>{
+  if(e.target.closest && e.target.closest("input,textarea")) return;
+  if($("qcard").hidden) return;
+  if(["1","2","3","4"].includes(e.key)) choose(+e.key-1);
+  else if(e.key==="ArrowRight") go(cur+1); else if(e.key==="ArrowLeft") go(cur-1);
+});
+renderQ();
+</script>
+<script src="offline.js"></script>
+</body>
+</html>

@@ -1,0 +1,750 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Мультик-учебник: как устроен компьютер — процессор, оперативка, накопители, видеокарта, BIOS, разгон и сборка.">
+<title>Кухня внутри ПК</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: comic-strip player (stage + speech bubble) beside a study column; stacks on phones */
+:root{
+  --paper:#F4F7F1; --card:#FFFFFF; --ink:#1D2939; --muted:#5B6878; --line:#DCE3D8;
+  --wall:#E6F0FA; --wall2:#D5E4F3;
+  --stroke:#1D2939; --eye:#1D2939; --hat:#FFFFFF;
+  --yel:#FFC43D; --yel2:#F2A922; --grn:#2E9D68; --mint:#7ED9B0; --gold:#E7B422; --chip:#2A2F38;
+  --blue:#4A8BF5; --blue2:#A9C8FF; --coral:#FF6B57; --red:#E5484D; --wood:#C98B50; --wood2:#B07540;
+  --gray:#8D99A8; --scr:#DDE7F3; --night:#0B1020;
+  --ok:#1F8A57; --okbg:#E1F5EA; --bad:#C9353B; --badbg:#FDE8E8;
+  --f-disp:"Comfortaa","Nunito",system-ui,sans-serif;
+  --f-body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"Cascadia Mono",monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#11161F; --card:#19212D; --ink:#E6ECF4; --muted:#9AA7B6; --line:#2A3443;
+  --wall:#18222F; --wall2:#202D3E; --stroke:#C3CDD9; --hat:#F3F5F8; --chip:#0C0F14;
+  --grn:#2B8F5F; --gray:#6E7A89; --scr:#26364A; --wood:#A8713F; --wood2:#8C5D33; --night:#000000;
+  --ok:#5BD29A; --okbg:#173326; --bad:#FF8A8F; --badbg:#3A1C20; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#11161F; --card:#19212D; --ink:#E6ECF4; --muted:#9AA7B6; --line:#2A3443;
+  --wall:#18222F; --wall2:#202D3E; --stroke:#C3CDD9; --hat:#F3F5F8; --chip:#0C0F14;
+  --grn:#2B8F5F; --gray:#6E7A89; --scr:#26364A; --wood:#A8713F; --wood2:#8C5D33; --night:#000000;
+  --ok:#5BD29A; --okbg:#173326; --bad:#FF8A8F; --badbg:#3A1C20; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+[hidden]{display:none!important}
+.wrap{max-width:1160px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--f-disp);text-wrap:balance;margin:0;line-height:1.2}
+.top{display:grid;grid-template-columns:1fr auto;gap:8px 24px;align-items:end}
+.eyebrow{margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800}
+h1{font-size:clamp(28px,5vw,44px);font-weight:700}
+.lede{margin:0;color:var(--muted);max-width:60ch;grid-column:1}
+.progress{grid-column:2;grid-row:1/4;min-width:180px;display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);font-weight:700}
+.progress .bar{height:10px;border-radius:6px;background:var(--line);overflow:hidden;border:1.5px solid var(--stroke)}
+.progress .bar i{display:block;height:100%;background:var(--grn);width:0;transition:width .5s}
+@media (max-width:640px){.top{grid-template-columns:1fr}.progress{grid-column:1;grid-row:auto}}
+
+.eps{display:flex;gap:8px;overflow-x:auto;padding:4px 4px 10px;scrollbar-width:thin}
+.chip{flex:0 0 auto;display:flex;align-items:center;gap:8px;border:2px solid var(--stroke);background:var(--card);color:var(--ink);
+  border-radius:999px;padding:6px 14px 6px 6px;font:700 14px/1.2 var(--f-body);cursor:pointer;box-shadow:2px 2px 0 var(--stroke);transition:transform .15s}
+.chip:hover{transform:translateY(-1px)}
+.chip .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--wall2);font-family:var(--f-mono);font-size:13px}
+.chip.cur{background:var(--yel);color:#1D2939}
+.chip.cur .n{background:#fff}
+.chip.done .n{background:var(--grn);color:#fff}
+.chip.done .n::after{content:"✓"}
+.chip.done .n span{display:none}
+.chip:focus-visible,button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.player{display:flex;flex-direction:column;gap:14px;min-width:0}
+@media (min-width:901px){.player{position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}}
+.ephead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.epnum{font-family:var(--f-mono);font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.04em}
+h2{font-size:clamp(20px,3vw,26px)}
+.stage{border:3px solid var(--stroke);border-radius:18px;box-shadow:5px 5px 0 var(--stroke);overflow:hidden;
+  background-color:var(--wall);background-image:linear-gradient(var(--wall2) 1px,transparent 1px),linear-gradient(90deg,var(--wall2) 1px,transparent 1px);background-size:22px 22px}
+.stage svg{display:block;width:100%;height:auto}
+.sub{position:relative;background:var(--card);border:2.5px solid var(--stroke);border-radius:16px;padding:14px 18px;min-height:96px;box-shadow:3px 3px 0 var(--stroke)}
+.sub::before{content:"";position:absolute;left:34px;top:-12px;width:18px;height:18px;background:var(--card);border-left:2.5px solid var(--stroke);border-top:2.5px solid var(--stroke);transform:rotate(45deg)}
+.sub p{margin:0;font-size:17px;font-weight:600;max-width:65ch}
+.sub b{font-weight:800;color:var(--grn)}
+.controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.btn{border:2px solid var(--stroke);background:var(--card);color:var(--ink);border-radius:12px;padding:9px 16px;font:800 15px/1 var(--f-body);cursor:pointer;box-shadow:2px 2px 0 var(--stroke)}
+.btn:active{transform:translate(2px,2px);box-shadow:none}
+.btn:disabled{opacity:.4;cursor:default;box-shadow:none}
+.btn.primary{background:var(--grn);color:#fff}
+.btn.on{background:var(--yel);color:#1D2939}
+.dots{display:flex;gap:6px;flex:1;justify-content:center;min-width:60px}
+.dots i{width:10px;height:10px;border-radius:50%;border:2px solid var(--stroke);background:transparent}
+.dots i.cur{background:var(--yel)}
+.dots i.seen{background:var(--stroke)}
+
+.learn{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:18px 20px}
+.card h3{font-size:18px;margin-bottom:10px}
+.remember{border:2px dashed var(--grn)}
+.remember ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.remember li{font-weight:700}
+.deep p,.deep li{color:var(--ink);font-size:15px}
+.deep p{margin:0 0 10px}
+.deep ul{margin:0 0 10px;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+.deep code,.mono{font-family:var(--f-mono);font-size:.9em;background:var(--wall);padding:1px 5px;border-radius:5px}
+.tbl{overflow-x:auto;margin:6px 0 10px}
+.tbl table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tbl td:nth-child(n+2){font-family:var(--f-mono);font-size:13px}
+.q{display:flex;flex-direction:column;gap:8px;padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--line)}
+.q:last-of-type{border-bottom:0;margin-bottom:6px}
+.q p{margin:0;font-weight:800}
+.opt{text-align:left;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:10px;padding:9px 12px;font:600 15px/1.35 var(--f-body);cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--stroke)}
+.opt:disabled{cursor:default}
+.opt.right{background:var(--okbg);border-color:var(--ok);color:var(--ink)}
+.opt.wrong{background:var(--badbg);border-color:var(--bad)}
+.why{font-size:14px;margin:0;color:var(--muted)}
+.why b{color:var(--ok)}
+.why.no b{color:var(--bad)}
+.qfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-weight:700;font-size:14px;color:var(--muted)}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;font:600 13px var(--f-body);cursor:pointer;padding:0}
+.nextep{align-self:flex-start}
+
+/* SVG cartoon */
+.o{stroke:var(--stroke);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.o1{stroke:var(--stroke);stroke-width:1.4;stroke-linejoin:round;stroke-linecap:round}
+.nf{fill:none}
+.f-yel{fill:var(--yel)}.f-yel2{fill:var(--yel2)}.f-grn{fill:var(--grn)}.f-mint{fill:var(--mint)}.f-gold{fill:var(--gold)}
+.f-chip{fill:var(--chip)}.f-hat{fill:var(--hat)}.f-eye{fill:var(--eye)}.f-coral{fill:var(--coral)}.f-blue{fill:var(--blue)}
+.f-blue2{fill:var(--blue2)}.f-wood{fill:var(--wood)}.f-wood2{fill:var(--wood2)}.f-gray{fill:var(--gray)}.f-card{fill:var(--card)}
+.f-line{fill:var(--line)}.f-red{fill:var(--red)}.f-paper{fill:var(--paper)}.f-scr{fill:var(--scr)}.f-night{fill:var(--night)}.f-wall{fill:var(--wall)}
+.t{font-family:var(--f-body);font-weight:800;fill:var(--ink);font-size:10px;text-anchor:middle}
+.tm{font-family:var(--f-mono);font-weight:700}
+.td{font-family:var(--f-disp);font-weight:700}
+.tl{text-anchor:start}.te{text-anchor:end}
+.tw{fill:#fff}.tk{fill:var(--eye)}.tr{fill:var(--red)}
+.tchip{font-family:var(--f-mono);font-size:8px;font-weight:700;fill:var(--eye);text-anchor:middle}
+.lab{paint-order:stroke;stroke:var(--wall);stroke-width:3.5px;stroke-linejoin:round}
+.trace{fill:none;stroke:var(--gold);stroke-width:1.6;opacity:.85}
+.wire{fill:none;stroke:var(--coral);stroke-width:2.5;stroke-linecap:round}
+.air{fill:none;stroke:var(--blue);stroke-width:2;stroke-linecap:round}
+.road{fill:none;stroke:var(--gray);stroke-width:9;stroke-linecap:round;opacity:.55}
+.heat{fill:none;stroke:var(--coral);stroke-width:2.5;stroke-linecap:round}
+.hl{fill:none;stroke:var(--coral);stroke-width:3}
+.hlline{fill:none;stroke:var(--coral);stroke-width:2;stroke-dasharray:3 3}
+.px{fill:var(--scr)}
+
+.actor{transition:opacity .35s}
+.dim .actor:not(.on){opacity:.2}
+.actor.on{transform-box:fill-box;transform-origin:50% 100%;animation:pop .7s ease-out}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.08)}100%{transform:scale(1)}}
+.spin{transform-box:fill-box;transform-origin:center;animation:spin 1.1s linear infinite}
+.slow{animation-duration:3s}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hand{transform-box:fill-box;transform-origin:50% 100%;animation:spin 2s linear infinite}
+.fast .hand{animation-duration:.25s}
+.blink{transform-box:fill-box;transform-origin:center;animation:blink 4.5s infinite}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+.armL,.armR{transform-box:fill-box;animation:stir 1.1s ease-in-out infinite alternate}
+.armL{transform-origin:100% 0}.armR{transform-origin:0 0}
+@keyframes stir{from{transform:rotate(-10deg)}to{transform:rotate(12deg)}}
+.fast .armL,.fast .armR{animation-duration:.13s}
+.mv{animation:mv var(--t,2.6s) ease-in-out infinite}
+@keyframes mv{0%,10%{transform:translate(0,0);opacity:1}60%,88%{transform:translate(var(--dx,0px),var(--dy,0px));opacity:1}100%{transform:translate(var(--dx,0px),var(--dy,0px));opacity:0}}
+.rise{animation:rise 2.4s ease-out infinite}
+@keyframes rise{0%{transform:translateY(0);opacity:0}15%{opacity:1}75%{opacity:1}100%{transform:translateY(-40px);opacity:0}}
+.pulse{animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+.bob{animation:bob 1s ease-in-out infinite alternate}
+@keyframes bob{to{transform:translateY(-5px)}}
+.swap #cpu{animation:run 2.8s ease-in-out infinite;--dx:-150px}
+@keyframes run{0%,100%{transform:translateX(0)}40%,60%{transform:translateX(var(--dx))}}
+.off .dc{transform-box:fill-box;transform-origin:center;animation:fall 1.1s .5s ease-in forwards}
+@keyframes fall{to{transform:translateY(46px) rotate(30deg);opacity:0}}
+.shade{animation:shade .8s forwards}
+@keyframes shade{from{opacity:0}to{opacity:.6}}
+.grow{transform-box:fill-box;transform-origin:0 50%;animation:grow 1.4s ease-out both}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.flow{stroke-dasharray:6 6;animation:dash .7s linear infinite}
+@keyframes dash{to{stroke-dashoffset:-24}}
+.seek{transform-box:fill-box;transform-origin:100% 100%;animation:seek .45s ease-in-out infinite alternate}
+@keyframes seek{from{transform:rotate(-9deg)}to{transform:rotate(11deg)}}
+.press{animation:press 1.4s ease-in-out infinite}
+@keyframes press{0%,30%,100%{transform:translateY(0)}45%,60%{transform:translateY(4px)}}
+.pxw{animation:pxw 2.4s ease-in-out infinite}
+@keyframes pxw{0%,100%{fill:var(--scr)}45%{fill:var(--blue)}60%{fill:var(--coral)}}
+.tok{fill:var(--ok)}
+.appear{animation:appear .5s both}
+@keyframes appear{from{opacity:0}to{opacity:1}}
+.needle{transform-box:fill-box;transform-origin:50% 100%;transform:rotate(-55deg);transition:transform .9s cubic-bezier(.3,1.4,.5,1)}
+.oc .needle{transform:rotate(28deg)}.volt .needle{transform:rotate(52deg)}.xmp .needle{transform:rotate(-50deg)}
+.crash .needle{animation:wob .25s ease-in-out infinite alternate}
+@keyframes wob{from{transform:rotate(68deg)}to{transform:rotate(86deg)}}
+.therm{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(.35);transition:transform .9s}
+.oc .therm{transform:scaleY(.6)}.volt .therm{transform:scaleY(.85)}.crash .therm{transform:scaleY(1)}.xmp .therm{transform:scaleY(.37)}
+@media (prefers-reduced-motion:reduce){svg *{animation:none!important}.actor{transition:none}}
+
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">Мультик-учебник · 12 серий</p>
+    <h1>Кухня внутри ПК</h1>
+    <p class="lede">Как устроен компьютер — от «что такое оперативка» до цифр на наклейке планки. Каждая деталь здесь — герой на кухне ресторана. Смотри кадры, читай «Взрослым словами», отвечай на вопросы.</p>
+    <div class="progress"><span id="prog">Пройдено 0 из 9</span><div class="bar"><i id="progbar"></i></div></div>
+  </header>
+
+  <nav class="eps" id="eps" aria-label="Серии"></nav>
+
+  <main class="grid">
+    <section class="player" aria-live="polite">
+      <div class="ephead"><span class="epnum" id="epnum"></span><h2 id="eptitle"></h2></div>
+      <div class="stage" id="stage"></div>
+      <div class="sub"><p id="subtext"></p></div>
+      <div class="controls">
+        <button class="btn" id="prev" type="button">Назад</button>
+        <div class="dots" id="dots"></div>
+        <button class="btn" id="play" type="button">Авто</button>
+        <button class="btn primary" id="next" type="button">Дальше</button>
+      </div>
+    </section>
+    <aside class="learn">
+      <section class="card remember"><h3>Запомни</h3><ul id="rem"></ul></section>
+      <section class="card deep"><h3>Взрослым словами</h3><div id="deep"></div></section>
+      <section class="card quiz"><h3>Проверь себя</h3><div id="quiz"></div></section>
+      <button class="btn primary nextep" id="nextep" type="button"></button>
+    </aside>
+  </main>
+</div>
+
+<script>
+/* ---------- drawing helpers ---------- */
+const W=(inner,a='')=>`<g ${a}>${inner}</g>`;
+const T=(x,y,s,c='',st='')=>`<text x="${x}" y="${y}" class="t ${c}"${st?` style="${st}"`:''}>${s}</text>`;
+const face=(cx,cy)=>`<g class="blink"><circle cx="${cx-8}" cy="${cy}" r="3" class="f-eye"/><circle cx="${cx+8}" cy="${cy}" r="3" class="f-eye"/></g><path d="M${cx-6} ${cy+7}q6 5 12 0" class="o nf"/><circle cx="${cx-14}" cy="${cy+6}" r="3" class="f-coral" opacity=".45"/><circle cx="${cx+14}" cy="${cy+6}" r="3" class="f-coral" opacity=".45"/>`;
+function chef(x,y,s=1,a=''){
+  let pins='';for(let i=0;i<4;i++){const p=8+i*11;pins+=`<path d="M-6 ${p}h6M50 ${p}h6" class="o"/>`}
+  return W(`<g transform="translate(${x} ${y}) scale(${s})">
+  <path d="M17 50v22M33 50v22M11 72h8M31 72h8" class="o nf"/>
+  <g class="armL"><path d="M2 26q-14 6-14 20" class="o nf"/><circle cx="-12" cy="48" r="4.5" class="f-hat o"/></g>
+  <g class="armR"><path d="M48 26q14 6 14 20" class="o nf"/><circle cx="62" cy="48" r="4.5" class="f-hat o"/></g>
+  ${pins}<rect width="50" height="50" rx="8" class="f-yel o"/>
+  <rect x="10" y="33" width="30" height="11" rx="2" class="f-yel2"/><text x="25" y="41.5" class="tchip">CPU</text>
+  ${face(25,18)}
+  <circle cx="13" cy="-9" r="8" class="f-hat o"/><circle cx="37" cy="-9" r="8" class="f-hat o"/><circle cx="25" cy="-14" r="10" class="f-hat o"/><rect x="8" y="-7" width="34" height="8" rx="2" class="f-hat o"/>
+  </g>`,a);
+}
+function desk(x,y,w,a='',lab=''){
+  let c='',k='';const n=Math.floor((w-6)/24);
+  for(let i=0;i<n;i++)c+=`<rect x="${6+i*24}" y="4" width="16" height="10" rx="1.5" class="f-chip"/>`;
+  for(let i=5;i<w-5;i+=5)k+=`<rect x="${i}" y="17" width="3" height="5" class="f-gold"/>`;
+  return W(`<g transform="translate(${x} ${y})"><path d="M8 20v30M${w-8} 20v30M4 50h8M${w-12} 50h8" class="o nf"/>${k}<rect width="${w}" height="18" rx="3" class="f-grn o"/>${c}${lab?T(w/2,34,lab,'lab'):''}</g>`,a);
+}
+const crateIn=(x,y,c)=>`<g transform="translate(${x} ${y})"><rect width="18" height="14" rx="2" class="${c} o"/><path d="M0 5h18M9 5v9" class="o1 nf"/></g>`;
+const crate=(x,y,c='f-coral',a='')=>W(crateIn(x,y,c),a);
+function cupboard(x,y,s=1,a='',lab=''){
+  return W(`<g transform="translate(${x} ${y}) scale(${s})"><rect width="70" height="100" rx="4" class="f-wood o"/><rect x="6" y="6" width="58" height="88" rx="2" class="f-wood2"/><path d="M6 36h58M6 66h58" class="o nf"/>
+  ${crateIn(10,22,'f-coral')}${crateIn(34,22,'f-blue')}${crateIn(12,52,'f-mint')}${crateIn(38,52,'f-yel')}${crateIn(16,80,'f-blue')}${crateIn(40,80,'f-coral')}
+  ${lab?T(35,-7,lab,'lab'):''}</g>`,a);
+}
+const fanIn=(cx,cy,r,cls='spin')=>`<g transform="translate(${cx} ${cy})"><circle r="${r}" class="f-card o"/><g class="${cls}">${[0,90,180,270].map(d=>`<ellipse cx="${(r*.45).toFixed(1)}" rx="${(r*.42).toFixed(1)}" ry="${(r*.17).toFixed(1)}" transform="rotate(${d})" class="f-blue2"/>`).join('')}</g><circle r="${(r*.22).toFixed(1)}" class="f-eye"/></g>`;
+function gpu(x,y,s=1,a='',lab=''){
+  return W(`<g transform="translate(${x} ${y}) scale(${s})">
+  <path d="M20 38v18M46 38v18M14 56h10M40 56h10" class="o nf"/>
+  <g class="armR"><path d="M64 18q8-2 9-10" class="o nf"/><circle cx="73" cy="6" r="3.5" class="f-coral o"/></g>
+  <rect x="-4" y="3" width="5" height="32" class="f-gray o1"/>
+  <rect width="66" height="38" rx="5" class="f-blue o"/>${fanIn(20,19,13)}
+  <g class="blink"><circle cx="41" cy="14" r="2.4" class="f-eye"/><circle cx="53" cy="14" r="2.4" class="f-eye"/></g><path d="M42 21q5 4 10 0" class="o nf"/>
+  <ellipse cx="47" cy="-2" rx="14" ry="5" class="f-coral o"/><circle cx="47" cy="-8" r="2.5" class="f-coral o"/>
+  <text x="49" y="33" class="tchip">GPU</text>${lab?T(33,-16,lab,'lab'):''}</g>`,a);
+}
+const psuIn=(x,y)=>`<g transform="translate(${x} ${y})"><rect width="52" height="34" rx="4" class="f-gray o"/><path d="M29 5l-10 13h8l-4 12 12-15h-8l5-10z" class="f-yel o1"/></g>`;
+const dot=(p,d,b='0s')=>`<circle r="2.6" class="f-gold"><animateMotion dur="${d}" begin="${b}" repeatCount="indefinite" path="${p}"/></circle>`;
+const floor=(a='id="mobo" class="actor"')=>W(`<rect x="-2" y="196" width="364" height="26" class="f-grn"/><path d="M118 203h80l6 6h158" class="trace"/><path d="M128 216h60l5-5h50M250 216h112" class="trace"/>${dot('M118 203h80l6 6h158','3.2s')}${dot('M128 216h60l5-5h50','2.2s','.8s')}${T(60,212,'Материнская плата','tw','font-size:9px')}`,a);
+const clock=(cx,cy,r)=>`<circle cx="${cx}" cy="${cy}" r="${r}" class="f-hat o"/><g class="hand"><path d="M${cx} ${cy}V${cy-r+5}" class="o"/></g><circle cx="${cx}" cy="${cy}" r="2.5" class="f-eye"/>`;
+function boss(x,y,s=1,a=''){return W(`<g transform="translate(${x} ${y}) scale(${s})"><path d="M13 40v20M27 40v20M8 60h8M24 60h8" class="o nf"/><g class="armL"><path d="M2 20q-10 4-10 16" class="o nf"/><circle cx="-8" cy="37" r="4" class="f-hat o"/></g><rect width="40" height="40" rx="6" class="f-mint o"/><circle cx="13" cy="15" r="5.5" class="f-hat o1"/><circle cx="27" cy="15" r="5.5" class="f-hat o1"/><path d="M18.5 15h3" class="o1"/><g class="blink"><circle cx="13" cy="15" r="2" class="f-eye"/><circle cx="27" cy="15" r="2" class="f-eye"/></g><path d="M15 25q5 4 10 0" class="o nf"/><text x="20" y="37" class="tchip">UEFI</text><rect x="38" y="12" width="22" height="28" rx="2" class="f-hat o"/><rect x="44" y="9" width="10" height="5" rx="1" class="f-gray o1"/><path d="M42 21h14M42 27h14M42 33h10" class="o1"/></g>`,a)}
+const arc=(cx,cy,r,a0,a1)=>{const p=a=>[cx+r*Math.sin(a*Math.PI/180),cy-r*Math.cos(a*Math.PI/180)].map(v=>v.toFixed(1)).join(' ');return `M${p(a0)}A${r} ${r} 0 0 1 ${p(a1)}`};
+const svgWrap=s=>`<svg viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Кадр мультика">${s}</svg>`;
+const B=s=>`<b>${s}</b>`;
+
+/* ---------- episodes ---------- */
+const EP=[
+{name:'Знакомство',title:'Кто живёт на кухне',
+scene:()=>
+ W(fanIn(42,40,17)+T(42,72,'Вентилятор','lab'),'id="fan" class="actor"')+
+ W(`<path d="M292 27H190q-8 0-8 8V196" class="wire flow"/>`+psuIn(292,10)+T(318,58,'Блок питания','lab'),'id="psu" class="actor"')+
+ cupboard(12,96,1,'id="stor" class="actor"','Накопитель')+
+ W(desk(96,146,110,'','')+crate(106,132,'f-coral')+crate(128,132,'f-blue')+crate(150,132,'f-mint')+T(151,124,'Оперативка','lab'),'id="ram" class="actor"')+
+ W(chef(222,118)+T(247,84,'Процессор','lab'),'id="cpu" class="actor"')+
+ W(gpu(284,140)+T(316,122,'Видеокарта','lab'),'id="gpu" class="actor"')+
+ floor(),
+frames:[
+ {t:`Представь: компьютер — это ${B('кухня ресторана')}. Здесь есть повар, художник, рабочий стол, кладовка и даже своя электростанция. Давай знакомиться!`},
+ {focus:['cpu'],t:`Это Повар — ${B('ПРОЦЕССОР')} (CPU). Он единственный, кто по-настоящему «готовит»: считает, сравнивает, решает. Всё, что делает компьютер, проходит через его руки.`},
+ {focus:['ram'],t:`Перед поваром — рабочий стол. Это ${B('ОПЕРАТИВНАЯ ПАМЯТЬ')} (RAM, «оперативка»). На столе лежит только то, с чем повар работает прямо сейчас: открытые программы, вкладки, документ.`},
+ {focus:['stor'],t:`Слева — кладовка. Это ${B('НАКОПИТЕЛЬ')}: SSD или жёсткий диск (HDD). Там хранится всё — Windows, программы, фото. Кладовка большая, но до неё дольше идти.`},
+ {focus:['gpu'],t:`Справа — Художник, ${B('ВИДЕОКАРТА')} (GPU). Повар говорит, что показать, а Художник рисует каждую картинку на экране.`},
+ {focus:['psu','fan','mobo'],t:`Наверху — электростанция, ${B('БЛОК ПИТАНИЯ')}: даёт ток всем. Вентилятор уносит жар. А пол, по которому бегают сигналы, — ${B('МАТЕРИНСКАЯ ПЛАТА')}: она соединяет всех со всеми.`}
+],
+remember:['Процессор (CPU) — повар: считает и решает','Оперативка (RAM) — стол: быстрая, но временная','Накопитель (SSD/HDD) — кладовка: хранит навсегда','Видеокарта (GPU) — художник: рисует изображение','Материнская плата — пол и дороги, блок питания — электростанция'],
+deep:`<p><b>Зачем столько разных памятей?</b> Не бывает памяти, которая одновременно очень быстрая, огромная, дешёвая и не забывает данные без тока. Поэтому инженеры делают «слоёный пирог»: чуть-чуть очень быстрой (кэш в процессоре), побольше быстрой (оперативка), очень много медленной, но постоянной (накопитель).</p>
+<p><b>Где аналогия хромает.</b> Настоящий процессор никуда не «ходит»: данные ему подносит контроллер памяти, который сидит внутри самого процессора. Повар скорее отдаёт приказы, а помощники бегают. Но главная идея верна: чем дальше лежит нужное, тем дольше ждать.</p>`,
+quiz:[
+ {q:'Кто на кухне-компьютере «думает» и считает?',a:['Оперативка','Процессор','Блок питания'],c:1,w:'Процессор выполняет все вычисления. Остальные детали хранят, подносят, рисуют или питают.'},
+ {q:'Где лежат твои фото, когда компьютер выключен?',a:['На столе — в оперативке','В кладовке — на SSD или HDD','У художника — в видеокарте'],c:1,w:'Только накопитель хранит данные без электричества.'}
+]},
+
+{name:'Повар-процессор',title:'Процессор: повар с миллиардом движений',
+scene:()=>
+ chef(150,95,1.4,'id="cpu" class="actor" data-tag="one"')+
+ [['2+3=5',112,92,0],['7 > 4',250,84,.6],['1+1=2',216,60,1.2],['×2',128,58,1.8]].map(n=>`<text x="${n[1]}" y="${n[2]}" class="t tm rise" data-tag="nums" style="font-size:12px;animation-delay:${n[3]}s">${n[0]}</text>`).join('')+
+ W(`<rect x="95" y="34" width="170" height="156" rx="14" class="f-yel2 o"/>`+chef(126,62,.55)+chef(204,62,.55)+chef(126,132,.55)+chef(204,132,.55)+T(180,24,'1 процессор = 4 ядра-повара','td','font-size:12px')+T(140,114,'ядро 1','tk','font-size:8px')+T(218,114,'ядро 2','tk','font-size:8px')+T(140,186,'ядро 3','tk','font-size:8px')+T(218,186,'ядро 4','tk','font-size:8px'),'data-tag="cores"')+
+ W(clock(58,64,24)+T(58,108,'4 ГГц','td','font-size:14px')+T(250,30,'4 000 000 000 тактов за секунду','tm','font-size:10px'),'data-tag="ghz"')+
+ W(`<rect x="160" y="140" width="50" height="20" rx="4" class="f-hat o"/>`+crateIn(165,144,'f-coral').replace('width="18" height="14"','width="10" height="9"')+`<rect x="180" y="145" width="10" height="9" rx="2" class="f-blue o1"/><rect x="194" y="145" width="10" height="9" rx="2" class="f-mint o1"/><path d="M160 150H122V130" class="hlline"/>`+T(78,124,'Карманы = кэш','td','font-size:12px')+T(78,140,'L1 · L2 · L3','tm','font-size:10px'),'data-tag="cache"'),
+frames:[
+ {show:['one','nums'],t:`Процессор умеет очень простые вещи: сложить два числа, сравнить, переложить. Хитрость — в ${B('скорости')}: он делает это миллиарды раз в секунду.`},
+ {show:['cores'],t:`Заглянем внутрь. В одном процессоре живут несколько поваров — это ${B('ЯДРА')}. 4 ядра — четыре повара готовят разные блюда одновременно.`},
+ {show:['one','ghz'],cls:'fast',t:`${B('ЧАСТОТА')} — как быстро повар двигает руками. Каждый взмах — такт. 4 ГГц (гигагерца) — это 4 миллиарда тактов в секунду.`},
+ {show:['one','cache'],t:`На фартуке у повара карманы — ${B('КЭШ')}. Они крошечные, но достать из кармана быстрее, чем даже со стола. Карманы трёх уровней: L1, L2, L3.`}
+],
+remember:['Ядра — сколько дел одновременно','Частота (ГГц) — темп работы одного ядра','Кэш — сверхбыстрая память прямо в процессоре','Потоки (например, 8 ядер / 16 потоков): ядро ловко ведёт два дела, но это не два полноценных повара'],
+deep:`<ul>
+<li><b>«Больше ГГц — значит быстрее» — миф</b>, когда сравнивают разные поколения. Важна ещё работа за один такт (IPC). Новый процессор на 3,5 ГГц легко обгоняет старый на 4,5 ГГц.</li>
+<li><b>Больше ядер помогает не всегда.</b> Многие игры и старые программы нагружают 1–6 ядер. Монтаж видео, архивация, нейросети используют все.</li>
+<li><b>Размеры кэша:</b> L1 — десятки КБ на ядро, L2 — от 0,5 до 3 МБ на ядро, L3 — десятки МБ, общий на всех. Чем ближе к ядру, тем меньше и быстрее.</li>
+<li><b>Turbo-частота</b> — кратковременный разгон, пока хватает охлаждения и питания. Её нельзя ждать постоянно.</li></ul>`,
+quiz:[
+ {q:'Что значит «8 ядер»?',a:['8 поваров работают одновременно','Частота 8 ГГц','8 ГБ кэша'],c:0,w:'Ядро — отдельный исполнитель. 8 ядер выполняют 8 дел параллельно.'},
+ {q:'Процессор А: 4,5 ГГц, 2015 год. Процессор Б: 3,5 ГГц, 2025 год. Кто быстрее?',a:['Точно А — у него больше ГГц','По одним ГГц не понять: новый делает больше работы за такт','Одинаково'],c:1,w:'Сравнивать процессоры одной частотой нельзя. Смотри тесты конкретных моделей.'}
+]},
+
+{name:'Стол-оперативка',title:'Оперативка: рабочий стол повара',
+scene:()=>
+ desk(26,12,44,'data-tag="size"')+desk(100,12,80,'data-tag="size"')+desk(210,12,124,'data-tag="size"')+
+ W(T(48,76,'8 ГБ','td','font-size:12px')+T(140,76,'16 ГБ','td','font-size:12px')+T(272,76,'32 ГБ','td','font-size:12px'),'data-tag="size"')+
+ cupboard(14,96,1,'id="stor" class="actor"','Кладовка')+
+ desk(110,146,120,'id="ram" class="actor"','Стол-оперативка')+
+ crate(132,132,'f-blue','class="dc" data-tag="d"')+crate(156,132,'f-mint','class="dc" data-tag="d"')+
+ W(crateIn(180,132,'f-yel')+crateIn(204,132,'f-coral')+crateIn(144,118,'f-coral')+crateIn(168,118,'f-blue')+crateIn(192,118,'f-mint')+crateIn(156,104,'f-yel')+crateIn(180,104,'f-blue'),'data-tag="full"')+
+ chef(262,118,1,'id="cpu" class="actor"')+
+ crate(52,150,'f-coral','class="mv" style="--dx:80px;--dy:-18px" data-tag="carry"')+
+ W(T(180,40,'Копирую с накопителя на стол…','td','font-size:12px'),'data-tag="carry"')+
+ crate(180,132,'f-yel','class="mv" style="--dx:64px;--dy:22px;--t:1.4s" data-tag="grab"')+
+ W(T(180,40,'RAM ≈ 80 нс   ·   SSD ≈ 80 000 нс','tm','font-size:11px')+T(214,108,'раз — и взял!','td','font-size:11px'),'data-tag="grab"')+
+ W(T(180,40,'Стол забит! Бегаю в кладовку…','td','font-size:12px')+`<rect x="110" y="54" width="140" height="10" rx="5" class="f-line o1"/><rect x="110" y="54" width="136" height="10" rx="5" class="f-red"/>`+T(180,80,'занято 97%','tm tr','font-size:10px'),'data-tag="full"')+
+ W(`<rect x="0" y="0" width="360" height="220" class="f-night shade"/>`+T(180,40,'Свет выключили — стол опустел','td tw','font-size:13px')+T(49,84,'а тут всё цело','tw','font-size:10px'),'data-tag="off"')+
+ floor(),
+frames:[
+ {show:['carry'],t:`Повар не готовит в кладовке — там тесно и далеко. Сначала он приносит продукты на стол. Так и компьютер: когда ты открываешь программу, она ${B('копируется с накопителя в оперативку')}.`},
+ {show:['d','grab'],t:`Со стола взять — одно движение руки. Оперативка отвечает примерно за ${B('80 наносекунд')}, а SSD — примерно за 80 000. Разница около тысячи раз!`},
+ {show:['size','d'],t:`${B('Объём оперативки')} — это размер стола. 8 ГБ — столик, 16 ГБ — нормальный стол, 32 ГБ — большой. Больше стол — больше программ лежит открытыми одновременно.`},
+ {show:['d','full'],cls:'swap',t:`Стол забит — повару приходится уносить вещи в кладовку и бегать за ними снова. Это ${B('файл подкачки')}. Вот откуда «тормоза», когда открыто слишком много.`},
+ {show:['d','off'],cls:'off',t:`Выключили электричество — со стола всё смахнули. ${B('Оперативка без тока всё забывает')}. Поэтому несохранённый документ пропадает, а сохранённый (в кладовке) остаётся.`}
+],
+remember:['Оперативка — быстрая временная память для того, что открыто сейчас','Объём в ГБ = размер стола','Мало оперативки → подкачка на диск → тормоза','Выключение стирает оперативку. Сохраняй работу'],
+deep:`<ul>
+<li><b>Как она хранит.</b> Каждый бит — заряд в крошечном конденсаторе. Заряд утекает, поэтому каждую строку памяти перезаряжают примерно раз в 64 мс. Нет питания — нет зарядов — нет данных.</li>
+<li><b>Миф «свободная оперативка — это хорошо».</b> Пустой стол ничего не ускоряет. Windows специально занимает свободное место кэшем файлов (строка «Кэшировано») и мгновенно отдаёт его программам. Программы-«чистильщики» оперативки обычно бесполезны, а иногда тормозят систему.</li>
+<li><b>Признак реальной нехватки:</b> «Используется» стабильно выше 85–90 %, диск всё время занят, переключение между окнами подвисает.</li>
+<li><b>Сколько нужно сейчас:</b> 8 ГБ — впритык (браузер + офис); 16 ГБ — комфорт для работы и учёбы; 32 ГБ — монтаж, много вкладок, виртуальные машины, локальные нейросети; 64 ГБ и больше — профессиональные задачи.</li></ul>`,
+quiz:[
+ {q:'Почему несохранённый документ пропадает, если выключить свет?',a:['Он лежал в оперативке, а она без тока всё забывает','Его удалил процессор','Он был на SSD, а SSD стирается'],c:0,w:'Оперативка энергозависимая. SSD как раз хранит без тока.'},
+ {q:'Оперативка занята на 97 %, компьютер тормозит. Что происходит?',a:['Процессор перегрелся','Повар бегает в кладовку — идёт подкачка на диск','Сломался SSD'],c:1,w:'Когда стол забит, данные выгружаются в файл подкачки на накопителе, а он в тысячи раз медленнее.'},
+ {q:'Программа-«ускоритель» освобождает оперативку. Поможет?',a:['Да, всегда','Обычно нет: Windows сама использует свободную память под кэш и отдаёт её мгновенно','Только на DDR5'],c:1,w:'Свободная память — это пустой стол. Пользы от него нет.'}
+]},
+
+{name:'Цифры на планке',title:'Читаем наклейку на планке памяти',
+scene:()=>{
+ let k='';for(let x=6;x<314;x+=5){if(x>=150&&x<=164)continue;k+=`<rect x="${x}" y="74" width="3" height="10" class="f-gold"/>`}
+ let ch='';for(let i=0;i<8;i++)ch+=`<rect x="${10+i*39}" y="8" width="30" height="24" rx="2" class="f-chip"/>`;
+ const mini=(x,y,w,r,l)=>`<rect x="${x}" y="${y}" width="${w}" height="14" rx="2" class="f-grn o1"/><rect x="${x+w*r-2.5}" y="${y+8}" width="5" height="8" class="f-wall"/>`+T(x+w/2,y+30,l,'td','font-size:11px');
+ const stick=(x,y)=>`<rect x="${x}" y="${y}" width="130" height="26" rx="3" class="f-grn o"/>`+[0,1,2,3].map(i=>`<rect x="${x+8+i*30}" y="${y+5}" width="22" height="12" rx="1.5" class="f-chip"/>`).join('');
+ return W(`<g transform="translate(20 60)">${k}<rect width="320" height="76" rx="4" class="f-grn o"/>${ch}<rect x="40" y="40" width="240" height="24" rx="3" class="f-hat o1"/>
+  <text x="75" y="56.5" class="t tm tk" style="font-size:12px">16GB</text><text x="155" y="56.5" class="t tm tk" style="font-size:12px">DDR5-6000</text><text x="242" y="56.5" class="t tm tk" style="font-size:12px">CL30</text></g>`,'data-tag="big"')+
+ W(`<rect x="74" y="102" width="42" height="20" rx="4" class="hl pulse"/><path d="M95 46V100" class="hlline"/>`+T(95,38,'16GB — объём','td','font-size:12px'),'data-tag="h16"')+
+ W(`<circle cx="177" cy="139" r="13" class="hl pulse"/><path d="M177 46V125" class="hlline"/>`+T(180,38,'Вырез-ключ: у DDR4 и DDR5 в разных местах','td','font-size:11px')+mini(40,166,120,.4,'DDR4')+mini(200,166,120,.5,'DDR5'),'data-tag="notch"')+
+ W(`<rect x="169" y="102" width="34" height="20" rx="4" class="hl pulse"/><path d="M186 46V100" class="hlline"/>`+T(186,38,'6000 — скорость, МТ/с','td','font-size:12px'),'data-tag="hspeed"')+
+ W([0,1,2,3,4].map(i=>`<circle cx="34" cy="156" r="4" class="f-coral mv" style="--dx:292px;--t:1.1s;animation-delay:${i*.22}s"/>`).join('')+T(180,184,'6000 миллионов передач данных в секунду','','font-size:11px'),'data-tag="speed"')+
+ W(`<rect x="246" y="102" width="34" height="20" rx="4" class="hl pulse"/><path d="M263 46V100" class="hlline"/>`+T(263,38,'CL30 — задержка','td','font-size:12px'),'data-tag="hcl"')+
+ W(clock(58,174,18)+T(58,208,'ждём 30 тактов','','font-size:10px')+T(232,172,'30 × 2000 ÷ 6000 = 10 нс','tm','font-size:12px')+T(232,192,'это реальная задержка','','font-size:10px'),'data-tag="cl"')+
+ W(`<path d="M168 82C150 120 100 120 95 156" class="road"/><path d="M186 82C204 120 260 120 265 156" class="road"/>`+dot('M168 82C150 120 100 120 95 156','1.2s')+dot('M95 156C100 120 150 120 168 82','1.2s','.6s')+dot('M186 82C204 120 260 120 265 156','1.2s','.3s')+dot('M265 156C260 120 204 120 186 82','1.2s','.9s')+chef(155,22,.75)+stick(30,160)+stick(200,160)+T(95,202,'канал A','td','font-size:11px')+T(265,202,'канал B','td','font-size:11px')+T(66,40,'2 планки =','td','font-size:12px')+T(66,56,'2 дороги','td','font-size:12px'),'data-tag="dual"');
+},
+frames:[
+ {show:['big'],t:`Возьмём настоящую планку оперативки. На её наклейке написано: ${B('16GB DDR5-6000 CL30')}. Похоже на шифр — разгадаем каждое слово.`},
+ {show:['big','h16'],t:`${B('16GB')} — объём: 16 гигабайт. Это размер стола, мы его уже знаем.`},
+ {show:['big','notch'],t:`${B('DDR5')} — поколение. Посмотри на вырез внизу: у DDR4 и DDR5 он в разных местах, чужая планка просто не влезет. Материнская плата поддерживает только одно поколение.`},
+ {show:['big','hspeed','speed'],t:`${B('6000')} — скорость: 6000 миллионов передач данных в секунду (МТ/с). Чем больше число, тем быстрее подвозят продукты к повару.`},
+ {show:['big','hcl','cl'],t:`${B('CL30')} — тайминг: сколько тактов ждать первого ответа. Меньше — лучше. Но CL сравнивают только вместе со скоростью — формула справа, в «Взрослым словами».`},
+ {show:['dual'],t:`Одна планка — одна дорога к повару. Две одинаковые планки — две дороги: это ${B('двухканальный режим')}. Поэтому 2×8 ГБ обычно быстрее, чем 1×16 ГБ.`}
+],
+remember:['Объём (ГБ), поколение (DDR4/DDR5), скорость (МТ/с), тайминг (CL)','DDR4 и DDR5 не взаимозаменяемы','Две одинаковые планки лучше одной','После установки включи XMP или EXPO в BIOS'],
+deep:`<ul>
+<li><b>Реальная задержка в наносекундах</b> = CL × 2000 ÷ скорость. DDR4-3200 CL16 → 16 × 2000 ÷ 3200 = <b>10 нс</b>. DDR5-6000 CL30 → 30 × 2000 ÷ 6000 = <b>10 нс</b>. Отклик почти одинаковый! DDR5 выигрывает не в задержке, а в пропускной способности.</li>
+<li><b>Пропускная способность канала</b> = скорость × 8 байт. DDR4-3200 ≈ 25,6 ГБ/с, DDR5-6000 ≈ 48 ГБ/с. Два канала — вдвое больше.</li>
+<li><b>МГц или МТ/с?</b> DDR — Double Data Rate, две передачи за такт. DDR4-3200 физически работает на 1600 МГц, и программа CPU-Z честно покажет 1600. Это не брак.</li>
+<li><b>XMP (Intel) / EXPO (AMD).</b> По умолчанию планка стартует на базовой скорости (DDR4 обычно 2133–2400, DDR5 — 4800–5600). Заявленные 6000 включаются профилем в BIOS.</li>
+<li><b>Куда ставить две планки</b> в плату с 4 слотами: обычно во 2-й и 4-й слот от процессора (A2 и B2). Точно — в инструкции к плате.</li>
+<li><b>Ноутбуки:</b> планки короче (SO-DIMM), а в тонких моделях память часто распаяна — добавить нельзя. Проверь до покупки.</li></ul>`,
+quiz:[
+ {q:'Можно ли вставить планку DDR4 в слот DDR5?',a:['Да, просто будет медленнее','Нет, вырез-ключ в другом месте','Да, через переходник'],c:1,w:'Поколения физически и электрически несовместимы.'},
+ {q:'Что быстрее для обычного ПК?',a:['Одна планка 16 ГБ','Две планки по 8 ГБ','Одинаково'],c:1,w:'Две планки включают двухканальный режим — две дороги к процессору.'},
+ {q:'Купил DDR5-6000, а Windows показывает 4800. Почему?',a:['Продали подделку','Не включён профиль XMP/EXPO в BIOS','Так и останется навсегда'],c:1,w:'Без профиля память работает на безопасной базовой скорости.'}
+]},
+
+{name:'Кладовка-накопитель',title:'Накопители: где всё хранится навсегда',
+scene:()=>
+ W(cupboard(145,92,1,'','Кладовка')+T(180,36,'Ток выключен — всё осталось на полках','td','font-size:12px')+T(180,56,'это постоянная память','','font-size:10px'),'data-tag="box"')+
+ W(`<rect x="18" y="70" width="104" height="104" rx="8" class="f-gray o"/><g class="spin"><circle cx="64" cy="118" r="40" class="f-hat o"/><path d="M64 118V80" class="o1"/><circle cx="64" cy="118" r="7" class="f-gray o1"/></g><g class="seek"><path d="M112 164L76 110" class="o" style="stroke-width:5"/><circle cx="112" cy="164" r="5" class="f-yel o1"/></g>`+T(70,192,'HDD','td','font-size:12px'),'data-tag="hdd"')+
+ W(`<rect x="140" y="78" width="84" height="100" rx="6" class="f-card o"/><path d="M140 96h84" class="o1"/><rect x="141.5" y="79.5" width="81" height="16" rx="4" class="f-blue"/>`+T(182,91,'SSD','tw td','font-size:10px')+`<rect x="150" y="104" width="28" height="28" rx="2" class="f-chip"/><rect x="186" y="104" width="28" height="28" rx="2" class="f-chip"/><rect x="150" y="140" width="28" height="28" rx="2" class="f-chip"/><rect x="186" y="140" width="28" height="28" rx="2" class="f-chip"/>`+T(182,194,'SATA SSD','td','font-size:12px'),'data-tag="sata"')+
+ W(`<rect x="340" y="122" width="8" height="22" class="f-gold"/><rect x="244" y="120" width="98" height="26" rx="3" class="f-grn o"/><circle cx="250" cy="133" r="4" class="f-wall o1"/><rect x="260" y="126" width="22" height="14" rx="1.5" class="f-chip"/><rect x="286" y="126" width="22" height="14" rx="1.5" class="f-chip"/><rect x="312" y="126" width="22" height="14" rx="1.5" class="f-chip"/>`+T(296,166,'NVMe · M.2','td','font-size:12px'),'data-tag="nvme"')+
+ W(T(8,22,'HDD','tm tl','font-size:9px')+T(8,38,'SATA','tm tl','font-size:9px')+T(8,54,'NVMe','tm tl','font-size:9px')+
+  `<rect x="46" y="14" width="6" height="10" rx="2" class="f-gray grow"/><rect x="46" y="30" width="22" height="10" rx="2" class="f-blue grow"/><rect x="46" y="46" width="280" height="10" rx="2" class="f-grn grow"/>`+
+  T(58,22.5,'~150 МБ/с','tm tl','font-size:8px')+T(74,38.5,'~550 МБ/с','tm tl','font-size:8px')+T(54,54.5,'~7 000 МБ/с','tm tl tw','font-size:8px'),'data-tag="race"'),
+frames:[
+ {show:['box'],t:`Кладовка помнит всё даже без электричества. Это ${B('постоянная память')} — накопитель. Бывает трёх видов.`},
+ {show:['hdd'],t:`${B('Жёсткий диск (HDD)')}: внутри крутится блестящая пластинка, а над ней бегает головка, как иголка у проигрывателя. Места много и дёшево, но медленно — пока головка доедет…`},
+ {show:['hdd','sata'],t:`${B('SSD')}: ничего не крутится, только чипы памяти. Любую полку находит почти мгновенно. Старый ноутбук, где HDD заменили на SSD, буквально оживает.`},
+ {show:['hdd','sata','nvme','race'],t:`${B('NVMe SSD')} — маленькая планка формата M.2, подключена прямо к самым быстрым дорогам платы. Сравни скорость чтения наверху — разница в десятки раз!`}
+],
+remember:['Накопитель — постоянная память, не стирается без тока','HDD — дёшево, много, медленно','SSD — быстро; NVMe — самый быстрый вид SSD','Windows и программы — всегда на SSD'],
+deep:`<ul>
+<li><b>Скорость чтения подряд:</b> HDD 100–250 МБ/с; SATA SSD около 550 МБ/с (это потолок самого интерфейса SATA); NVMe PCIe 3.0 — до ~3 500, PCIe 4.0 — до ~7 000, PCIe 5.0 — 10 000+ МБ/с.</li>
+<li><b>Почему SSD ощущается быстрым.</b> Дело даже не в МБ/с, а во времени поиска: HDD тратит 5–10 мс, чтобы найти кусочек файла, SSD — около 0,05–0,1 мс. Windows при загрузке читает тысячи мелких файлов, тут HDD и проигрывает.</li>
+<li><b>Ловушка:</b> M.2 — это форма разъёма, а не скорость. Бывают M.2 SATA (~550 МБ/с). Ищи в названии слово NVMe.</li>
+<li><b>Диск 1 ТБ, а Windows показывает 931 ГБ.</b> Производитель считает 1 ТБ = 10¹² байт, Windows делит на 1024³. Никто не обманывает.</li>
+<li><b>Износ:</b> ячейки SSD стареют от записи (ресурс указан в TBW), но обычному пользователю его хватает на годы.</li></ul>`,
+quiz:[
+ {q:'Что сильнее всего ускорит старый ноутбук с HDD?',a:['Замена HDD на SSD','Новые обои','Второй HDD'],c:0,w:'Это самый заметный апгрейд для старого компьютера: загрузка и запуск программ ускоряются в разы.'},
+ {q:'Надпись «M.2» гарантирует скорость NVMe?',a:['Да','Нет, M.2 — это форма разъёма, бывает и M.2 SATA'],c:1,w:'Смотри на протокол: NVMe или SATA.'},
+ {q:'Диск 1 ТБ, а Windows показывает 931 ГБ. Это обман?',a:['Да, недовес','Нет: разный счёт — 1000 у производителя и 1024 у Windows'],c:1,w:'10¹² байт ÷ 1024³ ≈ 931.'}
+]},
+
+{name:'Художник-видеокарта',title:'Видеокарта: художник с тысячей помощников',
+scene:()=>{
+ let px='';for(let r=0;r<8;r++)for(let c=0;c<15;c++)px+=`<rect x="${92+c*12}" y="${20+r*12}" width="11" height="11" class="px pxw" style="animation-delay:${((c+r)*.07).toFixed(2)}s"/>`;
+ let hp='';for(let r=0;r<2;r++)for(let c=0;c<16;c++)hp+=`<circle cx="${112+c*14}" cy="${170+r*16}" r="4.5" class="f-blue2 o1 bob" style="animation-delay:${((c*3+r*5)%10*.1).toFixed(1)}s"/>`;
+ return W(`<rect x="86" y="14" width="188" height="116" rx="6" class="f-chip o"/>${px}<rect x="172" y="130" width="16" height="14" class="f-gray o1"/><rect x="150" y="144" width="60" height="6" rx="2" class="f-gray o1"/>`,'data-tag="screen"')+
+ W(T(180,172,'1920 × 1080 = 2 073 600 точек','tm','font-size:11px')+T(180,190,'перерисовать 60+ раз в секунду','','font-size:11px'),'data-tag="cap"')+
+ gpu(20,140,1,'id="gpu" class="actor" data-tag="gpu"','Художник')+
+ W(hp+T(226,162,'тысячи простых ядер-помощников','','font-size:10px'),'data-tag="helpers"')+
+ W(desk(110,146,90,'','VRAM')+crate(124,132,'f-coral')+crate(148,132,'f-mint')+T(276,172,'свой стол художника','td','font-size:11px'),'data-tag="vram"')+
+ W(desk(30,146,120,'','Оперативка')+`<rect x="100" y="146" width="50" height="18" rx="3" class="f-blue o1" opacity=".9"/>`+T(118,132,'кусок — для графики','lab','font-size:9px')+chef(200,118)+gpu(207,147,.34)+`<path d="M152 155Q168 150 186 160" class="hlline"/>`+T(225,90,'Встроенная графика живёт','td','font-size:11px')+T(225,104,'прямо в процессоре','td','font-size:11px'),'data-tag="igpu"')+
+ W(floor(''),'data-tag="gpu igpu"');
+},
+frames:[
+ {show:['screen','cap'],t:`Экран — мозаика из точек-${B('пикселей')}. Full HD — 1920×1080, больше 2 миллионов точек. И всю мозаику надо перерисовывать 60 раз в секунду, а то и чаще.`},
+ {show:['screen','gpu','helpers'],t:`У повара мало рук. А у Художника — ${B('тысячи простых помощников')}, ядер видеокарты. Каждый красит свои точки, все одновременно. Поэтому картинка — работа видеокарты.`},
+ {show:['screen','gpu','vram'],t:`У Художника свой личный стол — ${B('видеопамять (VRAM)')}. На нём лежат текстуры, готовые кадры и, кстати, нейросети.`},
+ {show:['igpu'],t:`Бывает ${B('встроенная графика')} — маленький художник живёт прямо внутри процессора. Своего стола у него нет: он отрезает себе кусок обычной оперативки.`}
+],
+remember:['Видеокарта (GPU) рисует изображение','Много простых ядер — параллельная работа','VRAM — собственная память видеокарты','Встроенная графика забирает часть оперативки'],
+deep:`<ul>
+<li><b>CPU против GPU.</b> Процессор — несколько «умных» ядер для сложной последовательной логики. Видеокарта — тысячи простых ядер для одинаковых операций над огромным количеством данных. Поэтому GPU хорош и для графики, и для нейросетей.</li>
+<li><b>Для локальных нейросетей</b> главный параметр — объём VRAM: модель должна поместиться на стол художника. 8 ГБ — маленькие модели, 12–16 ГБ — средние, 24 ГБ и больше — крупные.</li>
+<li><b>«Установлено 16 ГБ, доступно 15,8».</b> Встроенная графика и устройства резервируют часть оперативки. В Диспетчере задач это строка «Зарезервировано аппаратно».</li>
+<li><b>Частая ошибка:</b> монитор подключён к разъёму на материнской плате, а не на видеокарте. Тогда работает встроенная графика, а дорогая видеокарта простаивает.</li></ul>`,
+quiz:[
+ {q:'Почему картинку рисует видеокарта, а не процессор?',a:['У неё тысячи простых ядер, работающих одновременно','Она умнее процессора','Процессор не умеет считать цвета'],c:0,w:'Пиксели независимы, их удобно красить параллельно.'},
+ {q:'Установлено 16 ГБ, доступно 15,8 ГБ. Куда делось?',a:['Сломалась планка','Часть зарезервировала встроенная графика и устройства'],c:1,w:'Это нормально и видно в Диспетчере задач.'}
+]},
+
+{name:'Плата, питание, холод',title:'Материнская плата, питание и охлаждение',
+scene:()=>{
+ let pins='';for(let i=0;i<5;i++)for(let j=0;j<5;j++)pins+=`<circle cx="${150+i*10}" cy="${60+j*10}" r="1.6" class="f-gold"/>`;
+ let slots='';for(let i=0;i<4;i++)slots+=`<rect x="${236+i*14}" y="34" width="8" height="104" rx="2" class="f-chip o1"/>`;
+ return W(`<rect x="16" y="14" width="328" height="184" rx="8" class="f-grn o"/>
+  <path d="M40 40H130V64M200 80H230M170 112V150M120 128H40V156M250 138V158H330M60 90H136" class="trace"/>`+
+  dot('M40 40H130V64','2.4s')+dot('M200 80H230','1s','.3s')+dot('M120 128H40V156','2.2s','.5s')+dot('M250 138V158H330','2s')+
+  `<rect x="140" y="50" width="60" height="60" rx="4" class="f-chip o"/>${pins}${slots}
+  <rect x="40" y="166" width="196" height="10" rx="2" class="f-chip o1"/><rect x="50" y="98" width="70" height="9" rx="2" class="f-chip o1"/><circle cx="126" cy="102" r="3" class="f-gold"/>`+
+  T(170,124,'сокет','tw','font-size:10px')+T(264,152,'слоты RAM','tw','font-size:9px')+T(138,190,'PCIe x16 — видеокарта','tw','font-size:9px')+T(85,120,'M.2 — SSD','tw','font-size:9px'),'data-tag="city"')+
+ W(`<g class="mv" style="--dy:44px;--t:2.6s"><rect x="144" y="8" width="52" height="52" rx="4" class="f-yel o"/><text x="170" y="38" class="tchip" style="font-size:10px">CPU</text></g>`+T(80,32,'AM5 · LGA1700 · LGA1851','tw tm','font-size:9px'),'data-tag="socket"')+
+ W(`<path d="M-2 108H24" class="wire flow"/>`+T(14,96,'220 В','tm','font-size:9px')+`<rect x="24" y="60" width="130" height="96" rx="6" class="f-gray o"/>`+fanIn(89,108,34)+
+  `<path d="M154 82H188M154 108H188M154 134H188" class="wire flow"/>`+T(194,86,'12 В — процессор и видеокарта','tl','font-size:10px')+T(194,112,'5 В — USB и диски','tl','font-size:10px')+T(194,138,'3,3 В — память и плата','tl','font-size:10px')+T(89,180,'650 Вт','td','font-size:15px')+T(250,40,'Блок питания раздаёт ток','td','font-size:12px'),'data-tag="psu"')+
+ W(fanIn(66,92,30)+T(66,140,'кулер','td','font-size:11px')+`<path d="M100 82q16-4 30 6M102 98q18 0 32 10M100 114q14 6 28 14" class="air flow"/>`+chef(170,118)+
+  [0,.5,1].map((d,i)=>`<path d="M${182+i*14} 92q5-6 0-12q-5-6 0-12" class="heat rise" style="animation-delay:${d}s"/>`).join('')+
+  `<rect x="286" y="44" width="12" height="78" rx="6" class="f-hat o"/><rect x="289" y="58" width="6" height="66" rx="3" class="f-red"/><circle cx="292" cy="128" r="10" class="f-red o"/>`+T(292,156,'95 °C','tm tr','font-size:12px')+T(200,30,'Жарко! Замедляюсь — троттлинг','td','font-size:12px')+floor(''),'data-tag="cool"');
+},
+frames:[
+ {show:['city'],t:`Это вид сверху на ${B('материнскую плату')}. Она как город: в ней гнёзда для деталей и дороги-шины, по которым бегут данные.`},
+ {show:['city','socket'],t:`Квадратное гнездо — ${B('сокет')}, дом для процессора. Процессор подходит только к своему сокету: у AMD сейчас AM5, у Intel — LGA1700 и LGA1851.`},
+ {show:['psu'],t:`${B('Блок питания')} превращает ток из розетки (220 В) в низкие напряжения — 12, 5 и 3,3 вольта — и раздаёт всем. Его мощность измеряют в ваттах.`},
+ {show:['cool'],t:`Кто работает — тот греется. Радиатор и вентиляторы уносят жар. Перегрелся процессор — он сам замедляется. Это ${B('троттлинг')}: так он защищает себя от поломки.`}
+],
+remember:['Материнская плата соединяет всех; сокет — гнездо процессора','Процессор и плата должны совпадать по сокету','Блок питания — мощность в ваттах, с запасом','Перегрев → троттлинг → тормоза'],
+deep:`<ul>
+<li><b>Что ещё на плате:</b> слоты PCIe (верхний длинный x16 — для видеокарты), разъёмы M.2 для NVMe, чипсет — регулировщик дорог, микросхема BIOS/UEFI — «правила кухни», которые запускаются раньше Windows.</li>
+<li><b>Совпадение сокета необходимо, но не всегда достаточно:</b> иногда нужен новый BIOS или другой чипсет. Проверяй список поддерживаемых процессоров на сайте производителя платы.</li>
+<li><b>Блок питания</b> бери с запасом примерно 30–40 % к пиковому потреблению. Сертификат 80 PLUS говорит о КПД, а не о надёжности целиком.</li>
+<li><b>Температуры:</b> у многих процессоров предел 95–100 °C. Если горячо уже без нагрузки — проверь пыль, вентиляторы и термопасту (её меняют раз в несколько лет).</li></ul>`,
+quiz:[
+ {q:'Процессор под нагрузкой раскалился и вдруг замедлился. Как это называется?',a:['Троттлинг','Разгон','Подкачка'],c:0,w:'Процессор снижает частоту, чтобы не перегреться.'},
+ {q:'Любой процессор подходит к любой материнской плате?',a:['Да','Нет — должны совпасть сокет и поддержка чипсетом/BIOS'],c:1,w:'Начинай проверку с сокета, затем список поддерживаемых процессоров.'}
+]},
+
+{name:'Всё вместе',title:'Что происходит, когда ты запускаешь программу',
+scene:()=>
+ W(`<rect x="321" y="104" width="6" height="86" class="f-gray o1"/><rect x="308" y="190" width="32" height="6" rx="2" class="f-gray o1"/><rect x="296" y="60" width="58" height="46" rx="4" class="f-chip o"/><rect x="300" y="64" width="50" height="36" rx="2" class="f-scr"/>`,'id="mon" class="actor"')+
+ W(`<circle cx="338" cy="78" r="4" class="f-yel"/><path d="M304 98v-10l12-9 12 9v10z" class="f-coral o1"/><rect x="313" y="90" width="6" height="8" class="f-blue"/>`,'data-tag="pic"')+
+ W(`<circle cx="330" cy="84" r="10" class="hl pulse"/><path d="M330 82l0 16 4-4 3 7 3-1-3-7h6z" class="f-hat o1"/>`+T(296,46,'клик!','td','font-size:13px'),'data-tag="click"')+
+ cupboard(8,106,.9,'id="stor" class="actor"','SSD')+
+ desk(82,146,84,'id="ram" class="actor"','RAM')+
+ crate(98,132,'f-coral','data-tag="d"')+
+ chef(184,135,.85,'id="cpu" class="actor"')+
+ gpu(240,152,.8,'id="gpu" class="actor"')+
+ floor()+
+ crate(30,150,'f-coral','class="mv" style="--dx:68px;--dy:-18px" data-tag="load"')+
+ W([['ADD',196,108,0],['CMP',226,98,.7],['MOV',206,84,1.4]].map(n=>`<text x="${n[1]}" y="${n[2]}" class="t tm rise" style="font-size:10px;animation-delay:${n[3]}s">${n[0]}</text>`).join(''),'data-tag="exec"')+
+ W([0,.4,.8].map(d=>`<circle cx="276" cy="160" r="4" class="f-coral mv" style="--dx:48px;--dy:-78px;--t:1.4s;animation-delay:${d}s"/>`).join(''),'data-tag="draw"')+
+ crate(196,150,'f-yel','class="mv" style="--dx:-166px;--dy:-4px;--t:2.6s" data-tag="save"')+
+ W(T(130,40,'Ctrl + S','tm','font-size:14px'),'data-tag="save"'),
+frames:[
+ {show:['click'],focus:['mon'],t:`Соберём всё вместе. Ты щёлкнул по значку программы. Что произошло внутри?`},
+ {show:['load'],focus:['stor','ram'],t:`${B('Шаг 1.')} Программа лежит в кладовке (на SSD). Её копируют на стол — в оперативку.`},
+ {show:['d','exec'],focus:['cpu','ram'],t:`${B('Шаг 2.')} Повар-процессор берёт со стола инструкции и выполняет их одну за другой — миллиарды в секунду. Самое нужное держит в карманах-кэше.`},
+ {show:['d','draw','pic'],focus:['gpu','mon'],t:`${B('Шаг 3.')} Что показать, повар передаёт Художнику-видеокарте. Тот рисует кадр и отправляет на монитор.`},
+ {show:['d','pic','save'],focus:['cpu','stor'],t:`${B('Шаг 4.')} Ты нажал «Сохранить». Результат уносят обратно в кладовку — теперь он переживёт выключение.`}
+],
+remember:['Запуск: SSD → оперативка → процессор (кэш) → видеокарта → экран','Сохранение: оперативка → SSD','Каждый следующий уровень памяти больше, дешевле и медленнее'],
+deep:`<p><b>Иерархия памяти в цифрах.</b> Растянем время так, чтобы обращение к кэшу L1 длилось 1 секунду:</p>
+<div class="tbl"><table><thead><tr><th>Уровень</th><th>Реально</th><th>Если L1 = 1 с</th></tr></thead><tbody>
+<tr><td>Кэш L1</td><td>~1 нс</td><td>1 секунда</td></tr>
+<tr><td>Кэш L3</td><td>~10–15 нс</td><td>10–15 секунд</td></tr>
+<tr><td>Оперативка</td><td>~80 нс</td><td>~1,5 минуты</td></tr>
+<tr><td>NVMe SSD</td><td>~80 мкс</td><td>~1 сутки</td></tr>
+<tr><td>HDD</td><td>~8 мс</td><td>~3 месяца</td></tr></tbody></table></div>
+<p>Отсюда главный вывод: компьютер «тормозит», когда процессору приходится ждать. В обычных домашних и офисных ПК частые виновники — медленный HDD и нехватка оперативки, а не слабый процессор. Но это проверяют, а не угадывают: смотри, что загружено на 100 % в Диспетчере задач.</p>`,
+quiz:[
+ {q:'Какой путь проходит программа при запуске?',a:['SSD → RAM → CPU → GPU → экран','CPU → SSD → экран','RAM → SSD → CPU'],c:0,w:'Сначала с накопителя в оперативку, затем процессор, затем видеокарта рисует.'},
+ {q:'Если обращение к кэшу L1 растянуть до 1 секунды, сколько ждать ответа NVMe SSD?',a:['~1 минуту','~1 сутки','~1 год'],c:1,w:'80 мкс против 1 нс — это в 80 000 раз дольше, около суток.'}
+]},
+
+{name:'BIOS: пробуждение',title:'Как компьютер просыпается: BIOS и UEFI',
+scene:()=>{
+ const row=(y,s,d)=>T(172,y,s,'tl','font-size:10px')+`<text x="336" y="${y}" class="t te tok appear" style="font-size:13px;animation-delay:${d}s">✓</text>`;
+ const brow=(y,s)=>T(198,y,s,'tl tm','font-size:9px');
+ return W(`<path d="M232 50C200 50 150 60 120 86" class="wire flow"/>`+psuIn(230,30)+`<g class="press"><circle cx="90" cy="110" r="32" class="f-card o"/><path d="M80 101a14 14 0 1 0 20 0" class="heat"/><path d="M90 92v16" class="heat"/></g>`+T(90,162,'нажал кнопку','td','font-size:12px')+T(262,100,'Питание в норме','td tok','font-size:12px'),'data-tag="power"')+
+ boss(24,136,1,'id="bios" class="actor" data-tag="b"')+
+ chef(120,118,1,'data-tag="kit"')+desk(196,146,70,'data-tag="kit boot"','RAM')+gpu(280,146,.85,'data-tag="kit"')+
+ W(`<rect x="160" y="10" width="190" height="80" rx="6" class="f-card o"/>`+T(170,28,'POST — самопроверка','tl td','font-size:11px')+row(46,'Процессор',.3)+row(62,'Память',.9)+row(78,'Видеокарта',1.5),'data-tag="post"')+
+ W(cupboard(100,96,1,'','SSD')+crate(130,150,'f-coral','class="mv" style="--dx:80px;--dy:-18px"')+`<rect x="186" y="10" width="164" height="80" rx="6" class="f-card o"/>`+T(196,28,'Порядок загрузки','tl td','font-size:11px')+`<rect x="192" y="36" width="152" height="15" rx="3" class="hl pulse"/>`+brow(47,'1. NVMe — Windows')+brow(64,'2. USB-флешка')+brow(80,'3. Сеть'),'data-tag="boot"')+
+ W(`<rect x="238" y="140" width="14" height="16" class="f-gray o1"/><rect x="222" y="156" width="46" height="6" rx="2" class="f-gray o1"/><rect x="150" y="24" width="190" height="116" rx="6" class="f-chip o"/><rect x="156" y="30" width="178" height="98" class="f-blue2"/><rect x="156" y="116" width="178" height="12" class="f-card"/><rect x="166" y="40" width="14" height="14" rx="2" class="f-hat o1"/><rect x="166" y="62" width="14" height="14" rx="2" class="f-hat o1"/><rect x="166" y="84" width="14" height="14" rx="2" class="f-hat o1"/><rect x="214" y="44" width="100" height="58" rx="3" class="f-card o1"/><rect x="214" y="44" width="100" height="10" rx="3" class="f-blue"/>`+T(64,124,'Дальше — Windows!','td','font-size:11px'),'data-tag="os"')+
+ floor();
+},
+frames:[
+ {show:['power'],t:`Нажимаешь кнопку — ${B('блок питания')} запускается, проверяет свои напряжения и посылает плате сигнал «питание в норме».`},
+ {show:['b','kit','post'],focus:['bios'],t:`Первым просыпается не Windows, а заведующий кухней — ${B('BIOS/UEFI')}, программа в микросхеме на плате. Он проводит ${B('POST')}: проверяет, на месте ли процессор, память и видеокарта.`},
+ {show:['b','boot'],t:`Всё в порядке — заведующий смотрит ${B('порядок загрузки')}: на каком накопителе лежит система. Находит загрузчик и переносит его на стол.`},
+ {show:['b','os'],t:`Загрузчик запускает Windows, и заведующий передаёт ей управление. Но его настройки — порядок загрузки, XMP, скорость вентиляторов — хранятся и работают при каждом включении.`}
+],
+remember:['BIOS/UEFI — программа в микросхеме на плате, запускается первой','POST — самопроверка деталей при включении','Порядок загрузки решает, с какого диска стартовать','Настройки BIOS: XMP, вентиляторы, порядок загрузки'],
+deep:`<ul>
+<li><b>UEFI</b> — современная замена старого BIOS: понимает большие диски (GPT), поддерживает Secure Boot, умеет мышь и графику. По привычке его всё равно зовут BIOS.</li>
+<li><b>Как войти:</b> сразу после включения жми Del или F2 (у ноутбуков бывает F2, F10, Esc). Из Windows 11: Параметры → Система → Восстановление → Особые варианты загрузки → Перезагрузить сейчас → Поиск и устранение неисправностей → Дополнительные параметры → Параметры встроенного ПО UEFI.</li>
+<li><b>Лампочки Debug LED</b> на плате: CPU, DRAM, VGA, BOOT. Застряла на DRAM — чаще всего планка плохо вставлена, стоит не в тех слотах или несовместима.</li>
+<li><b>Новая сборка на DDR5</b> при первом включении может минуту-две показывать чёрный экран: идёт «тренировка памяти». Это нормально — не выключай.</li>
+<li><b>Батарейка CR2032</b> на плате хранит часы. Время постоянно сбивается — меняй батарейку. Сброс настроек (Clear CMOS) помогает, если после изменений компьютер перестал стартовать.</li>
+<li><b>Обновлять BIOS</b> стоит при причине: поддержка нового процессора, исправление ошибок или уязвимостей. Во время обновления нельзя отключать питание.</li></ul>`,
+quiz:[
+ {q:'Что запускается первым при включении?',a:['Windows','BIOS/UEFI','Видеокарта'],c:1,w:'Сначала прошивка платы проверяет железо, потом ищет и запускает систему.'},
+ {q:'На плате горит лампочка DRAM, экран чёрный. Что проверить первым?',a:['Переустановить планки памяти и проверить слоты','Переустановить Windows','Заменить монитор'],c:0,w:'Лампочка показывает, на каком этапе POST застрял. До Windows дело не дошло.'},
+ {q:'Новый ПК на DDR5 при первом старте минуту показывает чёрный экран. Что это?',a:['Сломан','Тренировка памяти — нужно подождать'],c:1,w:'Плата подбирает параметры работы с новыми планками. Это бывает один раз после сборки или сброса.'}
+]},
+
+{name:'Разгон',title:'Разгон: заставляем повара работать быстрее',
+scene:()=>{
+ const g=(c,a0,a1)=>`<path d="${arc(262,112,58,a0,a1)}" class="nf" style="stroke:var(${c});stroke-width:12"/>`;
+ return chef(80,118,1,'id="cpu" class="actor"')+
+ W(g('--grn',-90,25)+g('--yel',25,58)+g('--red',58,90)+`<g class="needle"><path d="M262 112V60" class="o" style="stroke-width:4"/></g><circle cx="262" cy="112" r="7" class="f-eye"/>`+T(262,38,'частота','td','font-size:11px'))+
+ ['4,4 ГГц','5,0 ГГц','5,3 ГГц · 1,45 В','5,6 ГГц — сбой','4,4 ГГц'].map((s,i)=>W(T(262,136,s,'tm'+(i===3?' tr':''),'font-size:12px'),`data-tag="r${i}"`)).join('')+
+ `<rect x="334" y="30" width="14" height="110" rx="7" class="f-hat o"/><rect x="338" y="36" width="6" height="104" rx="3" class="f-red therm"/><circle cx="341" cy="146" r="11" class="f-red o"/>`+
+ ['55 °C','78 °C','92 °C','100 °C','56 °C'].map((s,i)=>W(T(336,176,s,'tm'+(i>=2&&i<4?' tr':''),'font-size:11px'),`data-tag="t${i}"`)).join('')+
+ W([0,.6,1.2].map((d,i)=>`<path d="${'M'+(92+i*14)+' 92q5-6 0-12q-5-6 0-12'}" class="heat rise" style="animation-delay:${d}s"/>`).join(''),'data-tag="hot"')+
+ W(`<path d="M30 88l-8 14h7l-4 12 11-16h-7l5-10z" class="f-yel o1 pulse"/><path d="M162 84l-8 14h7l-4 12 11-16h-7l5-10z" class="f-yel o1 pulse" style="animation-delay:.6s"/>`+T(100,40,'+ напряжение','td','font-size:12px'),'data-tag="volt"')+
+ W(`<rect x="14" y="12" width="140" height="44" rx="6" class="f-red o"/>`+T(84,30,'Ошибка!','tw td','font-size:12px')+T(84,46,'Перезагрузка…','tw','font-size:10px')+`<text x="140" y="92" class="t td tr rise" style="font-size:16px">?!</text>`,'data-tag="crash"')+
+ W(desk(150,146,110,'','XMP / EXPO')+crate(166,132,'f-blue')+crate(190,132,'f-mint'),'data-tag="xmpd"')+
+ floor();
+},
+frames:[
+ {show:['t0','r0'],t:`У каждой детали есть ${B('заводской темп')} с запасом прочности: на нём она гарантированно работает годами и не ошибается.`},
+ {show:['hot','t1','r1'],cls:'oc fast',t:`${B('Разгон')} — поднять частоту выше заводской. Повар двигается быстрее, но сильнее греется и ест больше тока.`},
+ {show:['hot','volt','t2','r2'],cls:'volt fast',t:`На высоком темпе повар начинает ошибаться. Чтобы не ошибался, поднимают ${B('напряжение')}. А нагрев растёт быстрее всего — примерно как квадрат напряжения.`},
+ {show:['hot','crash','t3','r3'],cls:'crash fast',t:`Перестарался — повар путается: ${B('зависания, перезагрузки, ошибки')} в расчётах и даже в сохранённых файлах. Поэтому после разгона обязательна долгая проверка стабильности.`},
+ {show:['xmpd','t4','r4'],cls:'xmp',t:`Самый безопасный шаг — включить ${B('XMP или EXPO')} для памяти. Это профиль, который производитель планки уже проверил. Остальной разгон — по желанию и на свой риск.`}
+],
+remember:['Разгон — работа выше заводской частоты','Цена: тепло, потребление, риск ошибок','Нестабильность = откатить настройки','XMP/EXPO — самый простой и безопасный шаг','Андервольтинг — меньше напряжения, меньше нагрев'],
+deep:`<ul>
+<li><b>Почему нагрев растёт так быстро:</b> мощность ≈ ёмкость × напряжение² × частота. +10 % напряжения — это уже примерно +21 % мощности, а вместе с ростом частоты ещё больше.</li>
+<li><b>Что можно разгонять:</b> у Intel — процессоры с буквой K, на платах Z-серии; у AMD Ryzen — почти все, на платах B и X. Ноутбуки обычно нельзя.</li>
+<li><b>Выигрыш сегодня скромный.</b> Производители сами выжимают почти максимум автоматическим бустом. Типичная прибавка — 0–10 %. Для работы и учёбы она редко заметна, а риск реальный.</li>
+<li><b>Андервольтинг</b> — разгон наоборот: снизить напряжение при той же частоте. Холоднее, тише, часто без потери скорости. Популярен на ноутбуках и видеокартах.</li>
+<li><b>Проверка стабильности:</b> часы нагрузки в OCCT, Prime95 или y-cruncher; для памяти — TestMem5 или MemTest86. Ошибки памяти могут тихо портить файлы, поэтому для рабочего ПК стабильность важнее лишних процентов.</li>
+<li><b>Гарантия:</b> разгон процессора производители часто исключают из гарантии. XMP/EXPO на практике считается нормой.</li></ul>`,
+quiz:[
+ {q:'Что почти всегда растёт при разгоне?',a:['Температура и потребление','Объём памяти','Ёмкость SSD'],c:0,w:'Больше частоты и напряжения — больше тепла и ватт.'},
+ {q:'После разгона ПК иногда сам перезагружается. Что это значит?',a:['Разгон нестабилен — нужно откатить настройки','Так и должно быть','Мало места на диске'],c:0,w:'Самопроизвольные перезагрузки и зависания — главный признак нестабильности.'},
+ {q:'Андервольтинг — это…',a:['Снижение напряжения ради меньшего нагрева при той же скорости','Разгон видеокарты','Удаление вирусов'],c:0,w:'Часто даёт тот же результат холоднее и тише.'}
+]},
+
+{name:'Сборка под задачу',title:'Собираем ПК под задачу',
+scene:()=>{
+ const card=(x,t1,t2,ic)=>`<rect x="${x}" y="44" width="104" height="128" rx="10" class="f-card o"/>${ic(x+52)}${T(x+52,148,t1,'td','font-size:11px')}${T(x+52,163,t2,'td','font-size:11px')}`;
+ const doc=cx=>`<rect x="${cx-16}" y="64" width="32" height="44" rx="3" class="f-hat o"/><path d="M${cx-9} 76h18M${cx-9} 84h18M${cx-9} 92h12" class="o1"/>`;
+ const clap=cx=>`<rect x="${cx-22}" y="80" width="44" height="30" rx="3" class="f-chip o"/><path d="M${cx-22} 72l44-8v10l-44 6z" class="f-hat o1"/><circle cx="${cx}" cy="95" r="7" class="f-blue2"/>`;
+ const pad=cx=>`<rect x="${cx-26}" y="74" width="52" height="30" rx="15" class="f-gray o"/><path d="M${cx-14} 83v12M${cx-20} 89h12" class="o" style="stroke:var(--hat)"/><circle cx="${cx+12}" cy="84" r="3.5" class="f-coral"/><circle cx="${cx+19}" cy="92" r="3.5" class="f-yel"/>`;
+ const bar=(title,parts,spec)=>{let x=20,s='',leg='';parts.forEach(([n,p,c],i)=>{const w=p*3.2;s+=`<rect x="${x.toFixed(1)}" y="44" width="${w.toFixed(1)}" height="26" class="${c} o1 grow" style="animation-delay:${(i*.12).toFixed(2)}s"/>`;if(p>=8)s+=T(x+w/2,61,p+'%','tm tk','font-size:9px');x+=w;const lx=i%2?190:24,ly=96+Math.floor(i/2)*20;leg+=`<rect x="${lx}" y="${ly-9}" width="10" height="10" rx="2" class="${c} o1"/>`+T(lx+16,ly,`${n} — ${p}%`,'tl','font-size:10px')});return T(180,28,title,'td','font-size:13px')+s+leg+T(180,192,spec,'tm','font-size:10px')};
+ const pr=(y,l,r,d)=>`<rect x="14" y="${y}" width="140" height="30" rx="6" class="f-card o"/>${T(84,y+19,l,'','font-size:10px')}<rect x="206" y="${y}" width="140" height="30" rx="6" class="f-card o"/>${T(276,y+19,r,'','font-size:10px')}<path d="M154 ${y+15}H206" class="hlline" style="stroke:var(--grn)"/><g class="appear" style="animation-delay:${d}s"><circle cx="180" cy="${y+15}" r="10" class="f-grn o1"/>${T(180,y+19.5,'✓','tw','font-size:12px')}</g>`;
+ return W(T(180,28,'Что будет готовить кухня?','td','font-size:13px')+card(14,'Офис и','учёба',doc)+card(128,'Монтаж и','нейросети',clap)+card(242,'Игры','',pad),'data-tag="q"')+
+ W(bar('Офис и учёба',[['Процессор (встройка)',30,'f-yel'],['Плата',18,'f-wood'],['Оперативка',15,'f-grn'],['SSD',12,'f-mint'],['Блок питания',12,'f-gray'],['Корпус',13,'f-coral']],'16 ГБ · SSD 512 ГБ · без видеокарты'),'data-tag="office"')+
+ W(bar('Монтаж и нейросети',[['Видеокарта',35,'f-blue'],['Процессор',22,'f-yel'],['Оперативка',14,'f-grn'],['Плата',10,'f-wood'],['SSD',9,'f-mint'],['Блок питания',6,'f-gray'],['Корпус и кулер',4,'f-coral']],'32–64 ГБ · NVMe 1–2 ТБ · VRAM от 12 ГБ'),'data-tag="create"')+
+ W(bar('Игры',[['Видеокарта',45,'f-blue'],['Процессор',18,'f-yel'],['Плата',10,'f-wood'],['Оперативка',8,'f-grn'],['SSD',7,'f-mint'],['Блок питания',7,'f-gray'],['Корпус и кулер',5,'f-coral']],'16–32 ГБ · NVMe 1 ТБ'),'data-tag="game"')+
+ W(pr(18,'Процессор AM5','Плата AM5',.2)+pr(62,'Память DDR5','Плата под DDR5',.7)+pr(106,'ПК берёт ~450 Вт','БП 650 Вт',1.2)+pr(150,'Видеокарта 300 мм','Корпус до 340 мм',1.7),'data-tag="compat"');
+},
+frames:[
+ {show:['q'],t:`Собираем свой компьютер. Первый вопрос не «что купить», а ${B('что будет готовить кухня')}. От задачи зависит, на ком экономить, а на ком нельзя.`},
+ {show:['office'],t:`${B('Офис и учёба')}: отдельный художник не нужен — хватит встроенной графики в процессоре. Главное — SSD и 16 ГБ оперативки.`},
+ {show:['create'],t:`${B('Монтаж и нейросети')}: нужны и повар с многими ядрами, и художник с большим столом-VRAM, и много оперативки.`},
+ {show:['game'],t:`${B('Игры')}: почти половина бюджета уходит художнику-видеокарте. Именно она решает, сколько кадров в секунду ты увидишь.`},
+ {show:['compat'],t:`Перед покупкой — ${B('проверка совместимости')}: сокет процессора и платы, поколение памяти, запас мощности блока питания, длина видеокарты и размер корпуса.`}
+],
+remember:['Сначала задача, потом детали','Игры — главное видеокарта; нейросети — объём VRAM','Офис — SSD и 16 ГБ, видеокарта не нужна','Совместимость: сокет, DDR4/DDR5, ватты, размеры'],
+deep:`<p>Доли бюджета — ориентир, а не закон. Цены меняются каждый месяц и в каждом городе свои, поэтому считай пропорции, а суммы проверяй в местных магазинах в день покупки.</p><ul>
+<li><b>Порядок выбора:</b> задача → бюджет → видеокарта и процессор → плата под сокет → память под плату → блок питания под потребление → корпус под размеры.</li>
+<li><b>Не экономь на блоке питания:</b> дешёвый может выйти из строя и потянуть за собой другие детали.</li>
+<li><b>Память ставь сразу двумя планками</b> нужного объёма (например, 2×16 ГБ). Четыре планки DDR5 часто приходится запускать на меньшей скорости.</li>
+<li><b>Для нейросетей</b> видеокарту выбирают по объёму VRAM. Большинство программ для локальных моделей лучше всего поддерживают видеокарты NVIDIA (CUDA).</li>
+<li><b>Совместимость</b> удобно проверить в конфигураторах вроде PCPartPicker: цены там зарубежные, но проверка сокетов, размеров и мощности работает.</li></ul>`,
+quiz:[
+ {q:'Для игрового ПК наибольшую часть бюджета обычно отдают…',a:['видеокарте','корпусу','SSD'],c:0,w:'Количество кадров в играх в первую очередь упирается в видеокарту.'},
+ {q:'Для локальных нейросетей в видеокарте важнее всего…',a:['объём видеопамяти (VRAM)','RGB-подсветка','число вентиляторов'],c:0,w:'Модель должна поместиться в VRAM, иначе работает в разы медленнее или не запускается.'},
+ {q:'Купил процессор под сокет AM5 и плату LGA1700. Соберётся?',a:['Да','Нет — разные сокеты'],c:1,w:'AM5 — это AMD, LGA1700 — Intel. Физически не совместимы.'}
+]},
+
+{name:'Проверь свой ПК',title:'Смотрим на свой компьютер',
+scene:()=>{
+ const key=(x,w,l,d)=>`<g class="press" style="animation-delay:${d}s"><rect x="${x}" y="88" width="${w}" height="46" rx="8" class="f-line o"/><rect x="${x}" y="80" width="${w}" height="46" rx="8" class="f-card o"/>${T(x+w/2,108,l,'td','font-size:15px')}</g>`;
+ const item=(y,n,v)=>`<rect x="24" y="${y}" width="108" height="26" rx="4" class="f-paper o1"/>`+T(30,y+11,n,'tl','font-size:9px')+T(30,y+21,v,'tl tm','font-size:7.5px');
+ const field=(x,y,s,c='')=>T(x,y,s,'tl tm '+c,'font-size:8px');
+ return W(key(40,76,'Ctrl',0)+T(130,110,'+','td','font-size:18px')+key(146,80,'Shift',.15)+T(240,110,'+','td','font-size:18px')+key(256,60,'Esc',.3)+T(180,170,'откроется Диспетчер задач','td','font-size:13px'),'data-tag="keys"')+
+ W(`<rect x="16" y="12" width="328" height="190" rx="8" class="f-card o"/><path d="M17.5 32H342.5" class="o1"/>`+T(28,26,'Диспетчер задач — Производительность','tl','font-size:9px')+
+  item(42,'ЦП','12% · 3,6 ГГц')+item(74,'Память','9,1/16 ГБ (57%)')+item(106,'Диск 0 (C:)','SSD (NVMe) · 2%')+item(138,'Графический процессор 0','4%')+
+  T(142,52,'Память','tl td','font-size:12px')+T(334,52,'16,0 ГБ DDR4','te tm','font-size:8px')+
+  `<rect x="142" y="60" width="192" height="62" rx="3" class="f-paper o1"/><path d="M142 80.5H334M142 101.5H334M206 60V122M270 60V122" class="o1" opacity=".25"/>`+
+  field(250,140,'Скорость: 3200 МТ/с')+field(250,154,'Гнёзд: 2 из 4')+field(250,168,'Форм-фактор: DIMM'),'data-tag="win"')+
+ W(`<polyline points="142,90 158,88 174,86 190,89 206,84 222,86 238,85 254,88 270,84 286,86 302,85 318,87 334,86" class="nf" style="stroke:var(--blue);stroke-width:2"/>`+field(142,140,'Используется: 9,1 ГБ')+field(142,154,'Доступно: 6,9 ГБ')+field(142,168,'Кэшировано: 4,2 ГБ'),'data-tag="norm"')+
+ W(`<polyline points="142,70 158,67 174,66 190,65 206,64 222,66 238,64 254,63 270,65 286,64 302,63 318,64 334,64" class="nf" style="stroke:var(--red);stroke-width:2.5"/>`+T(330,76,'93%','te tm tr','font-size:11px')+field(142,140,'Используется: 14,9 ГБ','tr')+field(142,154,'Доступно: 1,1 ГБ','tr')+field(142,168,'Кэшировано: 0,4 ГБ')+T(180,192,'Всегда выше 85–90 % — стол мал','td tr','font-size:10px'),'data-tag="busy"')+
+ W(`<rect x="21" y="71" width="114" height="32" rx="6" class="hl pulse"/><rect x="245" y="130" width="94" height="44" rx="6" class="hl pulse"/>`,'data-tag="hmem"');
+},
+frames:[
+ {show:['keys'],t:`Проверим твой компьютер! Нажми вместе три клавиши: ${B('Ctrl + Shift + Esc')}.`},
+ {show:['win','norm'],t:`Открой вкладку ${B('«Производительность»')}. Слева — все наши герои: ЦП (повар), Память (стол), Диск (кладовка), Графический процессор (художник).`},
+ {show:['win','norm','hmem'],t:`Нажми ${B('«Память»')}. Справа: сколько всего, сколько занято, скорость, тип и «Использовано гнёзд: 2 из 4» — значит, есть два свободных слота для новых планок.`},
+ {show:['win','busy'],t:`Если график памяти постоянно у потолка (85–90 % и выше), стол мал. Сначала посмотри на вкладке ${B('«Процессы»')}, кто его занимает, и только потом решай, докупать ли память.`}
+],
+remember:['Ctrl + Shift + Esc → «Производительность»','Память: объём, скорость, свободные гнёзда','Диск: SSD или HDD','ЦП: число ядер и логических процессоров'],
+deep:`<ul>
+<li><b>Модель и тайминги планок</b> покажет бесплатная программа CPU-Z: вкладка SPD — каждая планка отдельно, вкладка Memory — текущая частота (помни: там половина от МТ/с).</li>
+<li><b>Перед покупкой памяти выпиши:</b> поколение (DDR4/DDR5), скорость, объём уже стоящих планок и форм-фактор (DIMM — для ПК, SODIMM — для ноутбука). Лучше всего брать одинаковые планки комплектом.</li>
+<li><b>«Использовано гнёзд: 1 из 1»</b> или вовсе нет этой строки в ноутбуке — память, скорее всего, частично или полностью распаяна.</li>
+<li>В Windows 11 скорость может быть подписана «МТ/с», в старых версиях — «МГц». Число при этом то же (3200).</li></ul>`,
+quiz:[
+ {q:'Где в Windows посмотреть скорость оперативки и свободные слоты?',a:['Диспетчер задач → Производительность → Память','Панель задач → Часы','Проводник → Загрузки'],c:0,w:'Быстрый вход — Ctrl + Shift + Esc.'},
+ {q:'Память стабильно занята на 90 %+. Что логично сделать первым?',a:['Заменить блок питания','Посмотреть в «Процессах», что ест память, и закрыть лишнее','Купить новый процессор'],c:1,w:'Сначала найди причину. Если всё нужное и памяти всё равно мало — тогда докупать.'}
+]}
+];
+
+/* ---------- state ---------- */
+const KEY='pc-kitchen-v1';
+let store={ans:{}};
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.ans)store=s}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}};
+let ep=0,fr=0,timer=null,seen=new Set();
+const $=id=>document.getElementById(id);
+
+const isDone=i=>EP[i].quiz.every((q,j)=>store.ans[`${i}-${j}`]!==undefined);
+function renderNav(){
+  $('eps').innerHTML=EP.map((e,i)=>`<button type="button" class="chip${i===ep?' cur':''}${isDone(i)?' done':''}" data-i="${i}" aria-current="${i===ep}"><span class="n"><span>${i+1}</span></span>${e.name}</button>`).join('');
+  const d=EP.filter((_,i)=>isDone(i)).length;
+  $('prog').textContent=`Пройдено ${d} из ${EP.length}`;
+  $('progbar').style.width=(d/EP.length*100)+'%';
+}
+function renderQuiz(){
+  const e=EP[ep];let right=0,answered=0;
+  $('quiz').innerHTML=e.quiz.map((q,j)=>{
+    const a=store.ans[`${ep}-${j}`];const has=a!==undefined;if(has){answered++;if(a===q.c)right++}
+    return `<div class="q"><p>${q.q}</p>${q.a.map((o,k)=>`<button type="button" class="opt${has&&k===q.c?' right':''}${has&&k===a&&a!==q.c?' wrong':''}" data-q="${j}" data-k="${k}" ${has?'disabled':''}>${o}</button>`).join('')}
+    ${has?`<p class="why${a===q.c?'':' no'}"><b>${a===q.c?'Верно.':'Не совсем.'}</b> ${q.w}</p>`:''}</div>`}).join('')+
+    `<div class="qfoot"><span>${answered?`Верно ${right} из ${e.quiz.length}`:`${e.quiz.length} вопроса`}</span>${answered?'<button type="button" class="link" id="reset">Ответить заново</button>':''}</div>`;
+}
+function renderEp(){
+  const e=EP[ep];fr=0;seen=new Set();
+  $('epnum').textContent=`СЕРИЯ ${ep+1} / ${EP.length}`;
+  $('eptitle').textContent=e.title;
+  $('stage').innerHTML=svgWrap(e.scene());
+  $('rem').innerHTML=e.remember.map(r=>`<li>${r}</li>`).join('');
+  $('deep').innerHTML=e.deep;
+  $('dots').innerHTML=e.frames.map(()=>'<i></i>').join('');
+  const nx=EP[ep+1];
+  $('nextep').hidden=!nx; if(nx)$('nextep').textContent=`Следующая серия: ${nx.name} →`;
+  renderNav();renderQuiz();applyFrame();
+}
+function applyFrame(){
+  const e=EP[ep],f=e.frames[fr],svg=$('stage').querySelector('svg');
+  seen.add(fr);
+  svg.setAttribute('class',(f.cls||'')+((f.focus&&f.focus.length)?' dim':''));
+  svg.querySelectorAll('.actor').forEach(a=>a.classList.toggle('on',!!(f.focus&&f.focus.includes(a.id))));
+  const show=f.show||[];
+  svg.querySelectorAll('[data-tag]').forEach(el=>{
+    const vis=el.getAttribute('data-tag').split(' ').some(t=>show.includes(t));
+    if(vis)el.removeAttribute('hidden');else el.setAttribute('hidden','');
+  });
+  $('subtext').innerHTML=f.t;
+  [...$('dots').children].forEach((d,i)=>{d.className=i===fr?'cur':(seen.has(i)?'seen':'')});
+  $('prev').disabled=fr===0;
+  $('next').textContent=fr<e.frames.length-1?'Дальше':'К вопросам';
+}
+function go(d){
+  const n=EP[ep].frames.length;
+  if(d>0&&fr===n-1){stopAuto();document.querySelector('.quiz').scrollIntoView({behavior:'smooth',block:'start'});return}
+  fr=Math.max(0,Math.min(n-1,fr+d));applyFrame();
+}
+function stopAuto(){clearInterval(timer);timer=null;$('play').classList.remove('on');$('play').textContent='Авто'}
+function setEp(i,push=true){stopAuto();ep=i;renderEp();if(push){try{history.replaceState(null,'','#ep-'+(i+1))}catch(e){location.hash='ep-'+(i+1)}}}
+
+$('prev').onclick=()=>{stopAuto();go(-1)};
+$('next').onclick=()=>{stopAuto();go(1)};
+$('play').onclick=()=>{
+  if(timer){stopAuto();return}
+  $('play').classList.add('on');$('play').textContent='Пауза';
+  if(fr===EP[ep].frames.length-1){fr=0;applyFrame()}
+  timer=setInterval(()=>{if(fr<EP[ep].frames.length-1){fr++;applyFrame()}else stopAuto()},6500);
+};
+$('eps').onclick=ev=>{const b=ev.target.closest('.chip');if(b)setEp(+b.dataset.i)};
+$('nextep').onclick=()=>{if(ep<EP.length-1){setEp(ep+1);window.scrollTo({top:0,behavior:'smooth'})}};
+$('quiz').onclick=ev=>{
+  const o=ev.target.closest('.opt');
+  if(o){store.ans[`${ep}-${o.dataset.q}`]=+o.dataset.k;save();renderQuiz();renderNav();return}
+  if(ev.target.id==='reset'){EP[ep].quiz.forEach((_,j)=>delete store.ans[`${ep}-${j}`]);save();renderQuiz();renderNav()}
+};
+document.addEventListener('keydown',ev=>{
+  if(ev.target.closest&&ev.target.closest('button')&&(ev.key===' '||ev.key==='Enter'))return;
+  if(ev.key==='ArrowRight'){stopAuto();go(1)}else if(ev.key==='ArrowLeft'){stopAuto();go(-1)}
+});
+function fromHash(){const m=/^#ep-(\d+)$/.exec(location.hash);const i=m?Math.min(EP.length,Math.max(1,+m[1]))-1:0;if(i!==ep||!$('stage').firstChild){ep=i;renderEp()}}
+window.addEventListener('hashchange',fromHash);
+ep=-1;fromHash();
+</script>
+
+<script src="../offline.js"></script>
+</body>
+</html>

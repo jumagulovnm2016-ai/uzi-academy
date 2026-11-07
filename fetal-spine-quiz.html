@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Квиз: позвоночник плода во II триместре</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@600;700&family=PT+Sans:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+:root{
+  --bg:#f3f6f7; --paper:#fff; --ink:#18232f; --muted:#5b6b78; --line:#d5e0e3;
+  --navy:#1f3864; --teal:#007a7a; --soft:#e2f1f1; --ok:#1e7a46; --okbg:#e3f3e9; --bad:#b3261e; --badbg:#fbe7e5;
+  --c0:#d2304a; --c1:#1f63c6; --c2:#c98a00; --c3:#2a8a2a;
+  --f-d:"Spectral",Georgia,serif; --f-b:"PT Sans","Segoe UI",Arial,sans-serif; --f-m:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1519;--paper:#172027;--ink:#e5edf0;--muted:#9db0ba;--line:#2b3a43;--navy:#9cb6e6;--teal:#4cc3c3;--soft:#16302f;--ok:#6ad19a;--okbg:#163024;--bad:#ff8a80;--badbg:#3a1d1b}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 var(--f-b);min-height:100dvh}
+.wrap{max-width:720px;margin:0 auto;padding:18px 16px 40px;display:grid;gap:14px}
+.eyebrow{font:600 12px/1 var(--f-m);letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+h1{font:700 clamp(26px,6vw,36px)/1.1 var(--f-d);color:var(--navy);margin:6px 0 0;text-wrap:balance}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px clamp(14px,4vw,24px);display:grid;gap:12px}
+.muted{color:var(--muted);margin:0}
+label{font-weight:700;color:var(--navy)}
+input{font:inherit;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:9px;padding:12px 13px;width:100%}
+input:focus-visible{outline:3px solid var(--teal);outline-offset:1px}
+.err{color:var(--bad);font-size:14px;margin:0}
+.btn{font:700 17px var(--f-b);border:0;border-radius:10px;padding:13px 18px;cursor:pointer;background:var(--navy);color:var(--paper)}
+.btn.ghost{background:transparent;color:var(--navy);border:1.5px solid var(--navy)}
+.btn:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.rules{margin:0;padding-left:20px;display:grid;gap:4px}
+/* верхняя строка игры */
+.hud{display:flex;justify-content:space-between;align-items:center;gap:10px;font:700 14px var(--f-m);color:var(--muted)}
+.hud b{color:var(--navy);font-size:18px}
+.timebar{height:10px;background:var(--line);border-radius:6px;overflow:hidden}
+.timebar i{display:block;height:100%;width:100%;background:var(--teal);transform-origin:left;transition:background .3s}
+.timebar i.low{background:var(--c0)}
+.secs{font:700 34px/1 var(--f-m);color:var(--navy);text-align:center;font-variant-numeric:tabular-nums}
+.q{font:600 clamp(20px,4.6vw,26px)/1.28 var(--f-d);margin:0;text-wrap:pretty}
+.tag{font:600 12px var(--f-m);text-transform:uppercase;letter-spacing:.06em;color:var(--teal)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.grid{grid-template-columns:1fr}}
+.tile{display:grid;grid-template-columns:34px 1fr;align-items:center;gap:10px;text-align:left;font:700 16px/1.3 var(--f-b);color:#fff;border:0;border-radius:12px;padding:14px;min-height:68px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.tile:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.tile:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.tile svg{width:28px;height:28px}
+.t0{background:var(--c0)}.t1{background:var(--c1)}.t2{background:var(--c2)}.t3{background:var(--c3)}
+.tile.dim{opacity:.28}
+.tile.right{outline:4px solid var(--ok);outline-offset:2px;opacity:1}
+.tile:disabled{cursor:default}
+.tile.picked{opacity:.75;outline:4px solid var(--bad);outline-offset:2px}
+.tile.picked span::after{content:"  ✕ ваш ответ";font-weight:400}
+.verdict{border-radius:10px;padding:12px 14px;display:grid;gap:4px}
+.verdict.ok{background:var(--okbg)} .verdict.bad{background:var(--badbg)}
+.verdict strong{font-size:19px}.verdict.ok strong{color:var(--ok)}.verdict.bad strong{color:var(--bad)}
+.pts{font:700 15px var(--f-m)}
+.src{font:12px var(--f-m);color:var(--muted)}
+/* итог */
+.big{font:700 54px/1 var(--f-d);color:var(--navy);font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{background:var(--soft);border-radius:10px;padding:10px 12px}
+.stat span{display:block;font-size:13px;color:var(--muted)}.stat b{font:700 22px var(--f-m);color:var(--navy)}
+.list{margin:0;padding-left:22px;display:grid;gap:3px;font-size:15px}
+.list .x{color:var(--bad)} .list .v{color:var(--ok)}
+.send{font-weight:700}.send.ok{color:var(--ok)}.send.bad{color:var(--bad)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+footer{font-size:13px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a7b83">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+<div class="wrap">
+  <header><span class="eyebrow">Первичная специализация · УЗ-диагностика</span><h1>Квиз: позвоночник плода во II триместре</h1></header>
+
+  <section class="card" id="start">
+    <p class="muted">15 вопросов на время по ультразвуковой оценке позвоночника плода: сроки и ориентиры, оссификация и конус, эмбриология, Киари II, факторы риска и профилактика ДНТ, крестцово-копчиковая тератома. Баллы зависят от правильности и скорости: верный ответ — от 500 до 1000 баллов, чем быстрее, тем больше. Неверный ответ или истекшее время — 0.</p>
+    <ul class="rules muted"><li>На каждый вопрос — 30 секунд.</li><li>Ответ выбирается одним касанием, изменить его нельзя.</li><li>После ответа — правильный вариант и короткое пояснение; пауза между вопросами в зачёт времени не идёт.</li><li>В конце результат автоматически уходит преподавателю.</li></ul>
+    <label for="fio">ФИО курсанта</label>
+    <input id="fio" autocomplete="name" maxlength="120" placeholder="Иванов Иван Иванович">
+    <p class="err" id="fioerr" hidden>Введите хотя бы фамилию и имя, буквами.</p>
+    <button class="btn" id="go" type="button">Начать</button>
+  </section>
+
+  <section class="card" id="game" hidden aria-live="polite">
+    <div class="hud"><span>Вопрос <b id="qn">1</b> / 15</span><span>Баллы <b id="score">0</b></span></div>
+    <div class="timebar" aria-hidden="true"><i id="bar"></i></div>
+    <div class="secs" id="secs" role="timer">30</div>
+    <span class="tag" id="tag"></span>
+    <p class="q" id="qtext"></p>
+    <div class="grid" id="tiles"></div>
+    <div id="fb" hidden></div>
+    <button class="btn" id="next" type="button" hidden>Следующий вопрос →</button>
+  </section>
+
+  <section class="card" id="result" hidden></section>
+
+  <footer>Источники: руководство «Ультразвуковая оценка позвоночника плода во II триместре» (v2.3, 2026); ISUOG Practice Guidelines — скрининг II триместра (2022), ЦНС (2020/2021); Nicolaides 1986; MRC Vitamin Study 1991; Altman 1974; Rodriguez 2011. Жумагулов Н.М. · АДЦ «Сономедплюс», г. Ош</footer>
+</div>
+
+<script>
+const TG_TOKEN="proxy", TG_CHAT="188183172"; const TG_PROXY="https://script.google.com/macros/s/AKfycbznrtw3Wd7QBRhQaMlrCIp86oLemxjc_LlaIVomj-9rcXiyMYpmP_OCtc8u4lgQbaXKpg/exec";
+const TITLE="Квиз: позвоночник плода во II триместре";
+const LIMIT=30;   // секунд на вопрос
+const Q=[
+ {"t": "Норма · Сроки", "q": "В каком сроке ISUOG рекомендует рутинное исследование, включающее осмотр позвоночника?", "o": ["16–18 недель", "18–22 недели", "24–28 недель", "30–32 недели"], "a": 1, "e": "Рутинный осмотр II триместра выполняют в 18–22 недели. После 24 недель оценку затрудняют акустические тени окостеневших дужек.", "s": "ISUOG 2022"},
+ {"t": "Норма · Ориентиры", "q": "Какому позвонку соответствует последняя пара рёбер?", "o": ["L1", "Th10", "Th12", "C7"], "a": 2, "e": "Последняя пара рёбер — Th12. Его используют как второй ориентир при подсчёте уровня, вместе с S1 у крыла подвздошной кости.", "s": "Руководство, разд. 4.2, 6.4"},
+ {"t": "Норма · Оссификация", "q": "Копчик не визуализируется в 20 недель. Как это оценить?", "o": ["Агенезия копчика", "Норма: копчик ещё не оссифицирован", "Признак каудальной регрессии", "Повод для МРТ плода"], "a": 1, "e": "Во II триместре копчик не оссифицирован, поэтому отсутствие его изображения — норма.", "s": "Руководство, разд. 4.2"},
+ {"t": "Конус", "q": "До какого уровня поднимается конус спинного мозга к рождению?", "o": ["S1–S2", "L3–L4", "L1–L2", "Th10–Th11"], "a": 2, "e": "Из-за опережающего роста позвоночника конус смещается от крестцового уровня в начале II триместра до L2–L3 к середине беременности и до L1–L2 к рождению.", "s": "Руководство, разд. 4.1, 4.4"},
+ {"t": "Эмбриология", "q": "Нарушение какого процесса приводит к открытым дефектам нервной трубки?", "o": ["Вторичной нейруляции", "Первичной нейруляции", "Восхождения конуса", "Сегментации сомитов"], "a": 1, "e": "Первичная нейруляция — сворачивание нервной пластинки и закрытие нейропоров (около 26–28-го дня). Её нарушение даёт открытые дефекты; нарушение вторичной — закрытые дизрафии и каудальную регрессию.", "s": "Руководство, разд. 4.1"},
+ {"t": "Киари II", "q": "Почему при открытой spina bifida появляются признаки в задней черепной ямке?", "o": ["Утечка ликвора через дефект", "Опухоль задней черепной ямки", "Сопутствующая трисомия 18", "Хроническая гипоксия плода"], "a": 0, "e": "Ликвор уходит через дефект, давление в центральном канале падает, ЗЧЯ остаётся малой, и её содержимое смещается в большое затылочное отверстие.", "s": "Руководство, разд. 6.3"},
+ {"t": "Киари II", "q": "Какой интракраниальный признак открытой spina bifida проще всего заметить при скрининге?", "o": ["Вентрикуломегалия", "Облитерация большой цистерны", "Малая БПР", "Асимметрия полушарий"], "a": 1, "e": "Большая цистерна меньше 2 мм или не определяется примерно в 95% случаев — простой и надёжный признак в трансцеребеллярном сечении.", "s": "Руководство, табл. разд. 6.3"},
+ {"t": "Симптом «лимона»", "q": "Примерно у какой доли здоровых плодов встречается симптом «лимона»?", "o": ["Около 1%", "Около 10%", "Около 25%", "Никогда не встречается"], "a": 0, "e": "Симптом неспецифичен: около 1% здоровых плодов, а также энцефалоцеле, танатофорная дисплазия и др. Оценивают его вместе с ЗЧЯ.", "s": "Руководство, разд. 6.3"},
+ {"t": "Сочетанные находки", "q": "Какая находка на конечностях часто сопровождает открытую spina bifida?", "o": ["Полидактилия", "Косолапость", "Синдактилия", "Укорочение плеча"], "a": 1, "e": "Косолапость встречается примерно в четверти случаев открытой SB, реже — вывих бедра. Поэтому при косолапости прицельно смотрят позвоночник.", "s": "Руководство, разд. 6.2"},
+ {"t": "Биохимия", "q": "Какой показатель сыворотки матери повышен при открытой spina bifida?", "o": ["ХГЧ", "PAPP-A", "АФП", "Свободный эстриол"], "a": 2, "e": "Повышенный АФП — показание к прицельной оценке позвоночника. При закрытых формах АФП обычно не повышен.", "s": "Руководство, разд. 2, 7"},
+ {"t": "Профилактика", "q": "Какая доза фолиевой кислоты рекомендуется при ДНТ в анамнезе?", "o": ["0,4 мг в сутки", "4–5 мг в сутки", "1 мг в неделю", "15 мг в сутки"], "a": 1, "e": "Всем — 0,4 мг/сут минимум за месяц до зачатия и в I триместре; при ДНТ в анамнезе — 4–5 мг/сут. Это снижает риск повторения примерно на 70% (MRC, 1991).", "s": "MRC 1991; руководство, разд. 2"},
+ {"t": "Риск повторения", "q": "Каков риск повторения ДНТ после рождения одного поражённого ребёнка?", "o": ["Около 0,1%", "Около 2–4%", "Около 15%", "Около 25%"], "a": 1, "e": "Риск повторения — около 2–4%, поэтому при следующей беременности нужны высокие дозы фолатов и прицельный осмотр.", "s": "Руководство, разд. 2"},
+ {"t": "Тератома", "q": "На чём основана классификация крестцово-копчиковых тератом по Altman?", "o": ["На гистологической зрелости", "На размере опухоли", "На доле наружного и пресакрального компонента", "На степени васкуляризации"], "a": 2, "e": "Тип I — преимущественно наружная, тип IV — полностью пресакральная. Тип IV диагностируют позже всего.", "s": "Altman 1974; руководство, разд. 9.3"},
+ {"t": "Тератома", "q": "Какое отношение объёма тератомы к массе плода (TFR) до 24 недель считается неблагоприятным?", "o": ["Более 0,05", "Более 0,12", "Более 0,30", "Более 0,50"], "a": 1, "e": "TFR больше 0,12 до 24 недель связан с плохим исходом (Rodriguez, 2011). Неблагоприятны также быстрый рост, солидный васкуляризированный компонент и водянка.", "s": "Rodriguez 2011; руководство, разд. 9.3"},
+ {"t": "Тератома", "q": "Что представляет главную угрозу плоду при васкуляризированной тератоме?", "o": ["Маловодие", "Гипогликемия плода", "Внутричерепное кровоизлияние", "Сердечная недостаточность с высоким выбросом"], "a": 3, "e": "Артериовенозное шунтирование в опухоли перегружает сердце: водянка, многоводие, плацентомегалия, у матери — «зеркальный» синдром. Контроль каждые 1–2 недели.", "s": "Руководство, разд. 9.3"}
+];
+const SHAPES=['<svg viewBox="0 0 24 24"><path fill="#fff" d="M12 3 22 20H2z"/></svg>','<svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2 22 12 12 22 2 12z"/></svg>',
+  '<svg viewBox="0 0 24 24"><circle fill="#fff" cx="12" cy="12" r="9.5"/></svg>','<svg viewBox="0 0 24 24"><rect fill="#fff" x="3.5" y="3.5" width="17" height="17" rx="1"/></svg>'];
+const $=id=>document.getElementById(id);
+let fio="", i=0, score=0, streak=0, best=0, log=[], perm=[], t0=0, raf=0, locked=false, sent=false;
+const shuffle=a=>{a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]];}return a;};
+function fioOk(v){v=v.trim().replace(/\s+/g," ");return v.split(" ").length>=2&&/^[A-Za-zА-Яа-яЁёӨөҮүҢң'\- ]+$/.test(v)?v:null;}
+$("go").onclick=()=>{const v=fioOk($("fio").value); if(!v){$("fioerr").hidden=false;$("fio").focus();return;} fio=v; begin();};
+$("fio").addEventListener("keydown",e=>{if(e.key==="Enter")$("go").click();});
+function begin(){i=0;score=0;streak=0;best=0;log=[];sent=false;$("start").hidden=true;$("result").hidden=true;$("game").hidden=false;window.scrollTo(0,0);show();}
+function show(){
+  const x=Q[i]; locked=false; perm=shuffle([0,1,2,3]);
+  $("qn").textContent=i+1; $("score").textContent=score; $("tag").textContent=x.t; $("qtext").textContent=x.q;
+  $("fb").hidden=true; $("next").hidden=true;
+  const g=$("tiles"); g.innerHTML="";
+  perm.forEach((oi,pos)=>{const b=document.createElement("button");b.type="button";b.className="tile t"+pos;b.dataset.oi=oi;
+    b.innerHTML=SHAPES[pos]+"<span></span>"; b.lastChild.textContent=x.o[oi]; b.setAttribute("aria-label",(pos+1)+": "+x.o[oi]);
+    b.onclick=()=>answer(oi); g.appendChild(b);});
+  t0=performance.now(); cancelAnimationFrame(raf); tick();
+}
+function tick(){
+  const left=Math.max(0,LIMIT-(performance.now()-t0)/1000);
+  $("bar").style.transform=`scaleX(${left/LIMIT})`; $("bar").classList.toggle("low",left<=5);
+  $("secs").textContent=Math.ceil(left);
+  if(left<=0){answer(null);return;}
+  raf=requestAnimationFrame(tick);
+}
+function answer(oi){
+  if(locked) return; locked=true; cancelAnimationFrame(raf);
+  const x=Q[i], el=Math.min(LIMIT,(performance.now()-t0)/1000), ok=oi===x.a;
+  const pts= ok? Math.round(500+500*(1-el/LIMIT)) : 0;
+  if(ok){streak++;best=Math.max(best,streak);} else streak=0;
+  score+=pts; log.push({ok,el,pts,timeout:oi===null});
+  $("score").textContent=score;
+  [...$("tiles").children].forEach(b=>{b.disabled=true; const k=+b.dataset.oi; if(k===x.a) b.classList.add("right"); else if(k===oi) b.classList.add("picked"); else b.classList.add("dim");});
+  const fb=$("fb"); fb.hidden=false;
+  fb.className="verdict "+(ok?"ok":"bad");
+  fb.innerHTML=`<strong></strong><span class="pts"></span><span class="e"></span><span class="src"></span>`;
+  fb.children[0].textContent= ok? "Верно!" : (oi===null? "Время вышло" : "Неверно");
+  fb.children[1].textContent= ok? `+${pts} баллов · ${el.toFixed(1)} с${streak>=3?` · серия ${streak} 🔥`:""}` : `Правильно: ${x.o[x.a]}`;
+  fb.children[2].textContent=x.e; fb.children[3].textContent=x.s?"Источник: "+x.s:"";
+  $("next").hidden=false; $("next").textContent= i===Q.length-1? "Показать результат" : "Следующий вопрос →"; $("next").focus({preventScroll:true});
+}
+$("next").onclick=()=>{ if(i<Q.length-1){i++;show();window.scrollTo(0,0);} else finish(); };
+document.addEventListener("keydown",e=>{ if($("game").hidden) return;
+  if(!locked && /^[1-4]$/.test(e.key)){ answer(perm[+e.key-1]); } else if(locked && e.key==="Enter" && document.activeElement!==$("next")){ $("next").click(); } });
+
+function grade(p){return p>=90?"Отлично":p>=75?"Хорошо":p>=60?"Удовлетворительно":"Неудовлетворительно";}
+function stamp(d){const z=n=>String(n).padStart(2,"0");return `${z(d.getDate())}.${z(d.getMonth()+1)}.${d.getFullYear()} ${z(d.getHours())}:${z(d.getMinutes())}`;}
+function hash(s){let h=0x811c9dc5;for(const ch of s+"|fetal-spine-quiz"){h^=ch.codePointAt(0);h=Math.imul(h,0x01000193)>>>0;}return h.toString(36).toUpperCase().padStart(6,"0").slice(-6);}
+function attemptNo(){try{const k="acad-fetal-spine-quiz-attempts";const n=(+localStorage.getItem(k)||0)+1;localStorage.setItem(k,n);return n;}catch(e){return null;}}
+let cspBlocked=false;
+document.addEventListener("securitypolicyviolation",e=>{ if(String(e.blockedURI||"").includes("script.google")) cspBlocked=true; });
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+// Несколько способов доставки: если один заблокирован браузером или сетью, пробуем следующий
+async function sendTG(text){
+  const url=`${TG_PROXY}`;
+  try{ await fetch(url,{method:"POST",mode:"no-cors",body:new URLSearchParams({chat_id:TG_CHAT,text})}); return true; }catch(e){}
+  cspBlocked=false;
+  try{ const img=new Image(); img.referrerPolicy="no-referrer"; img.src=url+"?"+new URLSearchParams({chat_id:TG_CHAT,text,_:Date.now()}); }catch(e){}
+  await wait(1500); if(!cspBlocked) return true;
+  cspBlocked=false;
+  try{ const fr=document.createElement("iframe"); fr.name="tgsink"; fr.hidden=true; document.body.appendChild(fr);
+    const f=document.createElement("form"); f.method="POST"; f.target="tgsink"; f.action=url; f.hidden=true;
+    for(const [k,v] of [["chat_id",TG_CHAT],["text",text]]){ const i=document.createElement("input"); i.name=k; i.value=v; f.appendChild(i); }
+    document.body.appendChild(f); f.submit(); }catch(e){ return false; }
+  await wait(1500); return !cspBlocked;
+}
+function finish(){
+  $("game").hidden=true;
+  const n=Q.length, ok=log.filter(r=>r.ok).length, p=Math.round(ok/n*100);
+  const answered=log.filter(r=>!r.timeout), avg=answered.length? answered.reduce((s,r)=>s+r.el,0)/answered.length : 0;
+  const okT=log.filter(r=>r.ok).map(r=>r.el), fastest=okT.length? Math.min(...okT):null;
+  const wrong=log.map((r,k)=>r.ok?null:k+1).filter(Boolean);
+  const att=attemptNo();
+  const lines=[`${TITLE} — результат`,`ФИО: ${fio}`,`Дата: ${stamp(new Date())}`].concat(att?[`Попытка на этом устройстве: ${att}`]:[]).concat([
+    `Баллы: ${score} из ${n*1000}`,`Верно: ${ok} из ${n} (${p}%) — ${grade(p)}`,`Среднее время ответа: ${avg.toFixed(1)} с`,
+    `Лучшая серия: ${best}`,`Ошибки в вопросах: ${wrong.length?wrong.join(", "):"нет"}`]);
+  const text=lines.join("\n")+"\nКод: "+hash(lines.join("\n"));
+  const r=$("result"); r.hidden=false;
+  r.innerHTML=`<span class="eyebrow">Результат</span><div class="big">${score}</div><p class="muted">баллов из ${n*1000}</p>
+   <div class="stats"><div class="stat"><span>Верных ответов</span><b>${ok} / ${n}</b></div><div class="stat"><span>Оценка</span><b style="font-size:17px">${grade(p)}</b></div>
+   <div class="stat"><span>Среднее время</span><b>${avg.toFixed(1)} с</b></div><div class="stat"><span>Самый быстрый верный</span><b>${fastest!==null?fastest.toFixed(1)+" с":"—"}</b></div>
+   <div class="stat"><span>Лучшая серия</span><b>${best}</b></div></div>
+   <p class="send" id="send">Отправляем результат преподавателю…</p>
+   <ol class="list">${log.map((rr,k)=>`<li class="${rr.ok?"v":"x"}">${rr.ok?"верно":rr.timeout?"время вышло":"неверно"} · ${rr.el.toFixed(1)} с · +${rr.pts}</li>`).join("")}</ol>
+   <div class="row"><button class="btn" id="again" type="button">Пройти ещё раз</button><button class="btn ghost" id="share" type="button">Отправить через Telegram</button></div>`;
+  $("again").onclick=()=>{ r.hidden=true; r.innerHTML=""; begin(); };
+  $("share").onclick=()=>window.open("https://t.me/share/url?url="+encodeURIComponent(" ")+"&text="+encodeURIComponent(text),"_blank","noopener");
+  window.scrollTo(0,0);
+  sendTG(text).then(okS=>{const s=$("send"); if(!s) return; s.className="send "+(okS?"ok":"bad");
+    s.textContent= okS? "Результат отправлен преподавателю." : "Автоматически отправить не удалось — нажмите «Отправить через Telegram» и выберите чат преподавателя.";});
+}
+</script>
+<script src="offline.js"></script>
+</body>
+</html>
