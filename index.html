@@ -22,7 +22,17 @@ a.t small{grid-column:1;color:var(--muted)}
 a.t span{grid-row:1/3;grid-column:2;font:700 13px ui-monospace,Consolas,monospace;color:var(--teal);background:var(--soft);border-radius:6px;padding:4px 8px;white-space:nowrap}
 .note{background:var(--paper);border-left:4px solid var(--teal);border-radius:8px;padding:12px 14px;color:var(--ink)}
 footer{font-size:13px;color:var(--muted)}
+.install{background:var(--paper);border:1.5px solid var(--teal);border-radius:10px;padding:14px 16px;display:grid;gap:8px}
+.install b{color:var(--navy)}
+.install .btn{font:inherit;font-weight:700;border-radius:8px;padding:10px 16px;cursor:pointer;border:0;background:var(--navy);color:var(--paper);justify-self:start}
+.install ol{margin:0;padding-left:20px;color:var(--ink)}
+[hidden]{display:none!important}
 </style>
+<script>
+// Кнопка установки: Chrome присылает событие один раз и рано — ловим его до загрузки страницы
+window.__installEvt = null;
+addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); window.__installEvt = e; if (window.__installShow) window.__installShow(); });
+</script>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0a7b83">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -30,7 +40,13 @@ footer{font-size:13px;color:var(--muted)}
 </head>
 <body>
 <div class="wrap">
-<header><span class="eyebrow">Первичная специализация · УЗ-диагностика</span><h1>Тесты для курсантов</h1></header>
+<header><span class="eyebrow">Первичная специализация · УЗ-диагностика</span><h1>Академия УЗИ</h1></header>
+<section class="install" id="install" hidden aria-live="polite">
+ <b>Установить «Академию УЗИ» на телефон</b>
+ <p id="inst-text"></p>
+ <button class="btn" id="inst-btn" type="button" hidden>Установить</button>
+ <ol id="inst-steps" hidden></ol>
+</section>
 <p class="note">Откройте нужный тест в браузере (Chrome, Safari). Введите ФИО полностью — после завершения результат автоматически уходит преподавателю.</p>
 <a class="t" href="guides.html"><b>Руководства</b><small>методички и лекции по темам курса — PDF</small><span>16 рук.</span></a>
 
@@ -92,6 +108,44 @@ footer{font-size:13px;color:var(--muted)}
 </div>
 <footer>Жумагулов Н.М. · АДЦ «Сономедплюс», г. Ош</footer>
 </div>
+<script>
+(function () {
+  var box = document.getElementById("install"), text = document.getElementById("inst-text"),
+      btn = document.getElementById("inst-btn"), steps = document.getElementById("inst-steps");
+  var ua = navigator.userAgent || "";
+  var standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+  if (standalone) return;                                         // уже открыто как приложение
+  var inApp = /Telegram|WhatsApp|Instagram|FBAN|FBAV|FB_IAB|Line\/|wv\)/i.test(ua);
+  var ios = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  function list(items) { steps.innerHTML = items.map(function (t) { return "<li>" + t + "</li>"; }).join(""); steps.hidden = false; }
+  function show() {
+    box.hidden = false;
+    if (window.__installEvt) {
+      text.textContent = "Приложение откроется отдельной иконкой и будет работать без интернета.";
+      btn.hidden = false; steps.hidden = true;
+    } else if (inApp) {
+      text.textContent = "Страница открыта внутри Telegram / WhatsApp / Instagram — оттуда установить нельзя.";
+      list(["Нажмите ⋮ (или «…») вверху справа.", "Выберите «Открыть в браузере» (Chrome или Safari).", "В браузере вернитесь сюда — появится кнопка установки."]);
+    } else if (ios) {
+      text.textContent = "На iPhone и iPad кнопки «Установить» нет — приложение добавляется через Safari:";
+      list(["Откройте эту страницу в Safari.", "Нажмите «Поделиться» (квадрат со стрелкой вверх).", "Выберите «На экран „Домой“» и нажмите «Добавить»."]);
+    } else {
+      text.textContent = "Если кнопка не появилась, установите через меню браузера:";
+      list(["Chrome: ⋮ вверху справа → «Установить приложение» или «Добавить на гл. экран».",
+            "Если пункта нет — подождите несколько секунд после загрузки страницы и откройте меню снова.",
+            "Если вы уже устанавливали «Академию УЗИ», ищите её иконку среди приложений."]);
+    }
+  }
+  window.__installShow = show;
+  btn.onclick = function () {
+    var e = window.__installEvt; if (!e) return;
+    e.prompt(); e.userChoice.then(function (r) { window.__installEvt = null; if (r.outcome === "accepted") box.hidden = true; else show(); });
+  };
+  addEventListener("appinstalled", function () { box.hidden = true; });
+  // даём Chrome пару секунд прислать событие, затем показываем подсказку для своего случая
+  if (window.__installEvt) show(); else setTimeout(show, 2500);
+})();
+</script>
 <script src="offline.js"></script>
 </body>
 </html>
