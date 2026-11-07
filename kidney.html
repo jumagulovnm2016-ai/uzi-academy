@@ -540,7 +540,7 @@ const TITLE=CFG.title;
 // Автоотправка результата преподавателю в Telegram
 const TG_TOKEN="proxy", TG_CHAT="188183172"; const TG_PROXY="https://script.google.com/macros/s/AKfycbznrtw3Wd7QBRhQaMlrCIp86oLemxjc_LlaIVomj-9rcXiyMYpmP_OCtc8u4lgQbaXKpg/exec";
 const tgOn = !TG_TOKEN.startsWith("__") && !TG_CHAT.startsWith("__");
-function attemptNo(){ try{ const k=CFG.salt+"-attempts"; const n=(+localStorage.getItem(k)||0)+1; localStorage.setItem(k,n); return n; }catch(e){ return null; } }
+function attemptNo(){ try{ const k="acad-"+CFG.salt+"-attempts"; const n=(+localStorage.getItem(k)||0)+1; localStorage.setItem(k,n); return n; }catch(e){ return null; } }
 // Несколько способов доставки: страница по ссылке может блокировать часть запросов
 let cspBlocked=false;
 document.addEventListener("securitypolicyviolation",e=>{ if(String(e.blockedURI||"").includes("script.google")) cspBlocked=true; });
