@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" class="acad-locked">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -27,6 +27,7 @@ footer{font-size:13px;color:var(--muted)}
 <meta name="theme-color" content="#0a7b83">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<style>html.acad-locked body > *:not([role=dialog]){visibility:hidden}</style>
 </head>
 <body>
 <div class="wrap">
@@ -73,5 +74,14 @@ footer{font-size:13px;color:var(--muted)}
 <footer>Жумагулов Н.М. · АДЦ «Сономедплюс», г. Ош · Материалы для внутреннего учебного использования</footer>
 </div>
 <script src="offline.js"></script>
+<!-- acad-gate -->
+<script src="engine/vendor/supabase-js-2.119.0.umd.js"></script>
+<script src="engine/account.js"></script>
+<script>
+// Академия УЗИ: страница доступна только вошедшему подтверждённому курсанту
+(function () { var A = window.AcadAccount;
+  if (!A || !A.gate) { document.body.style.visibility = "hidden"; return; }
+  A.gate().then(function (ok) { if (ok) document.documentElement.classList.remove("acad-locked"); }); })();
+</script>
 </body>
 </html>

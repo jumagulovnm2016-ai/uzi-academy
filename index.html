@@ -35,7 +35,7 @@ footer{font-size:13px;color:var(--muted)}
 /* без входа тесты на главной скрыты (сами страницы тестов тоже закрыты входом) */
 html.locked h2:has(+ .list a[href^="quiz.html"]),html.locked h2:has(+ .list a[href^="guess.html"]),
 html.locked .list:has(a[href^="quiz.html"]),html.locked .list:has(a[href^="guess.html"]),
-html.locked a[href="plan.html"],html.locked #srs{display:none!important}
+html.locked a[href="plan.html"],html.locked a[href="guides.html"],html.locked #srs{display:none!important}
 html:not(.teacher) h2:has(+ .list a[href="teacher.html"]),html:not(.teacher) .list:has(a[href="teacher.html"]){display:none!important}
 html:not(.locked) #gatenote{display:none}
 html.locked .note:not(#gatenote){display:none}
@@ -59,7 +59,7 @@ addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); windo
  <button class="btn" id="inst-btn" type="button" hidden>Установить</button>
  <ol id="inst-steps" hidden></ol>
 </section>
-<p class="note" id="gatenote"><b>Тесты доступны после входа.</b> Войдите по логину и коду от преподавателя или зарегистрируйтесь по почте — после подтверждения преподавателем откроются все тесты, повторение и ваш план.</p>
+<p class="note" id="gatenote"><b>Тесты и руководства доступны после входа.</b> Войдите по логину и коду от преподавателя или зарегистрируйтесь по почте — после подтверждения преподавателем откроются тесты, руководства, повторение и ваш план.</p>
 <a class="t" id="acc" href="account.html"><b id="acc-t">Личный кабинет</b><small id="acc-s">вход и регистрация — история результатов на любом устройстве</small><span id="acc-n">войти</span></a>
 <a class="t" href="plan.html"><b>Мой план</b><small>слабые темы, что пройти дальше, что пора проверить повторно</small><span>план</span></a>
 <a class="t" id="srs" href="quiz.html?srs=1" hidden><b>Повторение по расписанию</b><small id="srs-sub"></small><span id="srs-n"></span></a>

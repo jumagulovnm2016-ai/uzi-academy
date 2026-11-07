@@ -38,6 +38,30 @@ def acad_keys(s):
     return s
 
 
+# Страницы, которые в Академии открываются только после входа (как тесты)
+GATED_PAGES = {'guides.html'}
+GATE_MARK = '<!-- acad-gate -->'
+GATE_SNIPPET = GATE_MARK + """
+<script src="engine/vendor/supabase-js-2.119.0.umd.js"></script>
+<script src="engine/account.js"></script>
+<script>
+// Академия УЗИ: страница доступна только вошедшему подтверждённому курсанту
+(function () { var A = window.AcadAccount;
+  if (!A || !A.gate) { document.body.style.visibility = "hidden"; return; }
+  A.gate().then(function (ok) { if (ok) document.documentElement.classList.remove("acad-locked"); }); })();
+</script>
+"""
+
+
+def add_gate(text):
+    """Закрывает страницу входом: прячет содержимое до проверки и подключает кабинет."""
+    if GATE_MARK in text:
+        return text
+    text = re.sub(r'<html([^>]*)>', lambda m: '<html' + m.group(1) + ' class="acad-locked">' if 'class=' not in m.group(1) else m.group(0), text, count=1)
+    text = text.replace('</head>', '<style>html.acad-locked body > *:not([role=dialog]){visibility:hidden}</style>\n</head>', 1)
+    return text.replace('</body>', GATE_SNIPPET + '</body>', 1)
+
+
 def stub(name, page):
     return (f'<!doctype html>\n<html lang="ru"><head><meta charset="utf-8"><title>Переход к тесту…</title>\n'
             f'<meta http-equiv="refresh" content="0;url={page}.html?t={name}">\n'
@@ -138,7 +162,10 @@ def main(src):
         name, s = f[:-5], open(p, encoding='utf-8').read()
         k = ex.kind(s)
         if not k:
-            write_if_changed(os.path.join(ROOT, f), acad_keys(s), log, f)
+            out = acad_keys(s)
+            if f in GATED_PAGES:
+                out = add_gate(out)
+            write_if_changed(os.path.join(ROOT, f), out, log, f)
             continue
         try:
             t = ex.extract(name, s)
