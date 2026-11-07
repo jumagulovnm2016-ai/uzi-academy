@@ -196,8 +196,11 @@ function render(p) {
   history(p);
 }
 if (!A || !A.client) { $("loading").textContent = "Не удалось загрузить модуль входа. Обновите страницу."; return; }
-A.onChange(render);
-A.ready.then(render);
+// после входа — вернуться к тесту, с которого пришли
+const next = new URLSearchParams(location.search).get("next");
+const goNext = p => { if (p && p.status === "active" && next && /^[a-z0-9-]+\.html(\?[^\s<>"]*)?$/.test(next)) { location.replace(next); return true; } return false; };
+A.onChange(p => { if (!goNext(p)) render(p); });
+A.ready.then(p => { if (!goNext(p)) render(p); });
 })();
 </script>
 <script src="offline.js"></script>

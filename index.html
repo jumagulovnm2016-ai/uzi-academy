@@ -1,5 +1,10 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" class="locked">
+<script>
+// без ожидания сети: если на устройстве есть вход и подтверждённый профиль — сразу показать тесты
+try { var pr = JSON.parse(localStorage.getItem("acad-profile") || "null");
+  if (localStorage.getItem("acad-auth") && pr && pr.status === "active") { document.documentElement.classList.remove("locked"); if (pr.role === "teacher") document.documentElement.classList.add("teacher"); } } catch (e) {}
+</script>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -27,6 +32,13 @@ footer{font-size:13px;color:var(--muted)}
 .install .btn{font:inherit;font-weight:700;border-radius:8px;padding:10px 16px;cursor:pointer;border:0;background:var(--navy);color:var(--paper);justify-self:start}
 .install ol{margin:0;padding-left:20px;color:var(--ink)}
 [hidden]{display:none!important}
+/* без входа тесты на главной скрыты (сами страницы тестов тоже закрыты входом) */
+html.locked h2:has(+ .list a[href^="quiz.html"]),html.locked h2:has(+ .list a[href^="guess.html"]),
+html.locked .list:has(a[href^="quiz.html"]),html.locked .list:has(a[href^="guess.html"]),
+html.locked a[href="plan.html"],html.locked #srs{display:none!important}
+html:not(.teacher) h2:has(+ .list a[href="teacher.html"]),html:not(.teacher) .list:has(a[href="teacher.html"]){display:none!important}
+html:not(.locked) #gatenote{display:none}
+html.locked .note:not(#gatenote){display:none}
 </style>
 <script>
 // Кнопка установки: Chrome присылает событие один раз и рано — ловим его до загрузки страницы
@@ -47,6 +59,7 @@ addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); windo
  <button class="btn" id="inst-btn" type="button" hidden>Установить</button>
  <ol id="inst-steps" hidden></ol>
 </section>
+<p class="note" id="gatenote"><b>Тесты доступны после входа.</b> Войдите по логину и коду от преподавателя или зарегистрируйтесь по почте — после подтверждения преподавателем откроются все тесты, повторение и ваш план.</p>
 <a class="t" id="acc" href="account.html"><b id="acc-t">Личный кабинет</b><small id="acc-s">вход и регистрация — история результатов на любом устройстве</small><span id="acc-n">войти</span></a>
 <a class="t" href="plan.html"><b>Мой план</b><small>слабые темы, что пройти дальше, что пора проверить повторно</small><span>план</span></a>
 <a class="t" id="srs" href="quiz.html?srs=1" hidden><b>Повторение по расписанию</b><small id="srs-sub"></small><span id="srs-n"></span></a>
@@ -169,6 +182,9 @@ addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); windo
 (function () {
   var A = window.AcadAccount; if (!A || !A.ready) return;
   function show(p) {
+    var root = document.documentElement;
+    root.classList.toggle("locked", !(p && p.status === "active"));
+    root.classList.toggle("teacher", !!(p && p.role === "teacher" && p.status === "active"));
     if (!p) return;
     document.getElementById("acc-t").textContent = p.full_name || "Личный кабинет";
     document.getElementById("acc-s").textContent = p.status === "pending" ? "ожидает подтверждения преподавателем" : p.status === "blocked" ? "аккаунт отключён" : (p.role === "teacher" ? "преподаватель" : (p.group || "личный кабинет")) + " · результаты и повторение сохраняются";

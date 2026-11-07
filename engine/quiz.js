@@ -382,6 +382,8 @@ function fail(text) {
 }
 
 async function boot() {
+  // тесты — только для вошедших и подтверждённых курсантов
+  if (!window.AcadAccount || !AcadAccount.gate || !(await AcadAccount.gate())) return;
   const params = new URLSearchParams(location.search), exam = params.get("exam");
   const id = params.get("t") || "";
   if (params.get("srs")) {

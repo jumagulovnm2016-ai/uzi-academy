@@ -82,6 +82,7 @@ const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&a
 const color = p => p >= 75 ? "var(--ok)" : p >= 60 ? "var(--warn)" : "var(--bad)";
 const cls = p => p >= 75 ? "g" : p >= 60 ? "m" : "b";
 
+if (!window.AcadAccount || !AcadAccount.gate || !(await AcadAccount.gate())) return;
 let catalog = [];
 try { catalog = await (await fetch("data/catalog.json")).json(); } catch (e) {}
 const ids = catalog.flatMap(s => s.tests.map(t => t.id));

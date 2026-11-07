@@ -166,6 +166,38 @@ api.srsChanged = () => { if (!active()) return; LS.set(K.dirty, 1); clearTimeout
 // страницу закрыли до отправки — отправим сразу, пока она ещё жива
 addEventListener("pagehide", () => { if (LS.get(K.dirty, 0) && active()) api.syncSrs(); });
 
+// ---------- доступ к тестам только после входа ----------
+// Закрывает страницу, если курсант не вошёл или ещё не подтверждён преподавателем.
+// opts.teacher — страница только для преподавателя. Возвращает true, если доступ есть.
+// Это ограничение интерфейса: оно отсекает случайных посетителей, но файлы тестов на сайте остаются публичными.
+api.gate = async function (opts) {
+  opts = opts || {};
+  // быстрый путь: на устройстве есть сессия и последний известный профиль подтверждён — не ждём сеть
+  const cached = LS.get(K.profile, null), hasSession = (() => { try { return !!localStorage.getItem("acad-auth"); } catch (e) { return false; } })();
+  if (hasSession && cached && cached.status === "active" && (!opts.teacher || cached.role === "teacher")) return true;
+  const p = await api.ready;
+  const ok = p && p.status === "active" && (!opts.teacher || p.role === "teacher");
+  if (ok) return true;
+  const next = encodeURIComponent(location.pathname.split("/").pop() + location.search);
+  const [title, text, btn] = !p
+    ? ["Нужно войти", "Тесты Академии УЗИ доступны только курсантам. Войдите по логину и коду от преподавателя или по своей почте.", "Войти"]
+    : p.status === "pending" ? ["Ожидает подтверждения", "Ваша регистрация ещё не подтверждена преподавателем. Как только он добавит вас в группу, тесты откроются.", "Личный кабинет"]
+    : p.status === "blocked" ? ["Аккаунт отключён", "Обратитесь к преподавателю.", "Личный кабинет"]
+    : ["Только для преподавателя", "Эта страница доступна только преподавателю курса.", "Личный кабинет"];
+  const d = document.createElement("div");
+  d.setAttribute("role", "dialog"); d.setAttribute("aria-modal", "true");
+  d.style.cssText = "position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:16px;background:var(--bg,#f3f6f7)";
+  d.innerHTML = `<div style="max-width:420px;width:100%;background:var(--paper,#fff);color:var(--ink,#18232f);border:1px solid var(--line,#d5e0e3);border-radius:12px;padding:22px;display:grid;gap:12px;font:16px/1.5 'PT Sans','Segoe UI',Arial,sans-serif">
+    <span style="font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--teal,#007a7a)">Академия УЗИ</span>
+    <b style="font:700 24px/1.2 Georgia,serif;color:var(--navy,#1f3864)"></b><p style="margin:0;color:var(--muted,#5b6b78)"></p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><a style="font-weight:700;border-radius:8px;padding:10px 16px;background:var(--navy,#1f3864);color:var(--paper,#fff);text-decoration:none" href="account.html?next=${next}"></a>
+    <a style="font-weight:700;border-radius:8px;padding:10px 16px;border:1.5px solid var(--navy,#1f3864);color:var(--navy,#1f3864);text-decoration:none" href="./">На главную</a></div></div>`;
+  d.querySelector("b").textContent = title; d.querySelector("p").textContent = text; d.querySelector("a").textContent = btn;
+  document.body.appendChild(d);
+  document.querySelectorAll("body > :not([role=dialog])").forEach(el => { el.setAttribute("aria-hidden", "true"); el.style.visibility = "hidden"; });
+  return false;
+};
+
 async function afterLogin() {
   await loadProfile(); emit();
   if (active()) { flush(); await api.syncSrs(); emit(); }

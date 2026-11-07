@@ -72,9 +72,12 @@ ul.h{margin:0;padding-left:20px;color:var(--muted);display:grid;gap:4px}
     </ul>
   </section>
 </div>
+<script src="engine/vendor/supabase-js-2.119.0.umd.js"></script>
+<script src="engine/account.js"></script>
 <script>
-(function () {
+(async function () {
 "use strict";
+if (!window.AcadAccount || !AcadAccount.gate || !(await AcadAccount.gate({ teacher: true }))) return;
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 // та же кодировка, что в engine/quiz.js

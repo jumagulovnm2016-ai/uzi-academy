@@ -184,6 +184,7 @@ document.addEventListener("keydown", e => {
 function fail(text) { $("h1").textContent = "Игра не найдена"; $("about").innerHTML = esc(text) + ' <a href="./">Вернуться к списку тестов</a>.'; ["rules", "go", "fio"].forEach(id => $(id).hidden = true); document.querySelector('label[for="fio"]').hidden = true; document.querySelector(".alt").hidden = true; }
 
 async function boot() {
+  if (!window.AcadAccount || !AcadAccount.gate || !(await AcadAccount.gate())) return;   // только для вошедших
   const id = new URLSearchParams(location.search).get("t") || "";
   if (!/^[a-z0-9-]+$/.test(id)) return fail("В адресе не указана игра.");
   try { const r = await fetch(`data/tests/${id}.json`); if (!r.ok) throw 0; T = await r.json(); }
