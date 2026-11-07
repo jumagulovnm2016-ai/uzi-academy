@@ -1,7 +1,7 @@
 // Тесты по УЗ-диагностике — офлайн-режим. Файл sw.js собирается из sw.template.js командой: python3 build-sw.py
 // Страницы: сначала сеть (обновления приходят сразу), без сети — из кэша.
 // Результаты в Telegram: без сети ставятся в очередь и отправляются при появлении связи.
-const VERSION = '20261107-204628';
+const VERSION = '20261107-205535';
 const CACHE = 'academy-' + VERSION;
 const FONTS = 'academy-fonts';
 const PRECACHE = [
@@ -19,6 +19,7 @@ const PRECACHE = [
  "./fetal-thorax.html",
  "./first-trimester.html",
  "./gallbladder.html",
+ "./guess.html",
  "./guides.html",
  "./gyn-guess.html",
  "./index.html",
@@ -50,16 +51,27 @@ const PRECACHE = [
  "./icons/icon-512.png",
  "./icons/icon-maskable-512.png",
  "./icons/apple-touch-icon.png",
+ "./engine/guess.css",
+ "./engine/guess.js",
  "./engine/quiz.css",
  "./engine/quiz.js",
+ "./data/tests/brain-guess.json",
+ "./data/tests/face-guess.json",
+ "./data/tests/fetal-spine.json",
  "./data/tests/gallbladder.json",
+ "./data/tests/gyn-guess.json",
+ "./data/tests/kidney-guess.json",
+ "./data/tests/kidney-ums.json",
  "./data/tests/kidney.json",
  "./data/tests/liver-anatomy.json",
  "./data/tests/liver.json",
  "./data/tests/pancreas.json",
  "./data/tests/physics-20.json",
  "./data/tests/physics-30.json",
- "./data/tests/spleen.json"
+ "./data/tests/screening-2-guess.json",
+ "./data/tests/screening-2-trimester.json",
+ "./data/tests/spleen.json",
+ "./data/tests/uro-guess.json"
 ];
 const IMG = {
  "brain-guess": [
@@ -372,7 +384,8 @@ async function handleSend(req) {
 
 // ---------- картинки страницы: фоновая докачка ----------
 async function warmImages(pageUrl) {
-  const name = new URL(pageUrl).pathname.split('/').pop().replace(/\.html$/, '');
+  const u = new URL(pageUrl);
+  const name = u.searchParams.get('t') || u.pathname.split('/').pop().replace(/\.html$/, '');
   const list = IMG[name];
   if (!list) return;
   const c = await caches.open(CACHE);

@@ -110,3 +110,7 @@ details summary{cursor:pointer;color:var(--teal);font-weight:700}
 .restored{margin:0;padding:10px 12px;border-radius:8px;background:var(--teal-soft);color:var(--ink)}
 .backlink{font-size:14px;color:var(--teal);font-weight:700;text-decoration:none}
 .backlink:hover{text-decoration:underline}
+.qimg{margin:0;display:grid;gap:6px}
+.qimg a{display:flex;justify-content:center;background:#0d1418;border-radius:8px;overflow:hidden}
+.qimg img{display:block;max-width:100%;max-height:min(55vh,440px);object-fit:contain}
+.qimg figcaption{font-size:13px;color:var(--muted)}

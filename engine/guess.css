@@ -1,0 +1,62 @@
+/* Стили игры «Угадай снимок» (перенесены со страниц игр без изменений, дополнения — в конце). */
+:root{
+  --bg:#f3f6f7; --paper:#fff; --ink:#18232f; --muted:#5b6b78; --line:#d5e0e3;
+  --navy:#1f3864; --teal:#007a7a; --soft:#e2f1f1; --ok:#1e7a46; --okbg:#e3f3e9; --bad:#b3261e; --badbg:#fbe7e5;
+  --c0:#d2304a; --c1:#1f63c6; --c2:#c98a00; --c3:#2a8a2a;
+  --f-d:"Spectral",Georgia,serif; --f-b:"PT Sans","Segoe UI",Arial,sans-serif; --f-m:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1519;--paper:#172027;--ink:#e5edf0;--muted:#9db0ba;--line:#2b3a43;--navy:#9cb6e6;--teal:#4cc3c3;--soft:#16302f;--ok:#6ad19a;--okbg:#163024;--bad:#ff8a80;--badbg:#3a1d1b}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 var(--f-b);min-height:100dvh}
+.wrap{max-width:720px;margin:0 auto;padding:18px 16px 40px;display:grid;gap:14px}
+.eyebrow{font:600 12px/1 var(--f-m);letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+h1{font:700 clamp(26px,6vw,36px)/1.1 var(--f-d);color:var(--navy);margin:6px 0 0;text-wrap:balance}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px clamp(14px,4vw,24px);display:grid;gap:12px}
+.muted{color:var(--muted);margin:0}
+label{font-weight:700;color:var(--navy)}
+input{font:inherit;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:9px;padding:12px 13px;width:100%}
+input:focus-visible{outline:3px solid var(--teal);outline-offset:1px}
+.err{color:var(--bad);font-size:14px;margin:0}
+.btn{font:700 17px var(--f-b);border:0;border-radius:10px;padding:13px 18px;cursor:pointer;background:var(--navy);color:var(--paper)}
+.btn.ghost{background:transparent;color:var(--navy);border:1.5px solid var(--navy)}
+.btn:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.rules{margin:0;padding-left:20px;display:grid;gap:4px}
+/* верхняя строка игры */
+.hud{display:flex;justify-content:space-between;align-items:center;gap:10px;font:700 14px var(--f-m);color:var(--muted)}
+.hud b{color:var(--navy);font-size:18px}
+.timebar{height:10px;background:var(--line);border-radius:6px;overflow:hidden}
+.timebar i{display:block;height:100%;width:100%;background:var(--teal);transform-origin:left;transition:background .3s}
+.timebar i.low{background:var(--c0)}
+.secs{font:700 34px/1 var(--f-m);color:var(--navy);text-align:center;font-variant-numeric:tabular-nums}
+.q{font:600 clamp(20px,4.6vw,26px)/1.28 var(--f-d);margin:0;text-wrap:pretty}
+.tag{font:600 12px var(--f-m);text-transform:uppercase;letter-spacing:.06em;color:var(--teal)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.grid{grid-template-columns:1fr}}
+.tile{display:grid;grid-template-columns:34px 1fr;align-items:center;gap:10px;text-align:left;font:700 16px/1.3 var(--f-b);color:#fff;border:0;border-radius:12px;padding:14px;min-height:68px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.tile:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.18)}
+.tile:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.tile svg{width:28px;height:28px}
+.t0{background:var(--c0)}.t1{background:var(--c1)}.t2{background:var(--c2)}.t3{background:var(--c3)}
+.tile.dim{opacity:.28}
+.tile.right{outline:4px solid var(--ok);outline-offset:2px;opacity:1}
+.tile:disabled{cursor:default}
+.tile.picked{opacity:.75;outline:4px solid var(--bad);outline-offset:2px}
+.tile.picked span::after{content:"  ✕ ваш ответ";font-weight:400}
+.verdict{border-radius:10px;padding:12px 14px;display:grid;gap:4px}
+.verdict.ok{background:var(--okbg)} .verdict.bad{background:var(--badbg)}
+.verdict strong{font-size:19px}.verdict.ok strong{color:var(--ok)}.verdict.bad strong{color:var(--bad)}
+.pts{font:700 15px var(--f-m)}
+.src{font:12px var(--f-m);color:var(--muted)}
+/* итог */
+.big{font:700 54px/1 var(--f-d);color:var(--navy);font-variant-numeric:tabular-nums}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{background:var(--soft);border-radius:10px;padding:10px 12px}
+.stat span{display:block;font-size:13px;color:var(--muted)}.stat b{font:700 22px var(--f-m);color:var(--navy)}
+.list{margin:0;padding-left:22px;display:grid;gap:3px;font-size:15px}
+.list .x{color:var(--bad)} .list .v{color:var(--ok)}
+.send{font-weight:700}.send.ok{color:var(--ok)}.send.bad{color:var(--bad)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+footer{font-size:13px;color:var(--muted)}
+.qimg{margin:0}.qimg a{display:flex;justify-content:center;align-items:center;background:#0d1418;border-radius:10px;overflow:hidden;min-height:200px}.qimg img{display:block;max-width:100%;max-height:min(50vh,430px);object-fit:contain}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}

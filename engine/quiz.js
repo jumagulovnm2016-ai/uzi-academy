@@ -135,7 +135,17 @@ function renderQ() {
     if (S.finished) b.disabled = true;
     b.addEventListener("click", () => choose(i)); li.appendChild(b); ul.appendChild(li);
   });
-  c.append(meta, h, ul);
+  c.append(meta, h);
+  if (x.img) {
+    const f = document.createElement("figure"); f.className = "qimg";
+    const a = document.createElement("a"); a.href = x.img; a.target = "_blank"; a.rel = "noopener"; a.title = "Открыть крупно";
+    const im = document.createElement("img"); im.src = x.img; im.alt = x.alt || "Эхограмма"; im.decoding = "async";
+    a.appendChild(im); f.appendChild(a);
+    const cap = document.createElement("figcaption"); cap.textContent = "Нажмите на изображение, чтобы открыть его крупно. " + (x.cr || "");
+    f.appendChild(cap); c.appendChild(f);
+  }
+  const nextImg = Q[S.cur + 1] && Q[S.cur + 1].img; if (nextImg) { const pre = new Image(); pre.src = nextImg; }
+  c.appendChild(ul);
   if (show && answered) {
     const fb = document.createElement("div"); fb.className = "fb"; const ok = v === x.a;
     fb.innerHTML = `<span class="verdict ${ok ? "ok" : "bad"}">${ok ? "Верно." : "Неверно. Правильный ответ — " + L[x.a] + "."}</span><span></span>`;
@@ -300,7 +310,10 @@ async function boot() {
     T = await r.json();
   } catch (e) { return fail(navigator.onLine ? "Такого теста нет." : "Нет интернета, и этот тест ещё не сохранён на устройстве."); }
 
-  KEY = "acad-state-" + T.id; LIMIT = T.minutes * 60 * 1000;
+  KEY = "acad-state-" + T.id;
+  // У игр «Угадай снимок» нет общего лимита — в обычном тесте даём столько же времени, сколько в игре.
+  T.minutes = T.minutes || Math.max(5, Math.ceil(T.questions.length * (T.seconds || 60) / 60));
+  LIMIT = T.minutes * 60 * 1000;
   document.title = T.pageTitle || ("Тест: " + T.title);
   $("eyebrow").textContent = T.eyebrow; $("h1").textContent = T.h1 || T.title; $("about").textContent = T.about || "";
   $("foot").textContent = T.footer || "";
@@ -311,6 +324,11 @@ async function boot() {
   if (S.ans.length !== Q.length) { S = fresh(S.mode === "review" ? "study" : S.mode); pickQuestions(); }
   sizeAnswers();
   if (S.cur >= Q.length) S.cur = 0;
+  // ?mode=review|exam со страницы игры — если попытка ещё не начата
+  const want = new URLSearchParams(location.search).get("mode");
+  if (MODES[want] && want !== S.mode && S.startAt === null && !S.ans.some(v => v !== null)) {
+    S = fresh(want); pickQuestions(); if (!Q.length) { S = fresh("study"); pickQuestions(); } sizeAnswers();
+  }
 
   if (S.startAt !== null || S.ans.some(v => v !== null)) {
     if (S.mode !== "review") fioLocked();

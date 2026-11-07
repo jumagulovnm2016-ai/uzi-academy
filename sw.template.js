@@ -92,7 +92,8 @@ async function handleSend(req) {
 
 // ---------- картинки страницы: фоновая докачка ----------
 async function warmImages(pageUrl) {
-  const name = new URL(pageUrl).pathname.split('/').pop().replace(/\.html$/, '');
+  const u = new URL(pageUrl);
+  const name = u.searchParams.get('t') || u.pathname.split('/').pop().replace(/\.html$/, '');
   const list = IMG[name];
   if (!list) return;
   const c = await caches.open(CACHE);
