@@ -13,6 +13,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <style>
+[hidden]{display:none!important}
 .backlink{font-size:14px;color:var(--teal);font-weight:700;text-decoration:none}
 .alt{display:grid;gap:8px;border-top:1px solid var(--line);padding-top:12px;margin-top:4px}
 .alt a{color:var(--teal);font-weight:700}
@@ -36,7 +37,7 @@
   </section>
 
   <section class="card" id="game" hidden aria-live="polite">
-    <div class="hud"><span>Снимок <b id="qn">1</b> / <span id="qtotal">0</span></span><span>Баллы <b id="score">0</b></span></div>
+    <div class="hud"><span><span id="unit">Снимок</span> <b id="qn">1</b> / <span id="qtotal">0</span></span><span>Баллы <b id="score">0</b></span></div>
     <div class="timebar" aria-hidden="true"><i id="bar"></i></div>
     <div class="secs" id="secs" role="timer"></div>
     <span class="tag" id="tag"></span>

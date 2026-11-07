@@ -56,7 +56,9 @@ function begin() {
 function paintQuestion() {
   const x = Q[S.i];
   $("qn").textContent = S.i + 1; $("score").textContent = S.score; $("tag").textContent = x.t; $("qtext").textContent = x.q;
-  const im = $("qimg"); im.alt = x.t + ": эхограмма"; $("imglink").href = x.img; im.src = x.img;
+  const im = $("qimg"), fig = im.closest("figure");
+  fig.hidden = !x.img;                                   // квизы на время — без эхограмм
+  if (x.img) { im.alt = x.t + ": эхограмма"; $("imglink").href = x.img; im.src = x.img; } else im.removeAttribute("src");
 }
 
 function show() {
@@ -73,9 +75,9 @@ function show() {
   cancelAnimationFrame(raf); $("secs").textContent = LIMIT; $("bar").style.transform = "scaleX(1)"; $("bar").classList.remove("low");
   t0 = performance.now(); const qi = S.i, im = $("qimg"); let started = false;
   const go = () => { if (started || locked || S.i !== qi) return; started = true; t0 = performance.now(); tick(); };
-  im.onload = go; im.onerror = go; if (im.complete && im.naturalWidth) go();
-  setTimeout(go, 6000);
-  if (Q[S.i + 1]) { const pre = new Image(); pre.src = Q[S.i + 1].img; }
+  if (!x.img) go();
+  else { im.onload = go; im.onerror = go; if (im.complete && im.naturalWidth) go(); setTimeout(go, 6000); }
+  if (Q[S.i + 1] && Q[S.i + 1].img) { const pre = new Image(); pre.src = Q[S.i + 1].img; }
 }
 
 function tick() {
@@ -109,7 +111,7 @@ function showFeedback() {
   const fb = $("fb"); fb.hidden = false;
   fb.className = "verdict " + (ok ? "ok" : "bad");
   fb.innerHTML = `<strong></strong><span class="pts"></span><span class="e"></span><span class="src"></span>`;
-  fb.children[0].textContent = ok ? "Верно!" : (oi === null ? (r.reloaded ? "Страница была перезагружена — снимок засчитан как «время вышло»" : "Время вышло") : "Неверно");
+  fb.children[0].textContent = ok ? "Верно!" : (oi === null ? (r.reloaded ? "Страница была перезагружена — вопрос засчитан как «время вышло»" : "Время вышло") : "Неверно");
   fb.children[1].textContent = ok ? `+${r.pts} баллов · ${r.el.toFixed(1)} с${S.streak >= 3 ? ` · серия ${S.streak} 🔥` : ""}` : `Правильно: ${x.o[x.a]}`;
   fb.children[2].textContent = x.e; fb.children[3].textContent = x.s ? "Источник: " + x.s : "";
   $("next").hidden = false; $("next").textContent = S.i === Q.length - 1 ? "Показать результат" : "Следующий вопрос →"; $("next").focus({ preventScroll: true });
@@ -183,9 +185,14 @@ async function boot() {
   document.title = T.pageTitle || T.title;
   $("eyebrow").textContent = T.eyebrow; $("h1").textContent = T.h1 || T.title; $("about").textContent = T.about; $("foot").textContent = T.footer;
   $("qtotal").textContent = Q.length;
-  $("rules").innerHTML = [`На каждый снимок — ${LIMIT} секунд; отсчёт начинается, когда снимок загрузился.`, "Снимок можно открыть крупно, нажав на него (время при этом идёт).",
+  const pics = Q.some(q => q.img), unit = pics ? "снимок" : "вопрос";
+  $("unit").textContent = pics ? "Снимок" : "Вопрос";
+  $("rules").innerHTML = [pics ? `На каждый снимок — ${LIMIT} секунд; отсчёт начинается, когда снимок загрузился.` : `На каждый вопрос — ${LIMIT} секунд.`,
+    pics ? "Снимок можно открыть крупно, нажав на него (время при этом идёт)." : null,
     "Ответ выбирается одним касанием, изменить его нельзя.", "После ответа — правильный вариант и короткое пояснение; пауза между вопросами в зачёт времени не идёт.",
-    "Если перезагрузить страницу на открытом снимке, он засчитывается как «время вышло».", "В конце результат автоматически уходит преподавателю."].map(t => `<li>${esc(t)}</li>`).join("");
+    `Если перезагрузить страницу на открытом вопросе, он засчитывается как «время вышло».`, "В конце результат автоматически уходит преподавателю."]
+    .filter(Boolean).map(t => `<li>${esc(t)}</li>`).join("");
+  $("asquiz").parentElement.firstChild.textContent = `Без таймера на каждый ${unit}: `;
   $("asquiz").href = `quiz.html?t=${encodeURIComponent(T.id)}`;
   const nMist = T.questions.filter(q => store.get(MKEY, {})[q.id]).length;
   if (nMist) { $("mistline").hidden = false; $("mistn").textContent = nMist; $("asreview").href = `quiz.html?t=${encodeURIComponent(T.id)}&mode=review`; }

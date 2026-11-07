@@ -32,7 +32,7 @@ def find(pattern, s, default=''):
 
 def js_array(s, start):
     """Вычисляет JS-массив вопросов через node (в старых страницах это не всегда строгий JSON)."""
-    i = s.index('[', s.index(start))
+    i = s.index('[', re.search(start, s).start())
     j = s.index('\n];', i) + 2
     src = 'process.stdout.write(JSON.stringify(' + s[i:j] + '))'
     return json.loads(subprocess.check_output(['node', '-e', src]).decode('utf-8'))
@@ -66,23 +66,27 @@ def extract(name):
         return {'id': name, 'format': 'quiz', 'title': cfg['title'], 'minutes': cfg['minutes'], 'salt': cfg['salt'],
                 **head, 'about': about_of(find(r'<header>.*?<p class="sub">(.*?)</p>', s)),
                 'footer': find(r'<footer>(.*?)<details>', s),
-                'questions': with_ids(name, js_array(s, 'const Q='))}
+                'questions': with_ids(name, js_array(s, r'const Q\s*=\s*\['))}
     if 'id="tiles"' in s:
         sec = int(re.search(r'const LIMIT=(\d+);', s).group(1))
-        img_dir = re.search(r'const IMG="([^"]+)"', s).group(1)
+        m = re.search(r'const IMG="([^"]+)"', s)
+        img_dir = m.group(1) if m else None          # квизы на время — без эхограмм
+        salt = re.search(r'for\(const ch of s\+"\|([^"]+)"\)', s).group(1)
         return {'id': name, 'format': 'guess', 'title': re.search(r'const TITLE="([^"]+)"', s).group(1),
-                'seconds': sec, 'salt': name, **head,
+                'seconds': sec, 'salt': salt, **head,
                 'about': find(r'<section class="card" id="start">\s*<p class="muted">(.*?)</p>', s),
                 'footer': find(r'<footer>(.*?)</footer>', s),
-                'questions': with_ids(name, js_array(s, 'const Q='), img_dir)}
+                'questions': with_ids(name, js_array(s, r'const Q\s*=\s*\['), img_dir)}
     # тест с TITLE/SALT/LIMIT
     minutes = int(re.search(r'const LIMIT=(\d+)\*60\*1000', s).group(1))
-    img_dir = f'img/{name}/'
+    # каталог картинок задан в коде страницы: "img/<папка>/"+x.img или "img/"+x.img
+    m = re.search(r'src="(img/[^"]*)"\+x\.img', s)
+    img_dir = m.group(1) if m else f'img/{name}/'
     return {'id': name, 'format': 'quiz', 'title': re.search(r'const TITLE="([^"]+)"', s).group(1), 'minutes': minutes,
             'salt': re.search(r'const SALT="([^"]+)"', s).group(1), **head,
             'about': about_of(find(r'<header>.*?<p class="sub">(.*?)</p>', s)),
             'footer': find(r'<footer>(.*?)<details>', s),
-            'questions': with_ids(name, js_array(s, 'const Q = ['), img_dir)}
+            'questions': with_ids(name, js_array(s, r'const Q\s*=\s*\['), img_dir)}
 
 
 def main(names):

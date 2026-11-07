@@ -1,7 +1,7 @@
 // Тесты по УЗ-диагностике — офлайн-режим. Файл sw.js собирается из sw.template.js командой: python3 build-sw.py
 // Страницы: сначала сеть (обновления приходят сразу), без сети — из кэша.
 // Результаты в Telegram: без сети ставятся в очередь и отправляются при появлении связи.
-const VERSION = '20261107-205535';
+const VERSION = '20261107-205952';
 const CACHE = 'academy-' + VERSION;
 const FONTS = 'academy-fonts';
 const PRECACHE = [
@@ -56,11 +56,19 @@ const PRECACHE = [
  "./engine/quiz.css",
  "./engine/quiz.js",
  "./data/tests/brain-guess.json",
+ "./data/tests/cns-face-spine.json",
+ "./data/tests/early-pregnancy.json",
+ "./data/tests/early-quiz.json",
+ "./data/tests/entry.json",
  "./data/tests/face-guess.json",
+ "./data/tests/fetal-spine-quiz.json",
  "./data/tests/fetal-spine.json",
+ "./data/tests/fetal-thorax.json",
+ "./data/tests/first-trimester.json",
  "./data/tests/gallbladder.json",
  "./data/tests/gyn-guess.json",
  "./data/tests/kidney-guess.json",
+ "./data/tests/kidney-quiz.json",
  "./data/tests/kidney-ums.json",
  "./data/tests/kidney.json",
  "./data/tests/liver-anatomy.json",
@@ -68,10 +76,15 @@ const PRECACHE = [
  "./data/tests/pancreas.json",
  "./data/tests/physics-20.json",
  "./data/tests/physics-30.json",
+ "./data/tests/screening-11-14-quiz.json",
  "./data/tests/screening-2-guess.json",
  "./data/tests/screening-2-trimester.json",
  "./data/tests/spleen.json",
- "./data/tests/uro-guess.json"
+ "./data/tests/ureter-bladder.json",
+ "./data/tests/ureter-quiz.json",
+ "./data/tests/uro-guess.json",
+ "./data/tests/uterus-adnexa.json",
+ "./data/tests/uterus-quiz.json"
 ];
 const IMG = {
  "brain-guess": [
