@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Собрать экзамен · Академия УЗИ</title>
+<style>
+:root{--bg:#f3f6f7;--paper:#fff;--ink:#18232f;--muted:#5b6b78;--line:#d5e0e3;--navy:#1f3864;--teal:#007a7a;--soft:#e2f1f1;--bad:#b3261e;--ok:#1e7a46}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1519;--paper:#172027;--ink:#e5edf0;--muted:#9db0ba;--line:#2b3a43;--navy:#9cb6e6;--teal:#4cc3c3;--soft:#16302f;--bad:#ff8a80;--ok:#6ad19a}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "PT Sans","Segoe UI",Arial,sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:28px 16px 48px;display:grid;gap:18px}
+.eyebrow{font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+h1{font:700 clamp(26px,5vw,36px)/1.15 Georgia,"Times New Roman",serif;color:var(--navy);margin:6px 0 0}
+h2{font:700 18px/1.3 Georgia,serif;color:var(--navy);margin:0}
+p{margin:0;color:var(--muted)}
+a.back{font-size:14px;color:var(--teal);font-weight:700;text-decoration:none}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:18px clamp(14px,4vw,24px);display:grid;gap:12px}
+label.f{display:grid;gap:4px;font-weight:700;color:var(--navy)}
+input[type=text],input[type=number],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:9px 11px;width:100%}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--teal);outline-offset:1px;border-color:var(--teal)}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.sec{display:grid;gap:6px;border-top:1px solid var(--line);padding-top:10px}
+.sec:first-of-type{border-top:0;padding-top:0}
+.sech{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.sech button{font:inherit;font-size:14px;color:var(--teal);background:none;border:0;cursor:pointer;font-weight:700;padding:4px}
+.t{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:6px 4px;border-radius:6px;cursor:pointer}
+.t:hover{background:var(--soft)}
+.t input{width:20px;height:20px;accent-color:var(--teal)}
+.t small{font:700 12px ui-monospace,Consolas,monospace;color:var(--teal);background:var(--soft);border-radius:6px;padding:3px 7px;white-space:nowrap}
+.sum{font-weight:700;color:var(--ink)}
+.err{color:var(--bad);font-weight:700}
+.btn{font:inherit;font-weight:700;border-radius:8px;padding:10px 16px;cursor:pointer;border:1.5px solid var(--navy);background:var(--paper);color:var(--navy);text-decoration:none;display:inline-block}
+.btn.primary{background:var(--navy);color:var(--paper)}
+.btn:disabled{opacity:.4;cursor:default}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+textarea{font:13px/1.4 ui-monospace,Consolas,monospace;min-height:84px;resize:vertical;word-break:break-all}
+.ok{color:var(--ok);font-weight:700}
+ul.h{margin:0;padding-left:20px;color:var(--muted);display:grid;gap:4px}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a7b83">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+<div class="wrap">
+  <header><a class="back" href="./">← Все тесты</a><br><span class="eyebrow">Для преподавателя</span><h1>Собрать экзамен</h1></header>
+  <p>Выберите разделы, число вопросов и время. Получится одна ссылка для всей группы, но у каждого курсанта будет свой случайный вариант: вопросы и порядок ответов перемешаны. Вопросы берутся поровну из каждого выбранного теста.</p>
+
+  <section class="card">
+    <label class="f">Название экзамена<input type="text" id="name" maxlength="120" value="Итоговый экзамен"></label>
+    <div class="row">
+      <label class="f">Вопросов<input type="number" id="q" min="5" max="200" value="30"></label>
+      <label class="f">Минут<input type="number" id="min" min="1" max="300" value="30"></label>
+      <label class="f">Режим<select id="mode"><option value="exam">Экзамен — ответы после завершения</option><option value="study">Учебный — разбор сразу</option></select></label>
+    </div>
+  </section>
+
+  <section class="card" id="list"><p>Загрузка списка тестов…</p></section>
+
+  <section class="card">
+    <p class="sum" id="sum"></p>
+    <p class="err" id="err" hidden></p>
+    <label class="f" for="link">Ссылка для курсантов</label>
+    <textarea id="link" readonly></textarea>
+    <div class="actions"><button class="btn primary" id="copy" type="button">Скопировать ссылку</button><a class="btn" id="open" target="_blank" rel="noopener">Открыть экзамен</a><button class="btn" id="tg" type="button">Отправить в Telegram</button><span id="msg" role="status"></span></div>
+    <ul class="h">
+      <li>Результат каждого курсанта приходит вам в Telegram, как обычно. В отчёте есть строка «Вариант» — по ней восстанавливается набор вопросов этого курсанта.</li>
+      <li>Чтобы посмотреть, в каких именно вопросах ошибся курсант, откройте ссылку экзамена, внизу — «Проверка отчёта», вставьте его отчёт.</li>
+      <li>Если изменить разделы или число вопросов, получится другая ссылка и другой экзамен. Сохраните ссылку, которую отправили группе.</li>
+    </ul>
+  </section>
+</div>
+<script>
+(function () {
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// та же кодировка, что в engine/quiz.js
+const enc = o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+let tests = {}, minTouched = false;
+
+function update() {
+  const ids = [...document.querySelectorAll(".t input:checked")].map(i => i.value);
+  const avail = ids.reduce((n, id) => n + tests[id].n, 0);
+  const q = Math.max(1, Math.min(200, +$("q").value || 0));
+  if (!minTouched) $("min").value = Math.max(5, Math.round(q * 0.8));
+  const err = $("err");
+  let problem = "";
+  if (!ids.length) problem = "Выберите хотя бы один тест.";
+  else if (q > avail) problem = `В выбранных тестах всего ${avail} вопросов — уменьшите число или добавьте разделы.`;
+  err.hidden = !problem; err.textContent = problem;
+  $("sum").textContent = ids.length ? `Выбрано тестов: ${ids.length} · вопросов в них: ${avail} · в варианте: ${q} · время: ${$("min").value} мин` : "";
+  const ok = !problem;
+  ["copy", "tg"].forEach(id => $(id).disabled = !ok); $("open").hidden = !ok;
+  if (!ok) { $("link").value = ""; return; }
+  const cfg = { n: $("name").value.trim() || "Сборный экзамен", t: ids, q, min: Math.max(1, Math.min(300, +$("min").value || 30)), m: $("mode").value };
+  const url = new URL("quiz.html?exam=" + enc(cfg), location.href).href;
+  $("link").value = url; $("open").href = url;
+}
+
+function render(catalog) {
+  const box = $("list"); box.innerHTML = "<h2>Разделы</h2>";
+  catalog.forEach((sec, si) => {
+    const d = document.createElement("div"); d.className = "sec";
+    d.innerHTML = `<div class="sech"><b>${esc(sec.section)}</b><button type="button" data-s="${si}">выбрать все</button></div>` +
+      sec.tests.map(t => { tests[t.id] = t;
+        const tag = `${t.n} вопр.` + (t.img ? ` · ${t.img} эхогр.` : "") + (t.format === "guess" ? " · квиз" : "");
+        return `<label class="t"><input type="checkbox" value="${esc(t.id)}" data-sec="${si}"><span>${esc(t.title)}</span><small>${tag}</small></label>`; }).join("");
+    box.appendChild(d);
+  });
+  box.querySelectorAll("[data-s]").forEach(b => b.onclick = () => {
+    const boxes = [...box.querySelectorAll(`input[data-sec="${b.dataset.s}"]`)], all = boxes.every(i => i.checked);
+    boxes.forEach(i => i.checked = !all); b.textContent = all ? "выбрать все" : "снять все"; update();
+  });
+  box.addEventListener("change", update);
+  update();
+}
+
+["name", "q", "mode"].forEach(id => $(id).addEventListener("input", update));
+$("min").addEventListener("input", () => { minTouched = true; update(); });
+const msg = t => { $("msg").textContent = t; $("msg").className = "ok"; };
+$("copy").onclick = () => { const ta = $("link");
+  try { navigator.clipboard.writeText(ta.value).then(() => msg("Ссылка скопирована."), () => { ta.focus(); ta.select(); msg("Ссылка выделена — скопируйте её."); }); }
+  catch (e) { ta.focus(); ta.select(); msg("Ссылка выделена — скопируйте её."); } };
+$("tg").onclick = () => window.open("https://t.me/share/url?url=" + encodeURIComponent($("link").value) + "&text=" + encodeURIComponent($("name").value.trim()), "_blank", "noopener");
+
+fetch("data/catalog.json").then(r => r.json()).then(render).catch(() => { $("list").innerHTML = "<p class=\"err\">Не удалось загрузить список тестов.</p>"; });
+})();
+</script>
+<script src="offline.js"></script>
+</body>
+</html>

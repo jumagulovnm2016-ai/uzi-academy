@@ -1,0 +1,237 @@
+[
+ {
+  "section": "Вводный блок",
+  "tests": [
+   {
+    "id": "entry",
+    "title": "Входной тест — физика УЗ и анатомия органов брюшной полости",
+    "format": "quiz",
+    "n": 20,
+    "img": 0
+   },
+   {
+    "id": "physics-20",
+    "title": "Физика ультразвука — базовый уровень",
+    "format": "quiz",
+    "n": 20,
+    "img": 0
+   },
+   {
+    "id": "physics-30",
+    "title": "Физика ультразвука — задачи на понимание",
+    "format": "quiz",
+    "n": 30,
+    "img": 0
+   }
+  ]
+ },
+ {
+  "section": "Органы брюшной полости",
+  "tests": [
+   {
+    "id": "liver-anatomy",
+    "title": "УЗИ печени. Часть 1 — анатомия и техника сканирования",
+    "format": "quiz",
+    "n": 30,
+    "img": 0
+   },
+   {
+    "id": "liver",
+    "title": "Диффузные и очаговые заболевания печени",
+    "format": "quiz",
+    "n": 30,
+    "img": 0
+   },
+   {
+    "id": "gallbladder",
+    "title": "Желчный пузырь и протоки",
+    "format": "quiz",
+    "n": 20,
+    "img": 0
+   },
+   {
+    "id": "pancreas",
+    "title": "УЗИ поджелудочной железы",
+    "format": "quiz",
+    "n": 30,
+    "img": 0
+   },
+   {
+    "id": "spleen",
+    "title": "УЗИ селезёнки",
+    "format": "quiz",
+    "n": 30,
+    "img": 0
+   }
+  ]
+ },
+ {
+  "section": "Мочевыделительная система",
+  "tests": [
+   {
+    "id": "kidney",
+    "title": "УЗИ почек",
+    "format": "quiz",
+    "n": 30,
+    "img": 0
+   },
+   {
+    "id": "kidney-quiz",
+    "title": "Квиз: УЗИ почек",
+    "format": "guess",
+    "n": 15,
+    "img": 0
+   },
+   {
+    "id": "ureter-quiz",
+    "title": "Квиз: мочеточники и мочевой пузырь",
+    "format": "guess",
+    "n": 20,
+    "img": 0
+   },
+   {
+    "id": "ureter-bladder",
+    "title": "УЗИ мочеточников и мочевого пузыря",
+    "format": "quiz",
+    "n": 30,
+    "img": 0
+   },
+   {
+    "id": "kidney-guess",
+    "title": "Угадай снимок: почки",
+    "format": "guess",
+    "n": 40,
+    "img": 40
+   },
+   {
+    "id": "uro-guess",
+    "title": "Угадай снимок: мочевой пузырь и мочеточники",
+    "format": "guess",
+    "n": 11,
+    "img": 11
+   },
+   {
+    "id": "kidney-ums",
+    "title": "УЗИ почек, мочеточников и мочевого пузыря",
+    "format": "quiz",
+    "n": 50,
+    "img": 16
+   }
+  ]
+ },
+ {
+  "section": "Гинекология",
+  "tests": [
+   {
+    "id": "uterus-quiz",
+    "title": "Квиз: УЗИ матки и придатков",
+    "format": "guess",
+    "n": 30,
+    "img": 0
+   },
+   {
+    "id": "uterus-adnexa",
+    "title": "УЗИ матки и придатков",
+    "format": "quiz",
+    "n": 40,
+    "img": 0
+   },
+   {
+    "id": "gyn-guess",
+    "title": "Угадай снимок: гинекология",
+    "format": "guess",
+    "n": 32,
+    "img": 32
+   }
+  ]
+ },
+ {
+  "section": "Акушерство",
+  "tests": [
+   {
+    "id": "early-quiz",
+    "title": "Квиз: УЗИ в ранние сроки беременности",
+    "format": "guess",
+    "n": 30,
+    "img": 0
+   },
+   {
+    "id": "early-pregnancy",
+    "title": "УЗИ при малом сроке беременности",
+    "format": "quiz",
+    "n": 30,
+    "img": 0
+   },
+   {
+    "id": "screening-11-14-quiz",
+    "title": "Квиз: первый скрининг 11–14 недель",
+    "format": "guess",
+    "n": 20,
+    "img": 0
+   },
+   {
+    "id": "first-trimester",
+    "title": "УЗИ в 11–14 недель: первый скрининг",
+    "format": "quiz",
+    "n": 30,
+    "img": 0
+   },
+   {
+    "id": "screening-2-trimester",
+    "title": "УЗИ-скрининг II триместра",
+    "format": "quiz",
+    "n": 30,
+    "img": 6
+   },
+   {
+    "id": "fetal-spine",
+    "title": "Позвоночник плода во II триместре",
+    "format": "quiz",
+    "n": 30,
+    "img": 10
+   },
+   {
+    "id": "fetal-spine-quiz",
+    "title": "Квиз: позвоночник плода во II триместре",
+    "format": "guess",
+    "n": 15,
+    "img": 0
+   },
+   {
+    "id": "fetal-thorax",
+    "title": "Органы грудной клетки плода во II триместре",
+    "format": "quiz",
+    "n": 30,
+    "img": 0
+   },
+   {
+    "id": "screening-2-guess",
+    "title": "Угадай снимок: скрининг II триместра",
+    "format": "guess",
+    "n": 30,
+    "img": 30
+   },
+   {
+    "id": "brain-guess",
+    "title": "Угадай снимок: головной мозг плода",
+    "format": "guess",
+    "n": 30,
+    "img": 30
+   },
+   {
+    "id": "face-guess",
+    "title": "Угадай снимок: лицо плода",
+    "format": "guess",
+    "n": 30,
+    "img": 30
+   },
+   {
+    "id": "cns-face-spine",
+    "title": "Мозг, лицо и позвоночник плода во II триместре",
+    "format": "quiz",
+    "n": 50,
+    "img": 18
+   }
+  ]
+ }
+]

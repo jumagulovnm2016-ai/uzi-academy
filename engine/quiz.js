@@ -42,8 +42,51 @@ const MODES = {
 let T, Q, S, KEY, LIMIT, tick = null;
 
 function fresh(mode) {
+  if (T && T.lock) mode = T.lock;                          // в экзамене преподавателя режим задан ссылкой
   return { v: 1, mode, qids: null, fio: "", ans: [], cur: 0, startAt: null, endAt: null,
-           finished: false, timedOut: false, reportText: null, sendState: null };
+           finished: false, timedOut: false, reportText: null, sendState: null,
+           seed: T && T.pool ? newSeed() : null };
+}
+
+// ---------- сборный экзамен: случайный вариант из нескольких тестов ----------
+// Ссылка: quiz.html?exam=<base64url JSON {n: название, t: [id тестов], q: вопросов, min: минут, m: "exam"|"study"}>
+// Вариант определяется зерном (seed): по нему из отчёта восстанавливается тот же набор и порядок вопросов.
+const newSeed = () => Math.floor(Math.random() * 36 ** 6).toString(36).toUpperCase().padStart(6, "0");
+function rng(seed) {
+  let a = parseInt(seed, 36) >>> 0 || 1;
+  return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+function shuffled(arr, rnd) { const a = arr.slice(); for (let k = a.length - 1; k > 0; k--) { const j = Math.floor(rnd() * (k + 1)); [a[k], a[j]] = [a[j], a[k]]; } return a; }
+// Поровну из каждого раздела; если в разделе вопросов меньше доли — недостающие добираются из остальных.
+function variant(pool, total, seed) {
+  const rnd = rng(seed), groups = pool.map(g => shuffled(g, rnd));
+  const take = groups.map(() => 0); let left = Math.min(total, groups.reduce((n, g) => n + g.length, 0));
+  while (left > 0) {
+    const open = groups.map((g, i) => i).filter(i => take[i] < groups[i].length);
+    const share = Math.max(1, Math.floor(left / open.length));
+    for (const i of shuffled(open, rnd)) { if (!left) break; const add = Math.min(share, groups[i].length - take[i], left); take[i] += add; left -= add; }
+  }
+  const picked = shuffled(groups.flatMap((g, i) => g.slice(0, take[i])), rnd);
+  // варианты ответа тоже перемешиваются — у соседей разные буквы
+  return picked.map(q => { const order = shuffled(q.o.map((_, i) => i), rnd);
+    return Object.assign({}, q, { o: order.map(i => q.o[i]), a: order.indexOf(q.a) }); });
+}
+function applyVariant() { if (T.pool) T.questions = variant(T.pool, T.total, S.seed); }
+const b64 = { enc: o => btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""),
+              dec: s => JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/"))))) };
+function shortHash(str) { let h = 0x811c9dc5; for (const ch of str) { h ^= ch.codePointAt(0); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(36); }
+async function loadExam(code) {
+  let c; try { c = b64.dec(code); } catch (e) { throw new Error("Ссылка на экзамен повреждена."); }
+  const ids = Array.isArray(c.t) ? c.t.filter(id => /^[a-z0-9-]+$/.test(id)) : [];
+  if (!ids.length) throw new Error("В ссылке на экзамен не выбраны разделы.");
+  const tests = await Promise.all(ids.map(id => fetch(`data/tests/${id}.json`).then(r => { if (!r.ok) throw new Error("Раздел не найден: " + id); return r.json(); })));
+  const total = Math.max(1, Math.min(200, +c.q || 30)), h = shortHash(code);
+  const name = String(c.n || "Сборный экзамен").slice(0, 120);
+  return { id: "exam-" + h, format: "quiz", title: name, h1: name, pageTitle: name + " · Академия УЗИ", eyebrow: "Экзамен преподавателя · Академия УЗИ",
+           about: `${total} вопросов из разделов: ${tests.map(t => t.title).join("; ")}. У каждого курсанта свой случайный вариант: вопросы и варианты ответов перемешаны.`,
+           footer: "Вопросы взяты из тестов Академии УЗИ; источники указаны в разборе каждого вопроса.",
+           minutes: Math.max(1, Math.min(300, +c.min || Math.ceil(total * 0.8))), salt: "acad-exam-" + h,
+           lock: c.m === "study" ? "study" : "exam", pool: tests.map(t => t.questions), total, sections: tests.map(t => t.title), questions: [] };
 }
 const save = () => store.set(KEY, S);
 const timed = () => S.mode !== "review";
@@ -87,6 +130,7 @@ function fioReset() {
 // ---------- шапка и режимы ----------
 function renderChrome() {
   const started = S.startAt !== null || S.ans.some(v => v !== null);
+  $("modes").hidden = !!T.lock;
   document.querySelectorAll(".mode").forEach(b => {
     b.setAttribute("aria-pressed", String(b.dataset.mode === S.mode));
     b.disabled = started && b.dataset.mode !== S.mode;
@@ -266,7 +310,8 @@ function showResult(auto) {
       const lines = [`Тест «${T.title}» — результат`, `Режим: ${MODES[S.mode].name} · Академия УЗИ`, `ФИО: ${S.fio || "не указано"}`, `Дата: ${stamp(new Date(S.endAt || Date.now()))}`,
         `Результат: ${ok} из ${Q.length} (${p}%) — ${g}`, `Время: ${fmt(used)} из ${fmt(LIMITv)}${S.timedOut ? " (время вышло)" : ""}`,
         `Без ответа: ${Q.length - done}`, `Ошибки в вопросах: ${wrong.length ? wrong.map(i => i + 1).join(", ") : "нет"}`];
-      const att = attemptNo(); if (att) lines.splice(4, 0, `Попытка на этом устройстве: ${att}`);
+      if (T.pool) lines.splice(2, 0, `Вариант: ${S.seed}`);
+      const att = attemptNo(); if (att) lines.splice(lines.findIndex(l => l.startsWith("Дата:")) + 1, 0, `Попытка на этом устройстве: ${att}`);
       S.reportText = lines.join("\n") + "\nКод проверки: " + hash(body(lines.join("\n")));
       save(); send(S.reportText);
     }
@@ -285,7 +330,7 @@ function showResult(auto) {
 }
 
 function restart() {
-  const m = S.mode; stopTimer(); S = fresh(m); pickQuestions();
+  const m = S.mode; stopTimer(); S = fresh(m); applyVariant(); pickQuestions();
   if (m === "review" && !Q.length) { S = fresh("study"); pickQuestions(); }
   sizeAnswers(); store.del(KEY); save(); fioReset(); $("restored").hidden = true;
   $("result").hidden = true; $("qcard").hidden = false; renderAll(); window.scrollTo(0, 0);
@@ -302,13 +347,19 @@ function fail(text) {
 }
 
 async function boot() {
-  const id = new URLSearchParams(location.search).get("t") || "";
-  if (!/^[a-z0-9-]+$/.test(id)) return fail("В адресе не указан тест.");
-  try {
-    const r = await fetch(`data/tests/${id}.json`);
-    if (!r.ok) throw new Error(r.status);
-    T = await r.json();
-  } catch (e) { return fail(navigator.onLine ? "Такого теста нет." : "Нет интернета, и этот тест ещё не сохранён на устройстве."); }
+  const params = new URLSearchParams(location.search), exam = params.get("exam");
+  const id = params.get("t") || "";
+  if (exam) {
+    try { T = await loadExam(exam); }
+    catch (e) { return fail(navigator.onLine ? e.message : "Нет интернета, и разделы этого экзамена ещё не сохранены на устройстве."); }
+  } else {
+    if (!/^[a-z0-9-]+$/.test(id)) return fail("В адресе не указан тест.");
+    try {
+      const r = await fetch(`data/tests/${id}.json`);
+      if (!r.ok) throw new Error(r.status);
+      T = await r.json();
+    } catch (e) { return fail(navigator.onLine ? "Такого теста нет." : "Нет интернета, и этот тест ещё не сохранён на устройстве."); }
+  }
 
   KEY = "acad-state-" + T.id;
   // У игр «Угадай снимок» нет общего лимита — в обычном тесте даём столько же времени, сколько в игре.
@@ -319,14 +370,15 @@ async function boot() {
   $("foot").textContent = T.footer || "";
 
   const saved = store.get(KEY, null);
-  S = saved && saved.v === 1 && MODES[saved.mode] ? saved : fresh("study");
-  pickQuestions();
-  if (S.ans.length !== Q.length) { S = fresh(S.mode === "review" ? "study" : S.mode); pickQuestions(); }
+  S = saved && saved.v === 1 && MODES[saved.mode] && (!T.pool || saved.seed) ? saved : fresh("study");
+  if (T.lock && S.mode !== T.lock) S = fresh(T.lock);
+  applyVariant(); pickQuestions();
+  if (S.ans.length !== Q.length) { S = fresh(S.mode === "review" ? "study" : S.mode); applyVariant(); pickQuestions(); }
   sizeAnswers();
   if (S.cur >= Q.length) S.cur = 0;
   // ?mode=review|exam со страницы игры — если попытка ещё не начата
   const want = new URLSearchParams(location.search).get("mode");
-  if (MODES[want] && want !== S.mode && S.startAt === null && !S.ans.some(v => v !== null)) {
+  if (!T.lock && MODES[want] && want !== S.mode && S.startAt === null && !S.ans.some(v => v !== null)) {
     S = fresh(want); pickQuestions(); if (!Q.length) { S = fresh("study"); pickQuestions(); } sizeAnswers();
   }
 
@@ -352,6 +404,15 @@ async function boot() {
     const t = $("vin").value, o = $("vout"); const m = t.match(/Код проверки:\s*([0-9A-Z]{4}-[0-9A-Z]{4})/);
     if (!m) { o.className = "bad-msg"; o.textContent = "В тексте нет строки «Код проверки»."; return; }
     const good = hash(body(t)) === m[1]; o.className = good ? "ok-msg" : "bad-msg"; o.textContent = good ? "Код верный: отчёт не изменён." : "Код не совпадает: текст отчёта изменён.";
+    // Для экзамена — восстановить вариант курсанта и показать, в каких вопросах он ошибся
+    const box = $("vlist"); box.innerHTML = "";
+    const sv = t.match(/Вариант:\s*([0-9A-Z]{6})/), sw = t.match(/Ошибки в вопросах:\s*([0-9, ]+)/);
+    if (T.pool && good && sv && sw) {
+      const qs = variant(T.pool, T.total, sv[1]);
+      const nums = sw[1].split(",").map(x => +x.trim()).filter(n => n >= 1 && n <= qs.length);
+      box.innerHTML = `<p class="hint">Вариант ${esc(sv[1])}: вопросы с ошибками и правильные ответы.</p><ol class="wrongs">` +
+        nums.map(n => `<li value="${n}"><b>${esc(qs[n - 1].t)}.</b> ${esc(qs[n - 1].q)} — <i>${esc(qs[n - 1].o[qs[n - 1].a])}</i></li>`).join("") + "</ol>";
+    }
   };
   document.addEventListener("keydown", e => {
     if (e.target.closest && e.target.closest("input,textarea")) return;

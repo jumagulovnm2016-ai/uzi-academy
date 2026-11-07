@@ -17,6 +17,21 @@ for sub in sorted(os.listdir('.')):
         pages.append(sub + '/')
 precache = ['./'] + ['./' + p for p in pages] + ['./offline.js', './manifest.webmanifest',
             './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png']
+# Каталог для сборного экзамена: разделы и тесты в том же порядке, что на главной странице
+import re
+catalog, section = [], None
+for m in re.finditer(r'<h2>(.*?)</h2>|href="(?:quiz|guess)\.html\?t=([a-z0-9-]+)"', open('index.html', encoding='utf-8').read()):
+    if m.group(1):
+        section = {'section': m.group(1), 'tests': []}; catalog.append(section)
+    elif section is not None and os.path.isfile('data/tests/%s.json' % m.group(2)):
+        t = json.load(open('data/tests/%s.json' % m.group(2), encoding='utf-8'))
+        section['tests'].append({'id': t['id'], 'title': t['title'], 'format': t['format'], 'n': len(t['questions']),
+                                 'img': sum(1 for q in t['questions'] if q.get('img'))})
+catalog = [c for c in catalog if c['tests']]
+with open('data/catalog.json', 'w', encoding='utf-8') as f:
+    json.dump(catalog, f, ensure_ascii=False, indent=1)
+precache += ['./data/catalog.json']
+
 # Единый движок тестов и банк вопросов
 precache += ['./engine/' + f for f in sorted(os.listdir('engine'))] if os.path.isdir('engine') else []
 precache += ['./data/tests/' + f for f in sorted(os.listdir('data/tests')) if f.endswith('.json')] if os.path.isdir('data/tests') else []
