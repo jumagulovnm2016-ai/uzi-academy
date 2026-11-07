@@ -25,6 +25,7 @@ function rate(qid, ok, when) {
   if (!c) c = F.createEmptyCard(now);
   all[qid] = scheduler.next(c, now, ok ? F.Rating.Good : F.Rating.Again).card;
   saveAll(all);
+  if (window.AcadAccount && AcadAccount.srsChanged) AcadAccount.srsChanged();   // синхронизация с личным кабинетом
 }
 
 // Вопросы к повторению до конца сегодняшнего дня, сначала самые «просроченные»

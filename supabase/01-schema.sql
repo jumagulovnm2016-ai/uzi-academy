@@ -75,24 +75,36 @@ language sql stable security definer set search_path = public as $$
 $$;
 
 -- ---------- новый аккаунт → профиль ----------
+-- Самостоятельная регистрация → профиль «на подтверждении» (pending).
 -- Аккаунты «по коду» создаёт только серверная функция преподавателя: она ставит
 -- app_metadata.by_teacher = true (обычный пользователь app_metadata задать не может).
+-- Supabase Auth записывает app_metadata вторым шагом (UPDATE), поэтому такие аккаунты
+-- создаются заблокированными и активируются триггером на обновление.
 create function public.handle_new_user() returns trigger
 language plpgsql security definer set search_path = public as $$
-declare
-  by_teacher boolean := coalesce((new.raw_app_meta_data ->> 'by_teacher')::boolean, false);
 begin
-  if new.email like '%@uzi-academy.invalid' and not by_teacher then
-    raise exception 'Этот адрес зарезервирован для аккаунтов, созданных преподавателем';
-  end if;
-  insert into profiles (id, full_name, login, status, group_id)
+  insert into profiles (id, full_name, status)
   values (
     new.id,
     left(coalesce(trim(new.raw_user_meta_data ->> 'full_name'), ''), 120),
-    case when by_teacher then new.raw_app_meta_data ->> 'login' end,
-    case when by_teacher then 'active' else 'pending' end,
-    case when by_teacher then nullif(new.raw_app_meta_data ->> 'group_id', '')::uuid end
+    case when new.email like '%@uzi-academy.invalid' then 'blocked' else 'pending' end
   );
+  return new;
+end;
+$$;
+
+create function public.handle_teacher_created() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if coalesce((new.raw_app_meta_data ->> 'by_teacher')::boolean, false)
+     and not coalesce((old.raw_app_meta_data ->> 'by_teacher')::boolean, false) then
+    update profiles set
+      login     = new.raw_app_meta_data ->> 'login',
+      status    = 'active',
+      group_id  = nullif(new.raw_app_meta_data ->> 'group_id', '')::uuid,
+      full_name = case when full_name = '' then left(coalesce(trim(new.raw_user_meta_data ->> 'full_name'), ''), 120) else full_name end
+    where id = new.id;
+  end if;
   return new;
 end;
 $$;
@@ -100,6 +112,10 @@ $$;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
+
+create trigger on_auth_user_by_teacher
+  after update of raw_app_meta_data on auth.users
+  for each row execute function public.handle_teacher_created();
 
 -- ---------- действия преподавателя ----------
 create function public.teacher_set_student(p_user uuid, p_status text, p_group uuid)

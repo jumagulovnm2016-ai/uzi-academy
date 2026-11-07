@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Личный кабинет · Академия УЗИ</title>
+<style>
+:root{--bg:#f3f6f7;--paper:#fff;--ink:#18232f;--muted:#5b6b78;--line:#d5e0e3;--navy:#1f3864;--teal:#007a7a;--soft:#e2f1f1;--bad:#b3261e;--bad-soft:#fbe7e5;--ok:#1e7a46;--warn:#8a5a00;--warn-soft:#fff4d6}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1519;--paper:#172027;--ink:#e5edf0;--muted:#9db0ba;--line:#2b3a43;--navy:#9cb6e6;--teal:#4cc3c3;--soft:#16302f;--bad:#ff8a80;--bad-soft:#3a1d1b;--ok:#6ad19a;--warn:#f2c86b;--warn-soft:#3a2f14}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "PT Sans","Segoe UI",Arial,sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:28px 16px 48px;display:grid;gap:18px}
+.eyebrow{font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+h1{font:700 clamp(26px,5vw,36px)/1.15 Georgia,"Times New Roman",serif;color:var(--navy);margin:6px 0 0}
+h2{font:700 18px/1.3 Georgia,serif;color:var(--navy);margin:0}
+p{margin:0}
+.muted{color:var(--muted)}
+a{color:var(--teal)}
+a.back{font-size:14px;font-weight:700;text-decoration:none}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:18px clamp(14px,4vw,24px);display:grid;gap:12px}
+.tabs{display:flex;gap:6px;border-bottom:1.5px solid var(--line)}
+.tabs button{font:inherit;font-weight:700;background:none;border:0;border-bottom:3px solid transparent;padding:8px 10px;color:var(--muted);cursor:pointer;margin-bottom:-1.5px}
+.tabs button[aria-selected="true"]{color:var(--navy);border-bottom-color:var(--navy)}
+label.f{display:grid;gap:4px;font-weight:700;color:var(--navy)}
+label.f small{font-weight:400;color:var(--muted)}
+input[type=text],input[type=email],input[type=password]{font:inherit;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+input:focus-visible{outline:3px solid var(--teal);outline-offset:1px;border-color:var(--teal)}
+.check{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:14px;color:var(--muted)}
+.check input{width:20px;height:20px;margin-top:1px;accent-color:var(--teal)}
+.btn{font:inherit;font-weight:700;border-radius:8px;padding:10px 16px;cursor:pointer;border:1.5px solid var(--navy);background:var(--paper);color:var(--navy)}
+.btn.primary{background:var(--navy);color:var(--paper)}
+.btn:disabled{opacity:.5;cursor:default}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.err{color:var(--bad);font-weight:700}
+.ok{color:var(--ok);font-weight:700}
+.notice{padding:10px 12px;border-radius:8px;background:var(--warn-soft);color:var(--warn);font-weight:700}
+.notice.bad{background:var(--bad-soft);color:var(--bad)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;font-weight:700}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{background:var(--soft);border-radius:8px;padding:10px 12px;display:grid;gap:2px}
+.stat span{font-size:13px;color:var(--muted)} .stat b{font:700 24px/1.1 Georgia,serif;color:var(--navy)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:7px 6px;border-top:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:700;border-top:0}
+td.n{text-align:right;font-family:ui-monospace,Consolas,monospace;white-space:nowrap}
+.pct{font-weight:700}.pct.g{color:var(--ok)}.pct.b{color:var(--bad)}
+.scroll{overflow-x:auto}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a7b83">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+<div class="wrap">
+  <header><a class="back" href="./">← Все тесты</a><br><span class="eyebrow">Академия УЗИ</span><h1>Личный кабинет</h1></header>
+
+  <p class="muted" id="loading">Загрузка…</p>
+
+  <!-- ===== не вошёл ===== -->
+  <section class="card" id="out" hidden>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" id="t-in" aria-selected="true">Вход</button>
+      <button type="button" role="tab" id="t-up" aria-selected="false">Регистрация</button>
+    </div>
+
+    <form id="f-in" novalidate>
+      <div style="display:grid;gap:12px">
+        <label class="f">Логин или почта<small>логин выдаёт преподаватель; если вы регистрировались сами — введите почту</small>
+          <input type="text" id="in-who" autocomplete="username" autocapitalize="none" spellcheck="false" required></label>
+        <label class="f">Пароль или код
+          <input type="password" id="in-pass" autocomplete="current-password" required></label>
+        <p class="err" id="in-err" role="alert" hidden></p>
+        <div class="actions"><button class="btn primary" type="submit" id="in-go">Войти</button></div>
+        <p class="muted">Забыли пароль или код? Напишите преподавателю — он выдаст новый. Восстановления по почте нет.</p>
+      </div>
+    </form>
+
+    <form id="f-up" novalidate hidden>
+      <div style="display:grid;gap:12px">
+        <label class="f">ФИО полностью<input type="text" id="up-name" autocomplete="name" maxlength="120" placeholder="Иванов Иван Иванович" required></label>
+        <label class="f">Почта<input type="email" id="up-email" autocomplete="email" autocapitalize="none" spellcheck="false" required></label>
+        <label class="f">Пароль<small>не меньше 6 символов</small><input type="password" id="up-pass" autocomplete="new-password" minlength="6" required></label>
+        <label class="check"><input type="checkbox" id="up-ok"><span>Согласен(на), что ФИО, почта и результаты тестов хранятся на сервере Академии УЗИ и видны преподавателю курса для учебных целей.</span></label>
+        <p class="err" id="up-err" role="alert" hidden></p>
+        <div class="actions"><button class="btn primary" type="submit" id="up-go">Зарегистрироваться</button></div>
+        <p class="muted">После регистрации преподаватель подтвердит вас и добавит в группу. До этого тесты работают как обычно, но результаты в кабинете не сохраняются.</p>
+      </div>
+    </form>
+  </section>
+
+  <!-- ===== вошёл ===== -->
+  <section class="card" id="in" hidden>
+    <p class="notice" id="st-pending" hidden>Ваша регистрация ожидает подтверждения преподавателем. Тесты можно проходить, но в кабинете результаты появятся только после подтверждения.</p>
+    <p class="notice bad" id="st-blocked" hidden>Аккаунт отключён. Обратитесь к преподавателю.</p>
+    <dl class="kv">
+      <dt>ФИО</dt><dd><span id="p-name"></span> <button class="btn" id="p-edit" type="button" style="padding:2px 10px;font-size:13px;margin-left:6px">изменить</button></dd>
+      <dt id="p-idk">Логин</dt><dd id="p-id"></dd>
+      <dt>Группа</dt><dd id="p-group"></dd>
+    </dl>
+    <form id="f-name" hidden><div class="actions"><input type="text" id="n-new" maxlength="120" style="flex:1 1 220px"><button class="btn primary" type="submit">Сохранить</button><button class="btn" type="button" id="n-cancel">Отмена</button></div><p class="err" id="n-err" hidden></p></form>
+    <p class="muted" id="p-teacher" hidden>Вы — преподаватель. Кабинет преподавателя (группы, коды, сводка) — следующий этап.</p>
+    <div class="actions"><button class="btn" id="out-btn" type="button">Выйти</button><span class="muted" id="sync"></span></div>
+  </section>
+
+  <section class="card" id="sum" hidden>
+    <h2>Мои результаты</h2>
+    <div class="stats">
+      <div class="stat"><span>Попыток</span><b id="s-n">0</b></div>
+      <div class="stat"><span>Средний результат</span><b id="s-avg">—</b></div>
+      <div class="stat"><span>К повторению сегодня</span><b id="s-due">0</b></div>
+      <div class="stat"><span>Запомнено надолго</span><b id="s-learn">0</b></div>
+    </div>
+    <p class="muted" id="s-pending" hidden></p>
+    <h2>По тестам</h2>
+    <div class="scroll"><table><thead><tr><th>Тест</th><th class="n">Попыток</th><th class="n">Последний</th><th class="n">Лучший</th></tr></thead><tbody id="by-test"></tbody></table></div>
+    <h2>История</h2>
+    <div class="scroll"><table><thead><tr><th>Дата</th><th>Тест</th><th>Режим</th><th class="n">Результат</th></tr></thead><tbody id="hist"></tbody></table></div>
+    <p class="muted" id="h-empty">Пока нет сохранённых попыток. Пройдите любой тест — результат появится здесь.</p>
+  </section>
+</div>
+
+<script src="engine/vendor/supabase-js-2.119.0.umd.js"></script>
+<script src="engine/account.js"></script>
+<script src="engine/vendor/ts-fsrs-5.4.1.umd.js"></script>
+<script src="engine/srs.js"></script>
+<script>
+(function () {
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const A = window.AcadAccount;
+const MODE = { study: "учебный", exam: "экзамен", review: "ошибки", game: "игра", srs: "повторение" };
+const fmtDate = s => new Date(s).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" });
+const pct = p => `<span class="pct ${p >= 75 ? "g" : p < 60 ? "b" : ""}">${p}%</span>`;
+
+function tab(up) {
+  $("t-in").setAttribute("aria-selected", String(!up)); $("t-up").setAttribute("aria-selected", String(up));
+  $("f-in").hidden = up; $("f-up").hidden = !up;
+}
+$("t-in").onclick = () => tab(false); $("t-up").onclick = () => tab(true);
+
+async function busy(btn, fn, errEl) {
+  errEl.hidden = true; btn.disabled = true;
+  try { await fn(); } catch (e) { errEl.textContent = e.message || String(e); errEl.hidden = false; }
+  finally { btn.disabled = false; }
+}
+$("f-in").onsubmit = e => { e.preventDefault();
+  if (!$("in-who").value.trim() || !$("in-pass").value) { $("in-err").textContent = "Введите логин (или почту) и пароль."; $("in-err").hidden = false; return; }
+  busy($("in-go"), () => A.signIn($("in-who").value, $("in-pass").value), $("in-err")); };
+$("f-up").onsubmit = e => { e.preventDefault();
+  if (!$("up-ok").checked) { $("up-err").textContent = "Нужно согласие на хранение данных."; $("up-err").hidden = false; return; }
+  if ($("up-pass").value.length < 6) { $("up-err").textContent = "Пароль — не меньше 6 символов."; $("up-err").hidden = false; return; }
+  busy($("up-go"), () => A.signUp($("up-name").value, $("up-email").value, $("up-pass").value), $("up-err")); };
+$("out-btn").onclick = () => { if (confirm("Выйти из кабинета? С этого устройства будут удалены личные данные (расписание повторения сохранено на сервере).")) A.signOut(); };
+$("p-edit").onclick = () => { $("n-new").value = A.profile.full_name; $("f-name").hidden = false; $("n-new").focus(); };
+$("n-cancel").onclick = () => { $("f-name").hidden = true; };
+$("f-name").onsubmit = e => { e.preventDefault();
+  const v = $("n-new").value.trim().replace(/\s+/g, " ");
+  if (v.split(" ").length < 2) { $("n-err").textContent = "Нужны фамилия и имя."; $("n-err").hidden = false; return; }
+  A.rename(v).then(() => { $("f-name").hidden = true; }, err => { $("n-err").textContent = err.message; $("n-err").hidden = false; }); };
+
+async function history(p) {
+  const st = window.AcadSRS && AcadSRS.ok ? AcadSRS.stats() : { dueToday: 0, learned: 0, total: 0 };
+  $("s-due").textContent = st.dueToday; $("s-learn").textContent = `${st.learned} из ${st.total}`;
+  const pend = A.pending();
+  $("s-pending").hidden = !pend; $("s-pending").textContent = `Ждут отправки на сервер (нет интернета): ${pend}.`;
+  let rows = [];
+  if (p.status === "active" || p.role === "teacher") {
+    const { data, error } = await A.client.from("attempts").select("test_id,title,mode,correct,total,percent,points,finished_at")
+      .eq("user_id", p.id).order("finished_at", { ascending: false }).limit(500);
+    if (!error) rows = data;
+  }
+  $("s-n").textContent = rows.length;
+  $("s-avg").textContent = rows.length ? Math.round(rows.reduce((s, r) => s + r.percent, 0) / rows.length) + "%" : "—";
+  $("h-empty").hidden = !!rows.length;
+  $("hist").innerHTML = rows.slice(0, 50).map(r => `<tr><td class="n">${fmtDate(r.finished_at)}</td><td>${esc(r.title)}</td><td>${MODE[r.mode] || esc(r.mode)}</td><td class="n">${r.correct}/${r.total} · ${pct(r.percent)}</td></tr>`).join("");
+  const by = {};
+  rows.forEach(r => { const b = by[r.test_id] || (by[r.test_id] = { title: r.title, n: 0, last: r.percent, best: 0 }); b.n++; b.best = Math.max(b.best, r.percent); });
+  $("by-test").innerHTML = Object.values(by).sort((a, b) => a.last - b.last)
+    .map(b => `<tr><td>${esc(b.title)}</td><td class="n">${b.n}</td><td class="n">${pct(b.last)}</td><td class="n">${pct(b.best)}</td></tr>`).join("");
+}
+
+function render(p) {
+  $("loading").hidden = true;
+  $("out").hidden = !!p; $("in").hidden = !p; $("sum").hidden = !p;
+  if (!p) return;
+  $("p-name").textContent = p.full_name || "—";
+  $("p-idk").textContent = p.login ? "Логин" : "Почта"; $("p-id").textContent = p.login || p.email || "—";
+  $("p-group").textContent = p.group || (p.role === "teacher" ? "—" : "пока не назначена");
+  $("st-pending").hidden = p.status !== "pending"; $("st-blocked").hidden = p.status !== "blocked";
+  $("p-teacher").hidden = p.role !== "teacher";
+  $("sync").textContent = p.status === "active" ? "Результаты и повторение синхронизируются автоматически." : "";
+  history(p);
+}
+if (!A || !A.client) { $("loading").textContent = "Не удалось загрузить модуль входа. Обновите страницу."; return; }
+A.onChange(render);
+A.ready.then(render);
+})();
+</script>
+<script src="offline.js"></script>
+</body>
+</html>

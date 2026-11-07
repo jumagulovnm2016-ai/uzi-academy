@@ -341,6 +341,13 @@ function showResult(auto) {
       const att = attemptNo(); if (att) lines.splice(lines.findIndex(l => l.startsWith("Дата:")) + 1, 0, `Попытка на этом устройстве: ${att}`);
       S.reportText = lines.join("\n") + "\nКод проверки: " + hash(body(lines.join("\n")));
       save(); send(S.reportText);
+      // копия результата в личный кабинет (если курсант вошёл; без интернета — сохранится позже)
+      if (window.AcadAccount && AcadAccount.saveAttempt) {
+        S.cid = S.cid || AcadAccount.newClientId(); save();
+        AcadAccount.saveAttempt({ client_id: S.cid, test_id: T.id, title: T.title, mode: S.mode, correct: ok, total: Q.length,
+          duration_sec: used / 1000, timed_out: S.timedOut, seed: S.seed || null, wrong_ids: wrong.map(i => Q[i].id),
+          report: S.reportText, finished_at: new Date(S.endAt || Date.now()).toISOString() });
+      }
     }
     $("report").value = S.reportText; showSend();
     const msg = t => { const m = $("sendmsg"); m.textContent = t; m.className = "ok-msg"; };
@@ -450,6 +457,14 @@ async function boot() {
     if ($("qcard").hidden || !Q.length) return;
     const kn = +e.key; if (kn >= 1 && kn <= Q[S.cur].o.length) choose(kn - 1);
     else if (e.key === "ArrowRight") go(S.cur + 1); else if (e.key === "ArrowLeft") go(S.cur - 1);
+  });
+
+  // ФИО из личного кабинета, если курсант вошёл и попытка ещё не начата
+  if (window.AcadAccount && AcadAccount.ready) AcadAccount.ready.then(p => {
+    if (p && p.full_name && S.startAt === null && !$("fio").value.trim() && S.mode !== "review") {
+      $("fio").value = p.full_name; S.fio = p.full_name; save();
+      const h = $("fiohint"); h.classList.remove("err"); h.textContent = "ФИО взято из личного кабинета. Результат сохранится и в кабинете.";
+    }
   });
 
   renderAll();

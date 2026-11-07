@@ -146,6 +146,12 @@ function finish() {
       `Баллы: ${S.score} из ${n * 1000}`, `Верно: ${ok} из ${n} (${p}%) — ${grade(p)}`, `Среднее время ответа: ${avg.toFixed(1)} с`,
       `Лучшая серия: ${S.best}`, `Ошибки в вопросах: ${wrong.length ? wrong.join(", ") : "нет"}`]);
     S.text = lines.join("\n") + "\nКод: " + hash(lines.join("\n"));
+    // копия результата в личный кабинет
+    if (window.AcadAccount && AcadAccount.saveAttempt) {
+      S.cid = S.cid || AcadAccount.newClientId();
+      AcadAccount.saveAttempt({ client_id: S.cid, test_id: T.id, title: T.title, mode: "game", correct: ok, total: n, points: S.score,
+        duration_sec: log.reduce((s, r) => s + r.el, 0), wrong_ids: log.map((r, k) => r.ok ? null : Q[k].id).filter(Boolean), report: S.text });
+    }
   }
   S.phase = "done"; save();
   const nMist = T.questions.filter(q => store.get(MKEY, {})[q.id]).length;
@@ -202,6 +208,7 @@ async function boot() {
   $("go").onclick = () => { const v = fioOk($("fio").value); if (!v) { $("fioerr").hidden = false; $("fio").focus(); return; } S = null; $("fio").value = v; begin(); };
   $("fio").addEventListener("keydown", e => { if (e.key === "Enter") $("go").click(); });
 
+  if (window.AcadAccount && AcadAccount.ready) AcadAccount.ready.then(p => { if (p && p.full_name && !$("fio").value.trim()) $("fio").value = p.full_name; });
   const saved = store.get(KEY, null);
   if (saved && saved.v === 1 && saved.fio && saved.log.length <= Q.length) {
     S = saved; $("start").hidden = true; $("game").hidden = false;
