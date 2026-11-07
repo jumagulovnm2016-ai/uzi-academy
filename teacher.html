@@ -142,6 +142,7 @@ dialog .card{border:0}
 
 <script src="engine/vendor/supabase-js-2.119.0.umd.js"></script>
 <script src="engine/account.js"></script>
+<script src="engine/plan.js"></script>
 <script>
 (function () {
 "use strict";
@@ -295,9 +296,19 @@ function showStudent(id) {
     <div id="d-out"></div>
     <div class="stats"><div class="stat"><span>Тестов пройдено</span><b>${s.tests}</b></div><div class="stat"><span>Средний</span><b>${s.avg == null ? "—" : s.avg + "%"}</b></div>
       <div class="stat"><span>Попыток</span><b>${s.at.length}</b></div><div class="stat"><span>Повторение: просрочено</span><b>${s.overdue} / ${s.cards}</b></div></div>
+    <h3>Слабые темы</h3><div id="d-weak" class="muted small">загрузка…</div>
     <h3>По тестам</h3><div class="scroll"><table><thead><tr><th>Тест</th><th class="n">Попыток</th><th class="n">Последний</th><th class="n">Лучший</th></tr></thead><tbody>
       ${Object.values(by).sort((a, b) => a.last - b.last).map(b => `<tr><td>${esc(b.title)}</td><td class="n">${b.n}</td><td class="n">${pct(b.last)}</td><td class="n">${pct(b.best)}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">Нет попыток</td></tr>`}</tbody></table></div>
     <h3>Последние попытки</h3><div class="scroll"><table><tbody>${s.at.slice(0, 15).map(a => `<tr><td class="n">${dtt(a.finished_at)}</td><td>${esc(a.title)}</td><td class="small">${MODE[a.mode] || ""}</td><td class="n">${a.correct}/${a.total} · ${pct(a.percent)}</td></tr>`).join("")}</tbody></table></div>`);
+  // слабые темы по последней попытке каждого теста (тот же расчёт, что в «Моём плане» курсанта)
+  (async () => {
+    const last = AcadPlan.latest(s.at), need = Object.keys(last).filter(t => !(D.bank[t] && D.bank[t].questions && D.bank[t].questions.length));
+    Object.assign(D.bank, await AcadPlan.loadTests(need));
+    const weak = AcadPlan.topics(last, D.bank).filter(t => t.n >= 2 && t.acc < 70).sort((a, b) => a.acc - b.acc).slice(0, 8);
+    const box = $("d-weak"); if (!box) return;
+    box.className = ""; box.innerHTML = weak.length ? `<div class="scroll"><table><tbody>${weak.map(t => `<tr><td>${esc(t.topic)}<div class="small muted">${esc(t.title)}</div></td><td class="n">${t.ok}/${t.n} · ${pct(t.acc)}</td></tr>`).join("")}</tbody></table></div>`
+      : `<p class="muted small">${Object.keys(last).length ? "Слабых тем нет — во всех темах 70% и выше." : "Нет попыток."}</p>`;
+  })();
   const out = $("d-out");
   const fail = e => { out.innerHTML = `<p class="err">${esc(e.message || e)}</p>`; };
   $("d-gs").onclick = () => setStudent(p, p.status, $("d-g").value || null).then(() => { out.innerHTML = '<p class="ok">Группа сохранена.</p>'; }, fail);

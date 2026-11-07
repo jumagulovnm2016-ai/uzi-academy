@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Мой план · Академия УЗИ</title>
+<style>
+:root{--bg:#f3f6f7;--paper:#fff;--ink:#18232f;--muted:#5b6b78;--line:#d5e0e3;--navy:#1f3864;--teal:#007a7a;--soft:#e2f1f1;--bad:#b3261e;--bad-soft:#fbe7e5;--ok:#1e7a46;--ok-soft:#e3f3e9;--warn:#8a5a00;--warn-soft:#fff4d6}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1519;--paper:#172027;--ink:#e5edf0;--muted:#9db0ba;--line:#2b3a43;--navy:#9cb6e6;--teal:#4cc3c3;--soft:#16302f;--bad:#ff8a80;--bad-soft:#3a1d1b;--ok:#6ad19a;--ok-soft:#163024;--warn:#f2c86b;--warn-soft:#3a2f14}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "PT Sans","Segoe UI",Arial,sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:28px 16px 48px;display:grid;gap:16px}
+.eyebrow{font:600 12px/1 ui-monospace,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+h1{font:700 clamp(26px,5vw,36px)/1.15 Georgia,"Times New Roman",serif;color:var(--navy);margin:6px 0 0}
+h2{font:700 18px/1.3 Georgia,serif;color:var(--navy);margin:0}
+p{margin:0} .muted{color:var(--muted)} .small{font-size:13px}
+a{color:var(--teal)} a.back{font-size:14px;font-weight:700;text-decoration:none}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px clamp(14px,4vw,22px);display:grid;gap:12px}
+.rec{display:grid;gap:6px;border:1.5px solid var(--line);border-left-width:5px;border-radius:10px;padding:12px 14px;background:var(--paper)}
+.rec b{font-size:16px;color:var(--ink)}
+.rec.srs{border-left-color:var(--teal)} .rec.weak{border-left-color:var(--bad)} .rec.retake{border-left-color:var(--warn)} .rec.check{border-left-color:var(--navy)} .rec.new{border-left-color:var(--ok)}
+.rec .n{font:700 12px ui-monospace,Consolas,monospace;color:var(--muted)}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:700;border-radius:8px;padding:8px 14px;border:1.5px solid var(--navy);background:var(--paper);color:var(--navy);text-decoration:none;display:inline-block}
+.btn.primary{background:var(--navy);color:var(--paper)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:7px 6px;border-top:1px solid var(--line);vertical-align:middle}
+th{font-size:12px;color:var(--muted);border-top:0}
+td.n{text-align:right;font-family:ui-monospace,Consolas,monospace;white-space:nowrap}
+.bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden;min-width:70px}
+.bar i{display:block;height:100%}
+.sec{display:grid;gap:6px}
+.sech{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:13px;border-radius:14px;padding:3px 10px;border:1px solid var(--line);text-decoration:none;color:var(--ink);background:var(--paper)}
+.chip.g{background:var(--ok-soft);border-color:transparent;color:var(--ok)} .chip.m{background:var(--warn-soft);border-color:transparent;color:var(--warn)} .chip.b{background:var(--bad-soft);border-color:transparent;color:var(--bad)}
+.chip i{font-style:normal;font-weight:700;margin-left:4px}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a7b83">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+<div class="wrap">
+  <header><a class="back" href="./">← Все тесты</a><br><span class="eyebrow">Академия УЗИ</span><h1>Мой план</h1></header>
+  <p class="muted" id="loading">Собираем ваши результаты…</p>
+
+  <section class="card" id="today" hidden>
+    <h2>Что сделать сейчас</h2>
+    <div id="recs" style="display:grid;gap:10px"></div>
+    <p class="muted small" id="src"></p>
+  </section>
+
+  <section class="card" id="weak-card" hidden>
+    <h2>Слабые темы</h2>
+    <p class="muted small">Темы, где в последней попытке верно меньше 70% ответов. Нажмите — откроется разбор ошибок этого теста.</p>
+    <table><thead><tr><th>Тема</th><th class="n">Верно</th><th></th></tr></thead><tbody id="weak"></tbody></table>
+  </section>
+
+  <section class="card" id="strong-card" hidden>
+    <h2>Сильные темы</h2>
+    <div class="chips" id="strong"></div>
+  </section>
+
+  <section class="card" id="course" hidden>
+    <h2>Прогресс по курсу</h2>
+    <div id="secs" style="display:grid;gap:14px"></div>
+  </section>
+</div>
+
+<script src="engine/vendor/supabase-js-2.119.0.umd.js"></script>
+<script src="engine/account.js"></script>
+<script src="engine/vendor/ts-fsrs-5.4.1.umd.js"></script>
+<script src="engine/srs.js"></script>
+<script src="engine/plan.js"></script>
+<script>
+(async function () {
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const color = p => p >= 75 ? "var(--ok)" : p >= 60 ? "var(--warn)" : "var(--bad)";
+const cls = p => p >= 75 ? "g" : p >= 60 ? "m" : "b";
+
+let catalog = [];
+try { catalog = await (await fetch("data/catalog.json")).json(); } catch (e) {}
+const ids = catalog.flatMap(s => s.tests.map(t => t.id));
+
+// попытки с сервера (если вошёл)
+let server = [], loggedIn = false;
+const A = window.AcadAccount;
+if (A && A.ready) {
+  const p = await A.ready;
+  if (p && p.status === "active") {
+    loggedIn = true;
+    try { const { data } = await A.client.from("attempts").select("test_id,mode,correct,total,percent,wrong_ids,finished_at").eq("user_id", p.id).order("finished_at", { ascending: false }).limit(2000); server = data || []; } catch (e) {}
+  }
+}
+// попытки этого устройства
+const localIds = ids.filter(id => { try { return localStorage.getItem("acad-state-" + id); } catch (e) { return false; } });
+const tests = await AcadPlan.loadTests([...localIds, ...server.map(a => a.test_id)].filter(id => ids.includes(id)));
+const local = localIds.map(id => tests[id] && AcadPlan.localAttempt(tests[id])).filter(Boolean);
+const srs = window.AcadSRS && AcadSRS.ok ? AcadSRS.stats() : null;
+const plan = AcadPlan.build({ attempts: server.concat(local), tests, catalog, srs });
+
+$("loading").hidden = true;
+$("today").hidden = false;
+$("recs").innerHTML = plan.recs.length ? plan.recs.map((r, i) => `<div class="rec ${r.kind}"><span class="n">${i + 1}</span><b>${esc(r.title)}</b><span class="muted small">${esc(r.why)}</span>
+  <div class="btns"><a class="btn primary" href="${r.href}">${esc(r.action)}</a>${r.href2 ? `<a class="btn" href="${r.href2}">${esc(r.action2)}</a>` : ""}</div></div>`).join("")
+  : `<p>Все тесты пройдены, слабых тем и просроченных повторений нет. Отличная работа — загляните через несколько дней.</p>`;
+$("src").textContent = plan.taken
+  ? `План собран по последней попытке каждого теста (${plan.taken} из ${ids.length})${loggedIn ? " — из личного кабинета и с этого устройства" : " — с этого устройства. Войдите в личный кабинет, чтобы учитывались попытки и с других устройств"}.`
+  : (loggedIn ? "Пока нет пройденных тестов — начните с первого раздела курса." : "Пока нет пройденных тестов на этом устройстве. Если вы проходили тесты на другом телефоне — войдите в личный кабинет.");
+
+if (plan.weak.length) {
+  $("weak-card").hidden = false;
+  $("weak").innerHTML = plan.weak.slice(0, 10).map(t => `<tr><td><a href="quiz.html?t=${encodeURIComponent(t.test)}&mode=review">${esc(t.topic)}</a><div class="muted small">${esc(t.title)}</div></td>
+    <td class="n">${t.ok}/${t.n}</td><td style="width:90px"><div class="bar"><i style="width:${t.acc}%;background:${color(t.acc)}"></i></div></td></tr>`).join("");
+}
+if (plan.strong.length) {
+  $("strong-card").hidden = false;
+  $("strong").innerHTML = plan.strong.slice(0, 16).map(t => `<span class="chip g">${esc(t.topic)}<i>${t.acc}%</i></span>`).join("");
+}
+const res = {}; plan.results.forEach(r => res[r.id] = r.p);
+$("course").hidden = false;
+$("secs").innerHTML = catalog.map(sec => {
+  const done = sec.tests.filter(t => t.id in res).length;
+  return `<div class="sec"><div class="sech"><b>${esc(sec.section)}</b><span class="muted small">пройдено ${done} из ${sec.tests.length}</span></div>
+    <div class="bar"><i style="width:${Math.round(done / sec.tests.length * 100)}%;background:var(--teal)"></i></div>
+    <div class="chips">${sec.tests.map(t => { const p = res[t.id], href = (t.format === "guess" ? "guess.html" : "quiz.html") + "?t=" + t.id;
+      return `<a class="chip ${p == null ? "" : cls(p)}" href="${href}">${esc(t.title)}${p == null ? "" : `<i>${p}%</i>`}</a>`; }).join("")}</div></div>`;
+}).join("");
+})();
+</script>
+<script src="offline.js"></script>
+</body>
+</html>
