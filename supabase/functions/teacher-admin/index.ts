@@ -20,12 +20,30 @@ function code(len = 6): string {
   return Array.from(bytes, (b) => ALPHABET[b % ALPHABET.length]).join("");
 }
 
+// Секретный ключ: в старых проектах Supabase передаёт SUPABASE_SERVICE_ROLE_KEY, в новых — секретные ключи
+// (sb_secret_…). Если автоматически ключа нет, его можно добавить вручную в Secrets под именем SERVICE_KEY.
+function serviceKey(): string | null {
+  const direct = Deno.env.get("SERVICE_KEY") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_SECRET_KEY");
+  if (direct) return direct;
+  const many = Deno.env.get("SUPABASE_SECRET_KEYS");
+  if (many) {
+    try {
+      const v = JSON.parse(many);
+      const list = Array.isArray(v) ? v : Object.values(v);
+      const k = list.find((x) => typeof x === "string" && x.startsWith("sb_secret_"));
+      if (k) return k as string;
+    } catch { if (many.startsWith("sb_secret_")) return many; }
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
   if (req.method !== "POST") return reply({ error: "Только POST" }, 405);
 
   const url = Deno.env.get("SUPABASE_URL")!;
-  const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const service = serviceKey();
+  if (!service) return reply({ error: "У функции нет секретного ключа. Supabase → Edge Functions → Secrets: добавьте SERVICE_KEY = ваш Secret key (sb_secret_…)" }, 500);
   const admin = createClient(url, service, { auth: { persistSession: false, autoRefreshToken: false } });
 
   // кто вызывает
