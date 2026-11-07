@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Тест · Академия УЗИ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600;700&family=PT+Sans:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="engine/quiz.css">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a7b83">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="backlink" href="./">← Все тесты</a>
+    <span class="eyebrow" id="eyebrow">Академия УЗИ</span>
+    <h1 id="h1">Загрузка теста…</h1>
+    <p class="sub" id="about"></p>
+    <p class="sub" id="rules"></p>
+    <div class="bar"><div class="track" aria-hidden="true"><div class="fill" id="fill"></div></div><span class="stat" id="stat"></span><span class="timer" id="timer" role="timer" aria-live="off"><span id="clock">--:--</span><small id="tnote">старт с первым ответом</small></span></div>
+  </header>
+
+  <section class="card modes" id="modes" aria-label="Режим прохождения">
+    <h2>Режим</h2>
+    <div class="row">
+      <button class="mode" type="button" data-mode="study" aria-pressed="true"><b>Учебный</b><small>Правильный ответ и пояснение — сразу после ответа</small></button>
+      <button class="mode" type="button" data-mode="exam" aria-pressed="false"><b>Экзамен</b><small>Ответы и пояснения — только после завершения</small></button>
+      <button class="mode" type="button" data-mode="review" aria-pressed="false" hidden><b>Работа над ошибками</b><small id="reviewnote">Только вопросы, в которых вы ошиблись</small></button>
+    </div>
+    <p class="hint" id="modehint">Режим выбирается до первого ответа.</p>
+  </section>
+
+  <p class="restored" id="restored" hidden></p>
+
+  <section class="card who" id="who">
+    <label for="fio">ФИО курсанта</label>
+    <input id="fio" type="text" autocomplete="name" placeholder="Например: Иванов Иван Иванович" maxlength="120">
+    <p class="hint" id="fiohint">Введите фамилию, имя и отчество. Без ФИО ответы не принимаются; после первого ответа ФИО изменить нельзя.</p>
+  </section>
+
+  <section class="card" id="qcard" aria-live="polite"></section>
+  <section class="card result" id="result" hidden></section>
+
+  <section class="card">
+    <div class="maphead"><h2>Карта вопросов</h2>
+      <div class="legend" id="legend"></div></div>
+    <div class="map" id="map"></div>
+    <div class="nav"><button class="btn" id="restart" type="button">Начать заново</button><button class="btn primary" id="finish" type="button">Показать результат</button></div>
+  </section>
+
+  <footer><span id="foot"></span>
+    <details><summary>Проверка отчёта (для преподавателя)</summary>
+      <div class="verify"><label for="vin">Вставьте текст отчёта, полученный от курсанта:</label>
+        <textarea id="vin" spellcheck="false"></textarea>
+        <div class="actions"><button class="btn" id="vbtn" type="button">Проверить код</button><span id="vout" role="status"></span></div>
+        <p class="hint">Код показывает, что текст отчёта не редактировали после теста. Защита простая: курсант, разбирающийся в коде страницы, может её обойти.</p>
+      </div></details>
+  </footer>
+</div>
+<script src="engine/quiz.js"></script>
+<script src="offline.js"></script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 // Тесты по УЗ-диагностике — офлайн-режим. Файл sw.js собирается из sw.template.js командой: python3 build-sw.py
 // Страницы: сначала сеть (обновления приходят сразу), без сети — из кэша.
 // Результаты в Telegram: без сети ставятся в очередь и отправляются при появлении связи.
-const VERSION = '20261107-202808';
+const VERSION = '20261107-204628';
 const CACHE = 'academy-' + VERSION;
 const FONTS = 'academy-fonts';
 const PRECACHE = [
@@ -32,6 +32,7 @@ const PRECACHE = [
  "./pancreas.html",
  "./physics-20.html",
  "./physics-30.html",
+ "./quiz.html",
  "./screening-11-14-quiz.html",
  "./screening-2-guess.html",
  "./screening-2-trimester.html",
@@ -48,7 +49,17 @@ const PRECACHE = [
  "./icons/icon-192.png",
  "./icons/icon-512.png",
  "./icons/icon-maskable-512.png",
- "./icons/apple-touch-icon.png"
+ "./icons/apple-touch-icon.png",
+ "./engine/quiz.css",
+ "./engine/quiz.js",
+ "./data/tests/gallbladder.json",
+ "./data/tests/kidney.json",
+ "./data/tests/liver-anatomy.json",
+ "./data/tests/liver.json",
+ "./data/tests/pancreas.json",
+ "./data/tests/physics-20.json",
+ "./data/tests/physics-30.json",
+ "./data/tests/spleen.json"
 ];
 const IMG = {
  "brain-guess": [

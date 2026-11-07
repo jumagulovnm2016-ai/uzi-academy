@@ -17,6 +17,9 @@ for sub in sorted(os.listdir('.')):
         pages.append(sub + '/')
 precache = ['./'] + ['./' + p for p in pages] + ['./offline.js', './manifest.webmanifest',
             './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png']
+# Единый движок тестов и банк вопросов
+precache += ['./engine/' + f for f in sorted(os.listdir('engine'))] if os.path.isdir('engine') else []
+precache += ['./data/tests/' + f for f in sorted(os.listdir('data/tests')) if f.endswith('.json')] if os.path.isdir('data/tests') else []
 
 img_map = {}
 if os.path.isdir('img'):

@@ -1,0 +1,351 @@
+// Единый движок тестов Академии УЗИ.
+// Страница: quiz.html?t=<id>, вопросы: data/tests/<id>.json.
+// Режимы: учебный (разбор сразу), экзамен (разбор после завершения), работа над ошибками.
+// Ход попытки сохраняется на устройстве и восстанавливается после перезагрузки.
+(function () {
+"use strict";
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const L = ["А", "Б", "В", "Г", "Д", "Е"];
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+
+// ---------- отправка преподавателю (как на прежних страницах) ----------
+const TG_CHAT = "188183172";
+const TG_PROXY = "https://script.google.com/macros/s/AKfycbznrtw3Wd7QBRhQaMlrCIp86oLemxjc_LlaIVomj-9rcXiyMYpmP_OCtc8u4lgQbaXKpg/exec";
+async function sendToTeacher(text) {
+  try {
+    await fetch(TG_PROXY, { method: "POST", mode: "no-cors", body: new URLSearchParams({ chat_id: TG_CHAT, text }) });
+    return "sent";
+  } catch (e) { return "fail"; }
+}
+
+// ---------- ошибки по всем тестам: { id вопроса: сколько раз ошибался } ----------
+const MKEY = "acad-mistakes";
+const mistakes = () => store.get(MKEY, {});
+function markMistake(qid, wrong) {
+  const m = mistakes();
+  if (wrong) m[qid] = (m[qid] || 0) + 1; else delete m[qid];
+  store.set(MKEY, m);
+}
+
+const MODES = {
+  study: { name: "учебный" },
+  exam: { name: "экзамен" },
+  review: { name: "работа над ошибками" }
+};
+
+let T, Q, S, KEY, LIMIT, tick = null;
+
+function fresh(mode) {
+  return { v: 1, mode, qids: null, fio: "", ans: [], cur: 0, startAt: null, endAt: null,
+           finished: false, timedOut: false, reportText: null, sendState: null };
+}
+const save = () => store.set(KEY, S);
+const timed = () => S.mode !== "review";
+const reveal = () => S.mode !== "exam" || S.finished;   // можно ли показывать правильные ответы
+
+function pickQuestions() {
+  if (S.mode !== "review") { Q = T.questions; return; }
+  if (!S.qids) { const m = mistakes(); S.qids = T.questions.filter(q => m[q.id]).map(q => q.id); }
+  const set = new Set(S.qids); Q = T.questions.filter(q => set.has(q.id));
+}
+function sizeAnswers() { if (S.ans.length !== Q.length) S.ans = Array(Q.length).fill(null); }
+
+// ---------- таймер ----------
+const fmt = ms => { const t = Math.max(0, Math.ceil(ms / 1000)); return String(Math.floor(t / 60)).padStart(2, "0") + ":" + String(t % 60).padStart(2, "0"); };
+function runTimer() { if (!tick) tick = setInterval(updateClock, 250); updateClock(); }
+function stopTimer() { if (tick) { clearInterval(tick); tick = null; } if (S.startAt !== null) S.endAt = S.endAt || Date.now(); }
+function updateClock() {
+  const el = $("timer");
+  el.hidden = !timed();
+  if (!timed()) return;
+  const left = S.startAt === null ? LIMIT : LIMIT - ((S.endAt || Date.now()) - S.startAt);
+  $("clock").textContent = fmt(left);
+  $("tnote").textContent = S.startAt === null ? "старт с первым ответом" : S.finished ? (S.timedOut ? "время вышло" : "тест завершён") : "осталось";
+  el.classList.toggle("warn", !S.finished && S.startAt !== null && left <= 2 * 60 * 1000);
+  el.classList.toggle("stop", S.finished);
+  if (!S.finished && S.startAt !== null && left <= 0) { S.timedOut = true; S.endAt = S.startAt + LIMIT; showResult(true); }
+}
+
+// ---------- ФИО ----------
+function fioOk() { const v = $("fio").value.trim().replace(/\s+/g, " "); return v.split(" ").length >= 2 && /^[A-Za-zА-Яа-яЁёӨөҮүҢң'\- ]+$/.test(v) ? v : null; }
+function fioLocked() {
+  $("fio").value = S.fio; $("fio").readOnly = true;
+  const h = $("fiohint"); h.classList.remove("err"); h.textContent = "ФИО зафиксировано до конца попытки.";
+}
+function fioReset() {
+  $("fio").readOnly = false;
+  const h = $("fiohint"); h.classList.remove("err");
+  h.textContent = "Введите фамилию, имя и отчество. Без ФИО ответы не принимаются; после первого ответа ФИО изменить нельзя.";
+}
+
+// ---------- шапка и режимы ----------
+function renderChrome() {
+  const started = S.startAt !== null || S.ans.some(v => v !== null);
+  document.querySelectorAll(".mode").forEach(b => {
+    b.setAttribute("aria-pressed", String(b.dataset.mode === S.mode));
+    b.disabled = started && b.dataset.mode !== S.mode;
+  });
+  const nMist = T.questions.filter(q => mistakes()[q.id]).length;
+  const rv = document.querySelector('[data-mode="review"]');
+  rv.hidden = !(nMist || S.mode === "review");
+  $("reviewnote").textContent = nMist ? `Ваши ошибки в этом тесте: ${nMist}` : "Ошибок не осталось";
+  $("modehint").textContent = started ? "Режим зафиксирован до конца попытки. «Начать заново» — чтобы сменить." : "Режим выбирается до первого ответа.";
+  const min = T.minutes;
+  const tail = `На тест отводится ${min} мин: отсчёт начинается с первого ответа, по истечении времени тест завершается автоматически. После завершения результат автоматически уходит преподавателю.`;
+  $("rules").textContent = S.mode === "study" ? "После ответа сразу показывается правильный вариант и пояснение. " + tail
+    : S.mode === "exam" ? "Правильные ответы и пояснения откроются после завершения теста. До конца теста ответ можно изменить. " + tail
+    : "Вопросы, в которых вы ошиблись в прошлых попытках. Без таймера и без отправки преподавателю. Вопрос, на который вы ответили верно, уходит из списка ошибок.";
+  $("who").hidden = S.mode === "review";
+  $("legend").innerHTML = reveal()
+    ? '<span><i style="background:var(--ok)"></i>верно</span><span><i style="background:var(--bad)"></i>неверно</span><span><i style="border:1.5px solid var(--line)"></i>без ответа</span>'
+    : '<span><i style="background:var(--navy)"></i>отвечено</span><span><i style="border:1.5px solid var(--line)"></i>без ответа</span>';
+  $("finish").textContent = S.mode === "exam" && !S.finished ? "Завершить экзамен" : "Показать результат";
+}
+
+function setMode(m) {
+  if (m === S.mode || S.startAt !== null || S.ans.some(v => v !== null)) return;
+  S = fresh(m); S.fio = $("fio").value; pickQuestions(); sizeAnswers(); save();
+  $("result").hidden = true; $("qcard").hidden = false; renderAll();
+}
+
+// ---------- вопрос ----------
+function renderQ() {
+  const c = $("qcard"); c.innerHTML = "";
+  if (!Q.length) {
+    c.innerHTML = "<p>В этом тесте у вас не осталось ошибок. Выберите учебный режим или экзамен.</p>";
+    renderMap(); return;
+  }
+  const x = Q[S.cur], v = S.ans[S.cur], answered = v !== null, show = reveal();
+  const meta = document.createElement("div"); meta.className = "qmeta";
+  meta.innerHTML = `<span class="tag">${esc(x.t)}</span><span>Вопрос ${S.cur + 1} из ${Q.length}</span>`;
+  const h = document.createElement("p"); h.className = "qtext"; h.textContent = x.q;
+  const ul = document.createElement("ul"); ul.className = "opts";
+  x.o.forEach((o, i) => {
+    const li = document.createElement("li"); const b = document.createElement("button");
+    b.type = "button"; b.className = "opt"; b.id = `opt-${S.cur}-${i}`;
+    b.innerHTML = `<span class="letter">${L[i]}</span><span></span>`; b.lastChild.textContent = o;
+    if (show && (answered || S.finished)) { b.disabled = true; if (i === x.a) b.classList.add("correct"); else if (i === v) b.classList.add("wrong"); }
+    else if (!show && i === v) { b.classList.add("picked"); b.setAttribute("aria-pressed", "true"); }
+    if (S.finished) b.disabled = true;
+    b.addEventListener("click", () => choose(i)); li.appendChild(b); ul.appendChild(li);
+  });
+  c.append(meta, h, ul);
+  if (show && answered) {
+    const fb = document.createElement("div"); fb.className = "fb"; const ok = v === x.a;
+    fb.innerHTML = `<span class="verdict ${ok ? "ok" : "bad"}">${ok ? "Верно." : "Неверно. Правильный ответ — " + L[x.a] + "."}</span><span></span>`;
+    fb.children[1].textContent = x.e || "";
+    if (x.k) { const k = document.createElement("span"); k.innerHTML = "<b>Вывод:</b> "; k.appendChild(document.createTextNode(x.k)); fb.appendChild(k); }
+    if (x.p) { const p = document.createElement("span"); p.innerHTML = "<b>На практике:</b> "; p.appendChild(document.createTextNode(x.p)); fb.appendChild(p); }
+    if (x.s) { const s = document.createElement("span"); s.className = "src"; s.textContent = "Источник: " + x.s; fb.appendChild(s); }
+    c.appendChild(fb);
+  } else if (show && S.finished && !answered) {
+    const fb = document.createElement("div"); fb.className = "fb";
+    fb.innerHTML = `<span class="verdict bad">Без ответа. Правильный ответ — ${L[x.a]}.</span><span></span>`;
+    fb.children[1].textContent = x.e || ""; c.appendChild(fb);
+  }
+  const nav = document.createElement("div"); nav.className = "nav";
+  nav.innerHTML = `<button class="btn" type="button" id="prev">← Назад</button><button class="btn primary" type="button" id="next">${S.cur === Q.length - 1 ? "К результату" : "Далее →"}</button>`;
+  c.appendChild(nav);
+  $("prev").disabled = S.cur === 0; $("prev").onclick = () => go(S.cur - 1);
+  $("next").onclick = () => S.cur === Q.length - 1 ? showResult() : go(S.cur + 1);
+  renderMap();
+}
+
+function choose(i) {
+  if (S.finished) return;
+  const was = S.ans[S.cur];
+  if (was !== null && S.mode !== "exam") return;          // в учебном режиме ответ окончательный
+  if (S.mode !== "review") {
+    if (S.startAt === null) {
+      const f = fioOk();
+      if (!f) { const h = $("fiohint"); h.textContent = "Сначала введите ФИО полностью — хотя бы фамилию и имя, буквами."; h.classList.add("err"); $("fio").focus(); return; }
+      S.fio = f; S.startAt = Date.now(); fioLocked(); runTimer();
+    }
+  } else {
+    markMistake(Q[S.cur].id, i !== Q[S.cur].a);
+  }
+  S.ans[S.cur] = i; save(); renderChrome(); renderQ();
+}
+
+function go(i) { if (i < 0 || i >= Q.length) return; S.cur = i; save(); $("result").hidden = true; $("qcard").hidden = false; renderQ(); }
+
+function stats() { const done = S.ans.filter(v => v !== null).length, ok = S.ans.filter((v, i) => v === Q[i].a).length; return { done, ok }; }
+
+function renderMap() {
+  const m = $("map"); m.innerHTML = ""; const show = reveal();
+  Q.forEach((x, i) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "cell"; b.textContent = i + 1; b.id = `cell-${i}`;
+    b.setAttribute("aria-label", `Вопрос ${i + 1}`);
+    if (S.ans[i] !== null) b.classList.add(show ? (S.ans[i] === x.a ? "ok" : "bad") : "done");
+    if (i === S.cur && !$("qcard").hidden) b.classList.add("cur");
+    b.onclick = () => go(i); m.appendChild(b);
+  });
+  const { done, ok } = stats();
+  $("fill").style.width = (Q.length ? done / Q.length * 100 : 0) + "%";
+  $("stat").textContent = show ? `${done} / ${Q.length} отвечено · верно ${ok}` : `${done} / ${Q.length} отвечено`;
+}
+
+// ---------- результат и отчёт ----------
+function grade(p) { if (p >= 90) return ["Отлично", 0]; if (p >= 75) return ["Хорошо", 1]; if (p >= 60) return ["Удовлетворительно", 2]; return ["Неудовлетворительно", 3]; }
+function hash(str) {
+  let h = 0x811c9dc5; for (const ch of str) { h ^= ch.codePointAt(0); h = Math.imul(h, 0x01000193) >>> 0; }
+  let h2 = 0x9e3779b9; for (const ch of (str + T.salt)) { h2 ^= ch.codePointAt(0); h2 = Math.imul(h2, 0x85ebca6b) >>> 0; }
+  const a = h.toString(36).toUpperCase().padStart(7, "0").slice(-4), b = h2.toString(36).toUpperCase().padStart(7, "0").slice(-4); return a + "-" + b;
+}
+const body = t => t.split(/\r?\n/).map(x => x.trim()).filter(Boolean).filter(x => !x.startsWith("Код проверки:")).join("\n");
+function stamp(d) { const z = n => String(n).padStart(2, "0"); return `${z(d.getDate())}.${z(d.getMonth() + 1)}.${d.getFullYear()} ${z(d.getHours())}:${z(d.getMinutes())}`; }
+function attemptNo() { try { const k = "acad-" + T.salt + "-attempts"; const n = (+localStorage.getItem(k) || 0) + 1; localStorage.setItem(k, n); return n; } catch (e) { return null; } }
+
+function showSend() {
+  const el = $("autosend"); if (!el) return;
+  const st = S.sendState;
+  if (st === "pending") { el.className = "hint"; el.textContent = "Отправляем результат преподавателю…"; }
+  else if (st === "sent") { el.className = "ok-msg"; el.textContent = "Результат отправлен преподавателю. Если преподаватель его не получил, нажмите «Отправить через Telegram»."; }
+  else if (st === "unknown") { el.className = "bad-msg"; el.textContent = "Страница была закрыта во время отправки — неизвестно, дошёл ли результат. Нажмите «Отправить ещё раз»."; }
+  else if (st === "fail") { el.className = "bad-msg"; el.textContent = "Автоматическая отправка не удалась. Нажмите «Отправить через Telegram» и выберите чат преподавателя (или скопируйте отчёт)."; }
+  else el.textContent = "";
+}
+function send(text) {
+  S.sendState = "pending"; save(); showSend();
+  sendToTeacher(text).then(st => { S.sendState = st; save(); showSend(); });
+}
+
+function showResult(auto) {
+  if (!Q.length) return;
+  if (!S.finished) {
+    if (S.mode !== "review" && S.startAt === null) {
+      const h = $("fiohint"); h.textContent = "Тест ещё не начат: введите ФИО и ответьте хотя бы на один вопрос."; h.classList.add("err"); $("fio").focus(); return;
+    }
+    const left = S.ans.filter(v => v === null).length;
+    if (!auto && left && !confirm(`Без ответа осталось вопросов: ${left}. Они будут засчитаны как неверные. Завершить?`)) return;
+    S.finished = true; stopTimer();
+    // В ошибки попадают только неверные ответы; пропущенные вопросы не трогаем.
+    if (S.mode !== "review") Q.forEach((q, i) => { if (S.ans[i] !== null) markMistake(q.id, S.ans[i] !== q.a); });
+    save();
+  }
+  updateClock(); renderChrome();
+  const { done, ok } = stats(), p = Math.round(ok / Q.length * 100), [g, gi] = grade(p);
+  const wrong = Q.map((x, i) => i).filter(i => S.ans[i] !== Q[i].a);
+  const wrongList = wrong.length
+    ? `<h2>Разобрать ошибки</h2><ol class="wrongs">${wrong.map(i => `<li><button type="button" data-i="${i}">Вопрос ${i + 1}: ${esc(Q[i].t.toLowerCase())}</button></li>`).join("")}</ol>`
+    : "<p>Все ответы верны.</p>";
+  const r = $("result");
+
+  if (S.mode === "review") {
+    r.innerHTML = `<h2>Работа над ошибками</h2><div class="score"><span class="big">${ok}/${Q.length}</span><span class="grade">исправлено</span></div>
+      <p class="stat">Осталось ошибок в этом тесте: ${T.questions.filter(q => mistakes()[q.id]).length}</p>${wrongList}`;
+  } else {
+    const LIMITv = LIMIT, used = Math.min(LIMITv, (S.endAt || Date.now()) - S.startAt);
+    const rows = [["Отлично", "90–100%"], ["Хорошо", "75–89%"], ["Удовлетворительно", "60–74%"], ["Неудовлетворительно", "менее 60%"]];
+    r.innerHTML = `<h2>Результат</h2>${S.timedOut ? `<p class="notice">Время вышло — тест завершён автоматически.</p>` : ""}<div class="score"><span class="big">${ok}/${Q.length}</span><span class="grade">${p}% · ${g}</span></div><p class="stat">Режим: ${MODES[S.mode].name} · затрачено времени: ${fmt(used)} из ${fmt(LIMITv)}</p>
+      ${done < Q.length ? `<p class="sub">Без ответа осталось вопросов: ${Q.length - done}. Они засчитаны как неверные.</p>` : ""}
+      <table class="scale"><tbody>${rows.map((rw, i) => `<tr class="${i === gi ? "me" : ""}"><td>${rw[0]}</td><td>${rw[1]}</td></tr>`).join("")}</tbody></table>
+      <h2>Отправка результата</h2>
+      <p id="autosend" role="status"></p>
+      <p class="hint">Копия отчёта — на случай, если преподаватель попросит прислать его вручную. Не редактируйте текст — иначе код проверки не совпадёт.</p>
+      <textarea class="report" id="report" readonly spellcheck="false"></textarea>
+      <div class="actions"><button class="btn primary" id="copy" type="button">Скопировать отчёт</button><button class="btn" id="resend" type="button">Отправить ещё раз</button><button class="btn" id="share" type="button">Отправить через Telegram</button><span id="sendmsg" role="status"></span></div>
+      ${wrongList}`;
+    if (!S.reportText) {
+      const lines = [`Тест «${T.title}» — результат`, `Режим: ${MODES[S.mode].name} · Академия УЗИ`, `ФИО: ${S.fio || "не указано"}`, `Дата: ${stamp(new Date(S.endAt || Date.now()))}`,
+        `Результат: ${ok} из ${Q.length} (${p}%) — ${g}`, `Время: ${fmt(used)} из ${fmt(LIMITv)}${S.timedOut ? " (время вышло)" : ""}`,
+        `Без ответа: ${Q.length - done}`, `Ошибки в вопросах: ${wrong.length ? wrong.map(i => i + 1).join(", ") : "нет"}`];
+      const att = attemptNo(); if (att) lines.splice(4, 0, `Попытка на этом устройстве: ${att}`);
+      S.reportText = lines.join("\n") + "\nКод проверки: " + hash(body(lines.join("\n")));
+      save(); send(S.reportText);
+    }
+    $("report").value = S.reportText; showSend();
+    const msg = t => { const m = $("sendmsg"); m.textContent = t; m.className = "ok-msg"; };
+    $("copy").onclick = () => {
+      const ta = $("report");
+      const sel = () => { ta.focus(); ta.select(); msg("Текст выделен — нажмите Ctrl+C (или «Копировать»)."); };
+      try { navigator.clipboard.writeText(S.reportText).then(() => msg("Скопировано. Вставьте в чат с преподавателем."), sel); } catch (e) { sel(); }
+    };
+    $("resend").onclick = () => send(S.reportText + "\n(повторная отправка)");
+    $("share").onclick = () => { window.open("https://t.me/share/url?url=" + encodeURIComponent(" ") + "&text=" + encodeURIComponent(S.reportText), "_blank", "noopener"); };
+  }
+  r.querySelectorAll("[data-i]").forEach(b => b.onclick = () => go(+b.dataset.i));
+  $("qcard").hidden = true; r.hidden = false; renderMap(); r.scrollIntoView({ block: "start" });
+}
+
+function restart() {
+  const m = S.mode; stopTimer(); S = fresh(m); pickQuestions();
+  if (m === "review" && !Q.length) { S = fresh("study"); pickQuestions(); }
+  sizeAnswers(); store.del(KEY); save(); fioReset(); $("restored").hidden = true;
+  $("result").hidden = true; $("qcard").hidden = false; renderAll(); window.scrollTo(0, 0);
+}
+
+function renderAll() { renderChrome(); updateClock(); renderQ(); }
+
+// ---------- запуск ----------
+function fail(text) {
+  $("h1").textContent = "Тест не найден";
+  $("about").innerHTML = esc(text) + ' <a href="./">Вернуться к списку тестов</a>.';
+  ["modes", "who", "qcard", "timer"].forEach(id => $(id).hidden = true);
+  document.querySelector(".map").parentElement.hidden = true;
+}
+
+async function boot() {
+  const id = new URLSearchParams(location.search).get("t") || "";
+  if (!/^[a-z0-9-]+$/.test(id)) return fail("В адресе не указан тест.");
+  try {
+    const r = await fetch(`data/tests/${id}.json`);
+    if (!r.ok) throw new Error(r.status);
+    T = await r.json();
+  } catch (e) { return fail(navigator.onLine ? "Такого теста нет." : "Нет интернета, и этот тест ещё не сохранён на устройстве."); }
+
+  KEY = "acad-state-" + T.id; LIMIT = T.minutes * 60 * 1000;
+  document.title = T.pageTitle || ("Тест: " + T.title);
+  $("eyebrow").textContent = T.eyebrow; $("h1").textContent = T.h1 || T.title; $("about").textContent = T.about || "";
+  $("foot").textContent = T.footer || "";
+
+  const saved = store.get(KEY, null);
+  S = saved && saved.v === 1 && MODES[saved.mode] ? saved : fresh("study");
+  pickQuestions();
+  if (S.ans.length !== Q.length) { S = fresh(S.mode === "review" ? "study" : S.mode); pickQuestions(); }
+  sizeAnswers();
+  if (S.cur >= Q.length) S.cur = 0;
+
+  if (S.startAt !== null || S.ans.some(v => v !== null)) {
+    if (S.mode !== "review") fioLocked();
+    if (S.sendState === "pending") S.sendState = "unknown";
+    const note = $("restored"); note.hidden = false;
+    note.textContent = S.finished ? "Это результат вашей последней попытки. Чтобы пройти тест снова, нажмите «Начать заново»."
+      : "Попытка восстановлена: ответы сохранены, таймер продолжает идти с момента первого ответа.";
+  } else if (S.fio) { $("fio").value = S.fio; }
+
+  document.querySelectorAll(".mode").forEach(b => b.onclick = () => setMode(b.dataset.mode));
+  $("fio").addEventListener("input", () => {
+    if (S.startAt === null) { S.fio = $("fio").value; save(); }
+    const h = $("fiohint"); if (h.classList.contains("err") && fioOk()) { h.classList.remove("err"); h.textContent = "ФИО принято. Можно отвечать."; }
+  });
+  $("finish").onclick = () => showResult();
+  $("restart").onclick = () => {
+    if (!S.finished && S.startAt !== null && !confirm("Текущая попытка будет потеряна. Начать заново?")) return;
+    restart();
+  };
+  $("vbtn").onclick = () => {
+    const t = $("vin").value, o = $("vout"); const m = t.match(/Код проверки:\s*([0-9A-Z]{4}-[0-9A-Z]{4})/);
+    if (!m) { o.className = "bad-msg"; o.textContent = "В тексте нет строки «Код проверки»."; return; }
+    const good = hash(body(t)) === m[1]; o.className = good ? "ok-msg" : "bad-msg"; o.textContent = good ? "Код верный: отчёт не изменён." : "Код не совпадает: текст отчёта изменён.";
+  };
+  document.addEventListener("keydown", e => {
+    if (e.target.closest && e.target.closest("input,textarea")) return;
+    if ($("qcard").hidden || !Q.length) return;
+    const kn = +e.key; if (kn >= 1 && kn <= Q[S.cur].o.length) choose(kn - 1);
+    else if (e.key === "ArrowRight") go(S.cur + 1); else if (e.key === "ArrowLeft") go(S.cur - 1);
+  });
+
+  renderAll();
+  if (S.finished) showResult();
+  else if (S.startAt !== null && timed()) runTimer();   // истёкшее время завершит тест в updateClock
+}
+
+boot();
+})();

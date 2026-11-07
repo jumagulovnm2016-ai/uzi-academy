@@ -1,0 +1,112 @@
+/* Общие стили тестов Академии УЗИ (перенесены со страниц тестов без изменений, дополнения — в конце). */
+:root{
+  --bg:#f3f6f7; --paper:#ffffff; --ink:#18232f; --muted:#5b6b78; --line:#d5e0e3;
+  --navy:#1f3864; --teal:#007a7a; --teal-soft:#e2f1f1;
+  --ok:#1e7a46; --ok-soft:#e3f3e9; --bad:#b3261e; --bad-soft:#fbe7e5;
+  --f-display:"Spectral", Georgia, "Times New Roman", serif;
+  --f-body:"PT Sans", "Segoe UI", Arial, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1519; --paper:#172027; --ink:#e5edf0; --muted:#9db0ba; --line:#2b3a43;
+  --navy:#9cb6e6; --teal:#4cc3c3; --teal-soft:#16302f;
+  --ok:#6ad19a; --ok-soft:#163024; --bad:#ff8a80; --bad-soft:#3a1d1b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1519; --paper:#172027; --ink:#e5edf0; --muted:#9db0ba; --line:#2b3a43;
+  --navy:#9cb6e6; --teal:#4cc3c3; --teal-soft:#16302f;
+  --ok:#6ad19a; --ok-soft:#163024; --bad:#ff8a80; --bad-soft:#3a1d1b; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:24px 48px;display:grid;gap:18px}
+header{display:grid;gap:6px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--teal)}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,5vw,38px);line-height:1.1;margin:0;color:var(--navy);text-wrap:balance}
+.sub{color:var(--muted);margin:0;max-width:62ch}
+.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.track{flex:1 1 220px;height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.fill{height:100%;width:0;background:var(--teal);transition:width .25s}
+.stat{font-family:var(--f-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:22px clamp(16px,4vw,28px);display:grid;gap:14px}
+.qmeta{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.tag{color:var(--teal);text-transform:uppercase;letter-spacing:.06em}
+.qtext{font-family:var(--f-display);font-weight:600;font-size:clamp(19px,3.2vw,23px);line-height:1.3;margin:0;text-wrap:pretty}
+.opts{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.opt{width:100%;display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:start;text-align:left;font:inherit;color:var(--ink);
+  background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:11px 12px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--teal)}
+.opt:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.opt:disabled{cursor:default}
+.letter{font-family:var(--f-mono);font-weight:700;width:28px;height:28px;display:grid;place-items:center;border-radius:6px;background:var(--teal-soft);color:var(--teal)}
+.opt.correct{border-color:var(--ok);background:var(--ok-soft)}
+.opt.correct .letter{background:var(--ok);color:var(--paper)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt.wrong .letter{background:var(--bad);color:var(--paper)}
+.fb{border-top:1px solid var(--line);padding-top:12px;display:grid;gap:6px}
+.verdict{font-weight:700}
+.verdict.ok{color:var(--ok)} .verdict.bad{color:var(--bad)}
+.src{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.nav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:700;border-radius:8px;padding:10px 16px;cursor:pointer;border:1.5px solid var(--navy);background:var(--paper);color:var(--navy)}
+.btn.primary{background:var(--navy);color:var(--paper)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.maphead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+h2{font-family:var(--f-display);font-size:18px;margin:0;color:var(--navy)}
+.legend{font-size:13px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.map{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px}
+@media (max-width:480px){.map{grid-template-columns:repeat(6,minmax(0,1fr))}}
+.cell{font-family:var(--f-mono);font-size:13px;font-weight:700;aspect-ratio:1;max-width:100%;border-radius:6px;border:1.5px solid var(--line);background:var(--paper);color:var(--muted);cursor:pointer;font-variant-numeric:tabular-nums}
+.cell.cur{border-color:var(--navy);color:var(--navy)}
+.cell.ok{background:var(--ok);border-color:var(--ok);color:var(--paper)}
+.cell.bad{background:var(--bad);border-color:var(--bad);color:var(--paper)}
+.cell:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.result{display:grid;gap:12px}
+.score{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.big{font-family:var(--f-display);font-size:52px;font-weight:700;line-height:1;color:var(--navy);font-variant-numeric:tabular-nums}
+.grade{font-weight:700;font-size:18px}
+.scale{width:100%;border-collapse:collapse;font-size:14px}
+.scale td{border-top:1px solid var(--line);padding:6px 4px}
+.scale td:last-child{text-align:right;font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.scale tr.me td{color:var(--teal);font-weight:700}
+.wrongs{margin:0;padding-left:20px;display:grid;gap:4px}
+.wrongs button{font:inherit;background:none;border:0;padding:0;color:var(--teal);cursor:pointer;text-align:left;text-decoration:underline}
+footer{font-size:13px;color:var(--muted)}
+.timer{display:inline-flex;align-items:center;gap:8px;font-family:var(--f-mono);font-weight:700;font-size:20px;font-variant-numeric:tabular-nums;color:var(--navy);
+  border:1.5px solid var(--line);border-radius:8px;padding:4px 12px;background:var(--paper)}
+.timer small{font-family:var(--f-body);font-weight:400;font-size:12px;color:var(--muted)}
+.timer.warn{color:var(--bad);border-color:var(--bad);background:var(--bad-soft)}
+.timer.stop{color:var(--muted)}
+.who{display:grid;gap:6px}
+.who label{font-weight:700;color:var(--navy)}
+.who input,.report,.verify textarea{font:inherit;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+.who input:focus-visible,.report:focus-visible,.verify textarea:focus-visible{outline:3px solid var(--teal);outline-offset:1px;border-color:var(--teal)}
+.who input[readonly]{background:var(--teal-soft)}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.hint.err{color:var(--bad)}
+.report{font-family:var(--f-mono);font-size:13px;line-height:1.5;min-height:200px;resize:vertical}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ok-msg{color:var(--ok);font-weight:700} .bad-msg{color:var(--bad);font-weight:700}
+.verify{display:grid;gap:8px;margin-top:8px}
+.verify textarea{font-family:var(--f-mono);font-size:13px;min-height:140px}
+details summary{cursor:pointer;color:var(--teal);font-weight:700}
+.notice{margin:0;padding:10px 12px;border-radius:8px;background:var(--bad-soft);color:var(--bad);font-weight:700}
+@media (prefers-reduced-motion:reduce){.fill{transition:none}}
+
+/* ---- Академия УЗИ: режимы, экзамен, работа над ошибками ---- */
+.modes{display:grid;gap:8px}
+.modes .row{display:flex;gap:8px;flex-wrap:wrap}
+.mode{font:inherit;text-align:left;flex:1 1 200px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;padding:10px 12px;cursor:pointer;display:grid;gap:2px}
+.mode b{color:var(--navy)}
+.mode small{color:var(--muted);font-size:13px}
+.mode[aria-pressed="true"]{border-color:var(--navy);background:var(--teal-soft)}
+.mode:disabled{cursor:default}
+.mode:disabled:not([aria-pressed="true"]){opacity:.45}
+.mode:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.opt.picked{border-color:var(--navy);background:var(--teal-soft)}
+.opt.picked .letter{background:var(--navy);color:var(--paper)}
+.cell.done{background:var(--navy);border-color:var(--navy);color:var(--paper)}
+.restored{margin:0;padding:10px 12px;border-radius:8px;background:var(--teal-soft);color:var(--ink)}
+.backlink{font-size:14px;color:var(--teal);font-weight:700;text-decoration:none}
+.backlink:hover{text-decoration:underline}
