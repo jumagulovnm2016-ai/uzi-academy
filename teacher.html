@@ -244,7 +244,7 @@ const gname = id => { const g = D.groups.find(x => x.id === id); return g ? g.na
 function renderGroupsSelect() {
   const opts = `<option value="all">Все курсанты</option>` + D.groups.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join("") + `<option value="none">Без группы</option>`;
   $("gsel").innerHTML = opts; $("gsel").value = D.groups.some(g => g.id === group) || group === "none" ? group : (group = "all");
-  const own = D.groups.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join("") + `<option value="">без группы</option>`;
+  const own = D.groups.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join("") + `<option value="__new">＋ Новая группа…</option><option value="">без группы</option>`;
   const keep = $("add-g").value; $("add-g").innerHTML = own; if (keep !== undefined && [...$("add-g").options].some(o => o.value === keep)) $("add-g").value = keep;
   if (group !== "all" && group !== "none") $("add-g").value = group;
 }
@@ -306,7 +306,7 @@ function showStudent(id) {
   const p = D.profiles.find(x => x.id === id); if (!p) return;
   const s = studentStats(p);
   const by = {}; s.at.forEach(a => { const b = by[a.test_id] || (by[a.test_id] = { title: a.title, n: 0, last: a.percent, best: 0 }); b.n++; b.best = Math.max(b.best, a.percent); });
-  const gopts = D.groups.map(g => `<option value="${g.id}"${g.id === p.group_id ? " selected" : ""}>${esc(g.name)}</option>`).join("") + `<option value=""${p.group_id ? "" : " selected"}>без группы</option>`;
+  const gopts = D.groups.map(g => `<option value="${g.id}"${g.id === p.group_id ? " selected" : ""}>${esc(g.name)}</option>`).join("") + `<option value="__new">＋ Новая группа…</option><option value=""${p.group_id ? "" : " selected"}>без группы</option>`;
   openDlg(`<div class="row"><h2 style="flex:1">${esc(p.full_name)}</h2><span class="st ${p.status}">${ST[p.status]}</span></div>
     <p class="muted small">${p.login ? "Логин: <b>" + esc(p.login) + "</b>" : "Почта: <b>" + esc(s.email || "—") + "</b>"} · аккаунт с ${dt(p.created_at)} · последний вход: ${dtt(s.signin)}</p>
     <div class="row"><label class="small muted">Группа:</label><select id="d-g">${gopts}</select><button class="btn sm" id="d-gs" type="button">Сохранить</button>
@@ -378,7 +378,7 @@ async function setStudent(p, status, gid) {
 function renderRequests() {
   const req = students().filter(p => p.status === "pending");
   $("req-n").hidden = !req.length; $("req-n").textContent = req.length;
-  const gopts = D.groups.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join("") + `<option value="">без группы</option>`;
+  const gopts = D.groups.map(g => `<option value="${g.id}">${esc(g.name)}</option>`).join("") + `<option value="__new">＋ Новая группа…</option><option value="">без группы</option>`;
   $("t-req").innerHTML = req.map(p => `<tr data-id="${p.id}"><td>${esc(p.full_name || "—")}</td><td class="small">${esc((D.meta[p.id] || {}).email || "—")}</td><td class="n">${dt(p.created_at)}</td>
     <td><select>${gopts}</select></td><td class="row"><button class="btn sm primary" data-a="ok" type="button">Подтвердить</button><button class="btn sm danger" data-a="no" type="button">Отклонить</button></td></tr>`).join("");
   $("req-empty").hidden = !!req.length;
@@ -425,7 +425,7 @@ $("add-go").onclick = async () => {
   if (!names.length) return msg("add-msg", "Впишите хотя бы одно ФИО.", true);
   if (bad.length) return msg("add-msg", "Нужны фамилия и имя: " + bad.join(", "), true);
   if (names.length > 60) return msg("add-msg", "За один раз — не больше 60.", true);
-  $("add-go").disabled = true; const gid = $("add-g").value || null; const left = [];
+  $("add-go").disabled = true; const gid = $("add-g").value && $("add-g").value !== "__new" ? $("add-g").value : null; const left = [];
   for (let i = 0; i < names.length; i++) {
     msg("add-msg", `Создаём ${i + 1} из ${names.length}…`);
     try { const r = await admin({ action: "create_student", full_name: names[i], group_id: gid });
@@ -447,6 +447,26 @@ function renderCreated() {
   $("add-rows").querySelectorAll("[data-i]").forEach(b => b.onclick = () => { const c = created[+b.dataset.i]; copy(credText(c.name, c.login, c.code, c.until), b); });
 }
 $("add-copy").onclick = e => copy(`Академия УЗИ — вход: ${SITE}\n\n` + created.map(c => `${c.name}\tлогин: ${c.login}\tкод: ${c.code}`).join("\n"), e.target);
+
+// «＋ Новая группа…» в любом списке групп: ввести название — группа создаётся и сразу выбирается
+document.addEventListener("focusin", e => { if (e.target.tagName === "SELECT") e.target.dataset.prev = e.target.value; });
+document.addEventListener("change", async e => {
+  const sel = e.target; if (sel.tagName !== "SELECT" || sel.value !== "__new") return;
+  // вернуть прежний выбор при отмене: запомненный при фокусе, иначе выбранный в разметке, иначе первый пункт
+  const marked = sel.querySelector("option[selected]");
+  const prev = sel.dataset.prev && sel.dataset.prev !== "__new" ? sel.dataset.prev : (marked ? marked.value : sel.options[0].value);
+  const n = (prompt("Название новой группы, например: УЗД-2026, декабрь") || "").trim();
+  if (!n) { sel.value = prev; return; }
+  const { data, error } = await sb.from("groups").insert({ name: n.slice(0, 80) }).select().single();
+  if (error) { alert(A.ru(error)); sel.value = prev; return; }
+  D.groups.push(data);
+  // добавить новую группу во все списки, не сбрасывая выбранное в них
+  document.querySelectorAll("select").forEach(s2 => { const nw = [...s2.options].find(o => o.value === "__new"); if (!nw) return;
+    const o = document.createElement("option"); o.value = data.id; o.textContent = data.name; s2.insertBefore(o, nw); });
+  sel.value = data.id; sel.dataset.prev = data.id;
+  const g = $("gsel"); if (g) { const o = document.createElement("option"); o.value = data.id; o.textContent = data.name; g.insertBefore(o, g.querySelector('option[value="none"]')); }
+  renderGroups();
+});
 
 $("g-add").onclick = async () => {
   const n = $("g-name").value.trim(); if (!n) return msg("g-msg", "Введите название.", true);
