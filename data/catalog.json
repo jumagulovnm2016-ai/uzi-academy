@@ -238,6 +238,13 @@
     "format": "quiz",
     "n": 30,
     "img": 0
+   },
+   {
+    "id": "fetal-heart-basic",
+    "title": "Сердце плода: анатомия, пороки, ритм",
+    "format": "quiz",
+    "n": 20,
+    "img": 0
    }
   ]
  }
