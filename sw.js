@@ -1,7 +1,7 @@
 // Тесты по УЗ-диагностике — офлайн-режим. Файл sw.js собирается из sw.template.js командой: python3 build-sw.py
 // Страницы: сначала сеть (обновления приходят сразу), без сети — из кэша.
 // Результаты в Telegram: без сети ставятся в очередь и отправляются при появлении связи.
-const VERSION = '20261114-135936';
+const VERSION = '20261114-225722';
 const CACHE = 'academy-' + VERSION;
 const FONTS = 'academy-fonts';
 const PRECACHE = [
@@ -16,6 +16,7 @@ const PRECACHE = [
  "./entry.html",
  "./exam-builder.html",
  "./face-guess.html",
+ "./fetal-abdomen.html",
  "./fetal-heart-basic.html",
  "./fetal-heart-pathology.html",
  "./fetal-heart.html",
@@ -74,6 +75,7 @@ const PRECACHE = [
  "./data/tests/early-quiz.json",
  "./data/tests/entry.json",
  "./data/tests/face-guess.json",
+ "./data/tests/fetal-abdomen.json",
  "./data/tests/fetal-heart-basic.json",
  "./data/tests/fetal-heart-pathology.json",
  "./data/tests/fetal-heart.json",
@@ -166,6 +168,16 @@ const IMG = {
   "./img/face-guess/f28.jpg",
   "./img/face-guess/f29.jpg",
   "./img/face-guess/f30.jpg"
+ ],
+ "fetal-abdomen": [
+  "./img/fetal-abdomen/q_ac.jpg",
+  "./img/fetal-abdomen/q_bowel.jpg",
+  "./img/fetal-abdomen/q_cdh.jpg",
+  "./img/fetal-abdomen/q_cord_art.jpg",
+  "./img/fetal-abdomen/q_gastroschisis.jpg",
+  "./img/fetal-abdomen/q_gastroschisis_sag.jpg",
+  "./img/fetal-abdomen/q_hydrops.jpg",
+  "./img/fetal-abdomen/q_kidneys.jpg"
  ],
  "fetal-spine": [
   "./img/fetal-spine/q_banana.jpg",

@@ -252,6 +252,13 @@
     "format": "quiz",
     "n": 30,
     "img": 0
+   },
+   {
+    "id": "fetal-abdomen",
+    "title": "Органы брюшной полости плода во II триместре",
+    "format": "quiz",
+    "n": 30,
+    "img": 8
    }
   ]
  }
