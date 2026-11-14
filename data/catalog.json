@@ -245,6 +245,13 @@
     "format": "quiz",
     "n": 20,
     "img": 0
+   },
+   {
+    "id": "fetal-heart-pathology",
+    "title": "Пороки, опухоли и аритмии сердца плода",
+    "format": "quiz",
+    "n": 30,
+    "img": 0
    }
   ]
  }
