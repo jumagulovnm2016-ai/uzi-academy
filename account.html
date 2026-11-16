@@ -73,7 +73,17 @@ td.n{text-align:right;font-family:ui-monospace,Consolas,monospace;white-space:no
           <input type="password" id="in-pass" autocomplete="current-password" required></label>
         <p class="err" id="in-err" role="alert" hidden></p>
         <div class="actions"><button class="btn primary" type="submit" id="in-go">Войти</button></div>
-        <p class="muted">Забыли пароль или код? Напишите преподавателю — он выдаст новый. Восстановления по почте нет.</p>
+        <p class="muted">Забыли пароль? <a href="#" id="fg-open"><b>Восстановить по почте</b></a> — если вы регистрировались с почтой. Логин и код от преподавателя восстанавливает преподаватель: напишите ему.</p>
+      </div>
+    </form>
+
+    <form id="f-fg" novalidate hidden>
+      <div style="display:grid;gap:12px">
+        <label class="f">Почта<small>пришлём письмо со ссылкой для нового пароля</small>
+          <input type="email" id="fg-email" autocomplete="email" autocapitalize="none" spellcheck="false" required></label>
+        <p class="err" id="fg-err" role="alert" hidden></p>
+        <p class="notice" id="fg-ok" hidden>Если эта почта зарегистрирована, на неё придёт письмо. Откройте ссылку из письма на этом же устройстве и задайте новый пароль. Письма нет — проверьте «Спам».</p>
+        <div class="actions"><button class="btn primary" type="submit" id="fg-go">Отправить ссылку</button><button class="btn" type="button" id="fg-back">Назад ко входу</button></div>
       </div>
     </form>
 
@@ -86,6 +96,19 @@ td.n{text-align:right;font-family:ui-monospace,Consolas,monospace;white-space:no
         <p class="err" id="up-err" role="alert" hidden></p>
         <div class="actions"><button class="btn primary" type="submit" id="up-go">Зарегистрироваться</button></div>
         <p class="muted">После регистрации преподаватель подтвердит вас и добавит в группу. До этого тесты работают как обычно, но результаты в кабинете не сохраняются.</p>
+      </div>
+    </form>
+  </section>
+
+  <!-- ===== новый пароль по ссылке из письма ===== -->
+  <section class="card" id="rs" hidden>
+    <h2>Новый пароль</h2>
+    <form id="f-rs" novalidate>
+      <div style="display:grid;gap:12px">
+        <label class="f">Новый пароль<small>не меньше 6 символов</small><input type="password" id="rs-pass" autocomplete="new-password" minlength="6" required></label>
+        <label class="f">Повторите пароль<input type="password" id="rs-pass2" autocomplete="new-password" required></label>
+        <p class="err" id="rs-err" role="alert" hidden></p>
+        <div class="actions"><button class="btn primary" type="submit" id="rs-go">Сохранить пароль</button></div>
       </div>
     </form>
   </section>
@@ -140,7 +163,7 @@ const pct = p => `<span class="pct ${p >= 75 ? "g" : p < 60 ? "b" : ""}">${p}%</
 
 function tab(up) {
   $("t-in").setAttribute("aria-selected", String(!up)); $("t-up").setAttribute("aria-selected", String(up));
-  $("f-in").hidden = up; $("f-up").hidden = !up;
+  $("f-in").hidden = up; $("f-up").hidden = !up; $("f-fg").hidden = true;
 }
 $("t-in").onclick = () => tab(false); $("t-up").onclick = () => tab(true);
 
@@ -156,6 +179,15 @@ $("f-up").onsubmit = e => { e.preventDefault();
   if (!$("up-ok").checked) { $("up-err").textContent = "Нужно согласие на хранение данных."; $("up-err").hidden = false; return; }
   if ($("up-pass").value.length < 6) { $("up-err").textContent = "Пароль — не меньше 6 символов."; $("up-err").hidden = false; return; }
   busy($("up-go"), () => A.signUp($("up-name").value, $("up-email").value, $("up-pass").value), $("up-err")); };
+$("fg-open").onclick = e => { e.preventDefault(); tab(false); $("f-in").hidden = true; $("f-fg").hidden = false;
+  $("fg-ok").hidden = true; $("fg-err").hidden = true;
+  const w = $("in-who").value.trim(); if (w.includes("@")) $("fg-email").value = w; $("fg-email").focus(); };
+$("fg-back").onclick = () => tab(false);
+$("f-fg").onsubmit = e => { e.preventDefault(); $("fg-ok").hidden = true;
+  busy($("fg-go"), async () => { await A.sendReset($("fg-email").value); $("fg-ok").hidden = false; }, $("fg-err")); };
+$("f-rs").onsubmit = e => { e.preventDefault();
+  if ($("rs-pass").value !== $("rs-pass2").value) { $("rs-err").textContent = "Пароли не совпадают."; $("rs-err").hidden = false; return; }
+  busy($("rs-go"), async () => { await A.setPassword($("rs-pass").value); $("sync").textContent = "Новый пароль сохранён."; }, $("rs-err")); };
 $("out-btn").onclick = () => { if (confirm("Выйти из кабинета? С этого устройства будут удалены личные данные (расписание повторения сохранено на сервере).")) A.signOut(); };
 $("p-edit").onclick = () => { $("n-new").value = A.profile.full_name; $("f-name").hidden = false; $("n-new").focus(); };
 $("n-cancel").onclick = () => { $("f-name").hidden = true; };
@@ -187,8 +219,11 @@ async function history(p) {
 
 function render(p) {
   $("loading").hidden = true;
-  $("out").hidden = !!p; $("in").hidden = !p; $("sum").hidden = !p;
-  if (!p) return;
+  const rs = !!(A.recovery && p);                  // пришёл по ссылке из письма — сначала новый пароль
+  $("rs").hidden = !rs;
+  $("out").hidden = !!p; $("in").hidden = !p || rs; $("sum").hidden = !p || rs;
+  if (!p) { if (A.recoveryError) { $("in-err").textContent = "Ссылка для восстановления устарела или уже использована. Нажмите «Восстановить по почте» и запросите новую."; $("in-err").hidden = false; } return; }
+  if (rs) return;
   $("p-name").textContent = p.full_name || "—";
   $("p-idk").textContent = p.login ? "Логин" : "Почта"; $("p-id").textContent = p.login || p.email || "—";
   $("p-group").textContent = p.group || (p.role === "teacher" ? "—" : "пока не назначена");
@@ -206,7 +241,7 @@ function render(p) {
 if (!A || !A.client) { $("loading").textContent = "Не удалось загрузить модуль входа. Обновите страницу."; return; }
 // после входа — вернуться к тесту, с которого пришли
 const next = new URLSearchParams(location.search).get("next");
-const goNext = p => { if (p && p.status === "active" && next && /^[a-z0-9-]+\.html(\?[^\s<>"]*)?$/.test(next)) { location.replace(next); return true; } return false; };
+const goNext = p => { if (A.recovery) return false; if (p && p.status === "active" && next && /^[a-z0-9-]+\.html(\?[^\s<>"]*)?$/.test(next)) { location.replace(next); return true; } return false; };
 A.onChange(p => { if (!goNext(p)) render(p); });
 A.ready.then(p => { if (!goNext(p)) render(p); });
 })();

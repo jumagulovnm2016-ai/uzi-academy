@@ -20,7 +20,12 @@ window.AcadAccount = api;
 const emit = () => listeners.forEach(cb => { try { cb(api.profile); } catch (e) {} });
 
 if (!window.supabase || !window.supabase.createClient) { api.ready = Promise.resolve(null); return; }
+// ссылка из письма «Забыли пароль?» приходит с #...type=recovery — запомнить до того, как библиотека очистит адрес
+const HASH = location.hash || "";
+api.recovery = /type=recovery/.test(HASH) && !/error/.test(HASH);
+api.recoveryError = /type=recovery|otp_expired|error_code=/.test(HASH) && /error/.test(HASH);
 const sb = api.client = window.supabase.createClient(URL_, KEY_, { auth: { persistSession: true, autoRefreshToken: true, storageKey: "acad-auth" } });
+sb.auth.onAuthStateChange(ev => { if (ev === "PASSWORD_RECOVERY" && !api.recovery) { api.recovery = true; setTimeout(emit, 0); } });
 
 // ---------- понятные сообщения об ошибках ----------
 function ru(err) {
@@ -31,6 +36,9 @@ function ru(err) {
   if (/valid email|Unable to validate email|invalid format/i.test(m)) return "Проверьте адрес почты.";
   if (/rate limit|too many/i.test(m)) return "Слишком много попыток. Подождите минуту и попробуйте снова.";
   if (/Failed to fetch|NetworkError|Load failed|fetch/i.test(m)) return "Нет связи с сервером. Проверьте интернет.";
+  if (/not authorized|not allowed to send/i.test(m)) return "На эту почту письмо отправить не удалось. Напишите преподавателю.";
+  if (/different from the old|same as the old/i.test(m)) return "Новый пароль должен отличаться от старого.";
+  if (/expired|otp_expired|Auth session missing/i.test(m)) return "Ссылка устарела или уже использована. Запросите новую.";
   if (/signups not allowed|Signups not allowed/i.test(m)) return "Регистрация сейчас закрыта. Обратитесь к преподавателю.";
   return m || "Неизвестная ошибка.";
 }
@@ -78,6 +86,24 @@ api.signIn = async (who, password) => {
   const email = who.includes("@") ? who : `${who}@${DOMAIN}`;
   const { error } = await sb.auth.signInWithPassword({ email, password: String(password || "") });
   if (error) throw new Error(ru(error));
+  await afterLogin(); return api.profile;
+};
+
+// «Забыли пароль?» — только для аккаунтов с настоящей почтой (логин+код восстанавливает преподаватель)
+api.sendReset = async email => {
+  email = String(email || "").trim().toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.endsWith("@" + DOMAIN))
+    throw new Error("Введите почту, с которой вы регистрировались. Логин и код от преподавателя по почте не восстанавливаются — напишите преподавателю.");
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  if (error) throw new Error(ru(error));
+};
+api.setPassword = async password => {
+  password = String(password || "");
+  if (password.length < 6) throw new Error("Пароль слишком короткий — нужно не меньше 6 символов.");
+  const { error } = await sb.auth.updateUser({ password });
+  if (error) throw new Error(ru(error));
+  api.recovery = false;
+  try { window.history.replaceState(null, "", location.pathname + location.search); } catch (e) {}
   await afterLogin(); return api.profile;
 };
 
