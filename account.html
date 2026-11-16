@@ -73,7 +73,8 @@ td.n{text-align:right;font-family:ui-monospace,Consolas,monospace;white-space:no
           <input type="password" id="in-pass" autocomplete="current-password" required></label>
         <p class="err" id="in-err" role="alert" hidden></p>
         <div class="actions"><button class="btn primary" type="submit" id="in-go">Войти</button></div>
-        <p class="muted">Забыли пароль? <a href="#" id="fg-open"><b>Восстановить по почте</b></a> — если вы регистрировались с почтой. Логин и код от преподавателя восстанавливает преподаватель: напишите ему.</p>
+        <p class="muted" id="fg-student">Забыли пароль или код? Напишите преподавателю — он выдаст новый.</p>
+        <p class="muted" id="fg-teacher" hidden>Забыли пароль? <a href="#" id="fg-open"><b>Восстановить по почте</b></a></p>
       </div>
     </form>
 
@@ -82,7 +83,7 @@ td.n{text-align:right;font-family:ui-monospace,Consolas,monospace;white-space:no
         <label class="f">Почта<small>пришлём письмо со ссылкой для нового пароля</small>
           <input type="email" id="fg-email" autocomplete="email" autocapitalize="none" spellcheck="false" required></label>
         <p class="err" id="fg-err" role="alert" hidden></p>
-        <p class="notice" id="fg-ok" hidden>Если эта почта зарегистрирована, на неё придёт письмо. Откройте ссылку из письма на этом же устройстве и задайте новый пароль. Письма нет — проверьте «Спам».</p>
+        <p class="notice" id="fg-ok" hidden>Письмо отправлено. Откройте ссылку из письма и задайте новый пароль. Письма нет — проверьте «Спам».</p>
         <div class="actions"><button class="btn primary" type="submit" id="fg-go">Отправить ссылку</button><button class="btn" type="button" id="fg-back">Назад ко входу</button></div>
       </div>
     </form>
@@ -179,6 +180,8 @@ $("f-up").onsubmit = e => { e.preventDefault();
   if (!$("up-ok").checked) { $("up-err").textContent = "Нужно согласие на хранение данных."; $("up-err").hidden = false; return; }
   if ($("up-pass").value.length < 6) { $("up-err").textContent = "Пароль — не меньше 6 символов."; $("up-err").hidden = false; return; }
   busy($("up-go"), () => A.signUp($("up-name").value, $("up-email").value, $("up-pass").value), $("up-err")); };
+// «Забыли пароль?» — только для преподавателя: ссылка видна на account.html?prepod (вход из кабинета преподавателя)
+if (new URLSearchParams(location.search).has("prepod") || /teacher\.html/.test(new URLSearchParams(location.search).get("next") || "")) { $("fg-student").hidden = true; $("fg-teacher").hidden = false; }
 $("fg-open").onclick = e => { e.preventDefault(); tab(false); $("f-in").hidden = true; $("f-fg").hidden = false;
   $("fg-ok").hidden = true; $("fg-err").hidden = true;
   const w = $("in-who").value.trim(); if (w.includes("@")) $("fg-email").value = w; $("fg-email").focus(); };
@@ -222,7 +225,7 @@ function render(p) {
   const rs = !!(A.recovery && p);                  // пришёл по ссылке из письма — сначала новый пароль
   $("rs").hidden = !rs;
   $("out").hidden = !!p; $("in").hidden = !p || rs; $("sum").hidden = !p || rs;
-  if (!p) { if (A.recoveryError) { $("in-err").textContent = "Ссылка для восстановления устарела или уже использована. Нажмите «Восстановить по почте» и запросите новую."; $("in-err").hidden = false; } return; }
+  if (!p) { if (A.recoveryError) { $("in-err").textContent = "Ссылка для восстановления устарела или уже использована. Запросите новую."; $("in-err").hidden = false; } return; }
   if (rs) return;
   $("p-name").textContent = p.full_name || "—";
   $("p-idk").textContent = p.login ? "Логин" : "Почта"; $("p-id").textContent = p.login || p.email || "—";
