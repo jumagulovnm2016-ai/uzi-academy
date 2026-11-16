@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ru" class="acad-locked">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Руководство — Академия УЗИ</title>
+<style>
+:root{--bg:#f3f6f7;--paper:#fff;--ink:#18232f;--muted:#5b6b78;--line:#d5e0e3;--navy:#1f3864;--teal:#007a7a;--soft:#e2f1f1}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1519;--paper:#172027;--ink:#e5edf0;--muted:#9db0ba;--line:#2b3a43;--navy:#9cb6e6;--teal:#4cc3c3;--soft:#16302f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "PT Sans","Segoe UI",Arial,sans-serif;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.bar{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:8px;padding:8px 12px}
+.bar a{color:var(--teal);font-weight:700;text-decoration:none;white-space:nowrap}
+.bar b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--navy)}
+.bar button{font:700 18px/1 inherit;width:36px;height:36px;border-radius:8px;border:1.5px solid var(--line);background:var(--paper);color:var(--navy);cursor:pointer}
+.bar span{font:600 13px ui-monospace,Consolas,monospace;color:var(--muted);white-space:nowrap}
+#pages{display:grid;gap:12px;justify-items:center;padding:14px 8px 40px;overflow-x:auto}
+.pg{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.18);position:relative}
+.pg canvas{display:block;width:100%;height:100%;pointer-events:none}
+#msg{text-align:center;color:var(--muted);padding:40px 16px}
+@media print{body *{display:none!important}body:after{content:"Печать руководств недоступна.";display:block!important;padding:40px;font:20px sans-serif}}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a7b83">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>html.acad-locked body > *:not([role=dialog]){visibility:hidden}</style>
+</head>
+<body>
+<div class="bar">
+  <a href="guides.html">← Руководства</a>
+  <b id="title">Руководство</b>
+  <span id="count"></span>
+  <button type="button" id="zout" aria-label="Уменьшить">−</button>
+  <button type="button" id="zin" aria-label="Увеличить">+</button>
+</div>
+<p id="msg">Загрузка…</p>
+<div id="pages"></div>
+
+<script>
+// Защита от случайного сохранения: без контекстного меню, перетаскивания, Ctrl+S / Ctrl+P
+document.addEventListener("contextmenu", e => e.preventDefault());
+document.addEventListener("dragstart", e => e.preventDefault());
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && /^[spu]$/i.test(e.key)) { e.preventDefault(); e.stopPropagation(); }
+}, true);
+</script>
+<script src="offline.js"></script>
+<script src="engine/vendor/supabase-js-2.119.0.umd.js"></script>
+<script src="engine/account.js"></script>
+<script type="module">
+// Просмотр руководства внутри сайта (pdf.js): страницы рисуются картинками, кнопок «Скачать» и «Печать» нет.
+import * as pdfjs from "./engine/vendor/pdfjs-4.10.38/pdf.min.mjs";
+pdfjs.GlobalWorkerOptions.workerSrc = "./engine/vendor/pdfjs-4.10.38/pdf.worker.min.mjs";
+const $ = id => document.getElementById(id);
+const g = new URLSearchParams(location.search).get("g") || "";
+const A = window.AcadAccount;
+
+const ok = await (A && A.gate ? A.gate() : Promise.resolve(false));
+if (ok) document.documentElement.classList.remove("acad-locked");
+if (!ok) throw new Error("нет доступа");
+if (!/^[a-z0-9-]+$/.test(g)) { $("msg").textContent = "Руководство не найдено."; throw new Error("bad g"); }
+
+// название — из списка руководств
+fetch("guides.html").then(r => r.text()).then(t => {
+  const a = new DOMParser().parseFromString(t, "text/html").querySelector(`a[href="viewer.html?g=${g}"] b`);
+  if (a) { $("title").textContent = a.textContent; document.title = a.textContent + " — Академия УЗИ"; }
+}).catch(() => {});
+
+let doc;
+try { doc = await pdfjs.getDocument({ url: `guides/${g}.pdf`, isEvalSupported: false }).promise; }
+catch (e) { $("msg").textContent = navigator.onLine ? "Не удалось открыть руководство." : "Нет интернета — руководство не загружено."; throw e; }
+$("msg").hidden = true;
+$("count").textContent = doc.numPages + " стр.";
+
+let zoom = 1;
+const box = $("pages"), slots = [];
+const baseW = () => Math.min(box.clientWidth - 16, 900);
+const first = await doc.getPage(1);
+const ratio = (v => v.height / v.width)(first.getViewport({ scale: 1 }));
+
+for (let i = 1; i <= doc.numPages; i++) {
+  const d = document.createElement("div"); d.className = "pg"; d.dataset.n = i;
+  box.appendChild(d); slots.push(d);
+}
+function size() {
+  const w = Math.round(baseW() * zoom);
+  slots.forEach(d => { d.style.width = w + "px"; d.style.height = Math.round(w * ratio) + "px"; });
+}
+const drawn = new Map();          // номер страницы → ширина, с которой нарисована
+async function draw(d) {
+  const n = +d.dataset.n, w = d.clientWidth;
+  if (drawn.get(n) === w) return; drawn.set(n, w);
+  const page = await doc.getPage(n);
+  const vp1 = page.getViewport({ scale: 1 });
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const vp = page.getViewport({ scale: w / vp1.width * dpr });
+  const c = document.createElement("canvas"); c.width = Math.floor(vp.width); c.height = Math.floor(vp.height);
+  d.style.height = Math.round(w * vp1.height / vp1.width) + "px";
+  await page.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+  if (drawn.get(n) === w) d.replaceChildren(c);
+}
+// рисовать только видимые страницы (и соседние), дальние — освобождать память
+const io = new IntersectionObserver(es => es.forEach(e => {
+  const d = e.target;
+  if (e.isIntersecting) draw(d).catch(() => {});
+  else { d.replaceChildren(); drawn.delete(+d.dataset.n); }
+}), { rootMargin: "150% 0px" });
+size(); slots.forEach(d => io.observe(d));
+
+function rezoom(z) {
+  const top = scrollY / Math.max(document.body.scrollHeight, 1);
+  zoom = Math.max(0.6, Math.min(3, z)); size();
+  scrollTo(0, top * document.body.scrollHeight);
+  slots.forEach(d => { const r = d.getBoundingClientRect(); if (r.bottom > -innerHeight && r.top < innerHeight * 2) draw(d).catch(() => {}); });
+}
+$("zin").onclick = () => rezoom(zoom * 1.25);
+$("zout").onclick = () => rezoom(zoom / 1.25);
+let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => rezoom(zoom), 200); });
+</script>
+</body>
+</html>
