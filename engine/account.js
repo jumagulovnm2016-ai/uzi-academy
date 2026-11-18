@@ -24,7 +24,24 @@ if (!window.supabase || !window.supabase.createClient) { api.ready = Promise.res
 const HASH = location.hash || "";
 api.recovery = /type=recovery/.test(HASH) && !/error/.test(HASH);
 api.recoveryError = /type=recovery|otp_expired|error_code=/.test(HASH) && /error/.test(HASH);
-const sb = api.client = window.supabase.createClient(URL_, KEY_, { auth: { persistSession: true, autoRefreshToken: true, storageKey: "acad-auth" } });
+// Каждый запрос к серверу — не дольше 15 секунд. На iPhone (Safari, браузер Instagram) запрос при плохой
+// связи или после сворачивания приложения может «повиснуть» навсегда — тогда кнопка «Войти» и «Загрузка…» не отпускают.
+const TIMEOUT = 15000;
+function timedFetch(input, init) {
+  init = init || {};
+  const ctl = new AbortController(), outer = init.signal;
+  if (outer) { if (outer.aborted) ctl.abort(); else outer.addEventListener("abort", () => ctl.abort(), { once: true }); }
+  const t = setTimeout(() => ctl.abort(), TIMEOUT);
+  return fetch(input, Object.assign({}, init, { signal: ctl.signal }))
+    .catch(e => { throw ctl.signal.aborted && !(outer && outer.aborted) ? new Error("acad-timeout") : e; })
+    .finally(() => clearTimeout(t));
+}
+const sb = api.client = window.supabase.createClient(URL_, KEY_, {
+  auth: { persistSession: true, autoRefreshToken: true, storageKey: "acad-auth" },
+  global: { fetch: timedFetch }
+});
+// Safari возвращает страницу «Назад» из памяти в старом состоянии (окно «Нужно войти», «Загрузка…») — перезагрузить
+addEventListener("pageshow", e => { if (e.persisted) location.reload(); });
 sb.auth.onAuthStateChange(ev => { if (ev === "PASSWORD_RECOVERY" && !api.recovery) { api.recovery = true; setTimeout(emit, 0); } });
 
 // ---------- понятные сообщения об ошибках ----------
@@ -34,6 +51,7 @@ function ru(err) {
   if (/already registered|already been registered|User already/i.test(m)) return "Эта почта уже зарегистрирована. Войдите или попросите преподавателя сбросить пароль.";
   if (/Password should be at least|password.*(short|length)/i.test(m)) return "Пароль слишком короткий — нужно не меньше 6 символов.";
   if (/valid email|Unable to validate email|invalid format/i.test(m)) return "Проверьте адрес почты.";
+  if (/acad-timeout|abort/i.test(m)) return "Сервер не ответил. Проверьте интернет (Wi-Fi или мобильные данные) и нажмите ещё раз.";
   if (/rate limit|too many/i.test(m)) return "Слишком много попыток. Подождите минуту и попробуйте снова.";
   if (/Failed to fetch|NetworkError|Load failed|fetch/i.test(m)) return "Нет связи с сервером. Проверьте интернет.";
   if (/not authorized|not allowed to send/i.test(m)) return "На эту почту письмо отправить не удалось. Напишите преподавателю.";
@@ -270,7 +288,8 @@ async function afterLogin() {
   // один аккаунт курсанта — одно устройство: прежние сеансы завершаются (скрипт 07)
   if (api.profile && api.profile.role !== "teacher") { try { await sb.rpc("keep_only_this_session"); } catch (e) {} }
   emit();
-  if (active()) { flush(); await api.syncSrs(); emit(); }
+  // повторение подтягивается в фоне — вход не ждёт загрузки сотен карточек
+  if (active()) { flush(); api.syncSrs().then(emit); }
 }
 
 addEventListener("online", () => { flush(); api.syncSrs(); });
