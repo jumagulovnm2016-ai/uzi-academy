@@ -202,17 +202,19 @@ function copy(text, el) {
 async function fetchAll(q) { let out = []; for (let f = 0; ; f += 1000) { const { data, error } = await q().range(f, f + 999); if (error) throw error; out = out.concat(data); if (data.length < 1000) return out; } }
 async function load() {
   $("upd").textContent = "загрузка…";
-  const [profiles, groups, attempts, srs, meta] = await Promise.all([
+  const [profiles, groups, attempts, srs, meta, seen] = await Promise.all([
     fetchAll(() => sb.from("profiles").select("id,full_name,login,role,status,group_id,created_at,access_until").order("full_name"))
       .catch(() => fetchAll(() => sb.from("profiles").select("id,full_name,login,role,status,group_id,created_at").order("full_name"))),
     fetchAll(() => sb.from("groups").select("id,name,created_at").order("created_at")),
     fetchAll(() => sb.from("attempts").select("user_id,test_id,title,mode,correct,total,percent,wrong_ids,finished_at").order("finished_at", { ascending: false })),
     fetchAll(() => sb.from("srs_cards").select("user_id,card->>due")),
-    sb.rpc("teacher_users_meta").then(r => r.error ? [] : r.data)
+    sb.rpc("teacher_users_meta").then(r => r.error ? [] : r.data),
+    sb.rpc("teacher_last_seen").then(r => r.error ? null : r.data, () => null)     // скрипт 08-visits.sql
   ]);
   D.profiles = profiles; D.groups = groups; D.attempts = attempts; D.srs = srs;
   D.meta = {}; (meta || []).forEach(m => D.meta[m.id] = m);
   D.metaMissing = !meta || !meta.length;
+  D.seen = {}; (seen || []).forEach(v => D.seen[v.user_id] = v); D.visitsMissing = seen == null;
   await loadBank();
   $("upd").textContent = "обновлено " + new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
   renderAll();
@@ -234,9 +236,10 @@ function studentStats(p) {
   const cards = D.srs.filter(c => c.user_id === p.id), now = Date.now();
   const overdue = cards.filter(c => Date.parse(c.due) < now - day).length;
   const m = D.meta[p.id] || {};
-  const lastAct = [at[0] && at[0].finished_at, m.last_sign_in_at].filter(Boolean).sort().pop() || null;
+  const v = (D.seen || {})[p.id] || {};
+  const lastAct = [at[0] && at[0].finished_at, m.last_sign_in_at, v.last_at].filter(Boolean).sort((a, b) => Date.parse(a) - Date.parse(b)).pop() || null;
   return { at, tests: vals.length, avg: vals.length ? Math.round(vals.reduce((s, v) => s + v, 0) / vals.length) : null,
-           cards: cards.length, overdue, last: lastAct, email: m.email || null, signin: m.last_sign_in_at || null };
+           cards: cards.length, overdue, last: lastAct, email: m.email || null, signin: m.last_sign_in_at || null, seen: v.last_at || null, seenDev: v.last_device || null };
 }
 const gname = id => { const g = D.groups.find(x => x.id === id); return g ? g.name : "без группы"; };
 
@@ -302,13 +305,33 @@ function renderStudents() {
   };
 }
 
+// журнал посещений курсанта: дни → страницы (скрипт 08-visits.sql)
+const hm = s => new Date(s).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+const dayName = d => new Date(d + "T12:00:00").toLocaleDateString("ru-RU", { weekday: "short", day: "numeric", month: "long" });
+async function loadVisits(uid) {
+  const { data, error } = await sb.from("visits").select("day,page,title,device,first_at,last_at,hits")
+    .eq("user_id", uid).order("day", { ascending: false }).order("first_at", { ascending: true }).limit(500);
+  const box = $("d-visits"); if (!box) return;
+  if (error) { box.textContent = /visits|relation|schema cache/i.test(error.message) ? "Чтобы видеть посещения, запустите в Supabase скрипт 08-visits.sql." : A.ru(error); return; }
+  if (!data.length) { box.textContent = "Пока нет записей. Учёт ведётся с момента запуска скрипта 08-visits.sql."; return; }
+  const days = {}; data.forEach(v => (days[v.day] || (days[v.day] = [])).push(v));
+  const name = v => v.page === "вход" ? "<b>Вход в аккаунт</b>" : esc(v.title || v.page);
+  box.className = "";
+  box.innerHTML = `<p class="muted small">Время первого и последнего открытия страницы за день. Всего дней с посещениями: ${Object.keys(days).length}.</p>
+    <div class="scroll" style="max-height:340px"><table><thead><tr><th>Время</th><th>Страница</th><th>Устройство</th><th class="n">Раз</th></tr></thead><tbody>` +
+    Object.entries(days).map(([d, list]) => { const a = list.reduce((m, v) => v.first_at < m ? v.first_at : m, list[0].first_at), b = list.reduce((m, v) => v.last_at > m ? v.last_at : m, list[0].last_at);
+      return `<tr><td colspan="4" style="background:var(--bg,#f3f6f7)"><b>${dayName(d)}</b> <span class="muted small">· на сайте с ${hm(a)} до ${hm(b)}</span></td></tr>` +
+        list.map(v => `<tr><td class="n">${hm(v.first_at)}${v.last_at !== v.first_at && hm(v.last_at) !== hm(v.first_at) ? "–" + hm(v.last_at) : ""}</td><td>${name(v)}</td><td class="small">${esc(v.device || "—")}</td><td class="n">${v.hits}</td></tr>`).join(""); }).join("") +
+    `</tbody></table></div>`;
+}
+
 function showStudent(id) {
   const p = D.profiles.find(x => x.id === id); if (!p) return;
   const s = studentStats(p);
   const by = {}; s.at.forEach(a => { const b = by[a.test_id] || (by[a.test_id] = { title: a.title, n: 0, last: a.percent, best: 0 }); b.n++; b.best = Math.max(b.best, a.percent); });
   const gopts = D.groups.map(g => `<option value="${g.id}"${g.id === p.group_id ? " selected" : ""}>${esc(g.name)}</option>`).join("") + `<option value="__new">＋ Новая группа…</option><option value=""${p.group_id ? "" : " selected"}>без группы</option>`;
   openDlg(`<div class="row"><h2 style="flex:1">${esc(p.full_name)}</h2><span class="st ${p.status}">${ST[p.status]}</span></div>
-    <p class="muted small">${p.login ? "Логин: <b>" + esc(p.login) + "</b>" : "Почта: <b>" + esc(s.email || "—") + "</b>"} · аккаунт с ${dt(p.created_at)} · последний вход: ${dtt(s.signin)}</p>
+    <p class="muted small">${p.login ? "Логин: <b>" + esc(p.login) + "</b>" : "Почта: <b>" + esc(s.email || "—") + "</b>"} · аккаунт с ${dt(p.created_at)} · последний вход: ${dtt(s.signin)} · был на сайте: ${s.seen ? dtt(s.seen) + (s.seenDev ? " (" + esc(s.seenDev) + ")" : "") : "—"}</p>
     <div class="row"><label class="small muted">Группа:</label><select id="d-g">${gopts}</select><button class="btn sm" id="d-gs" type="button">Сохранить</button>
       <button class="btn sm" id="d-ren" type="button">Изменить ФИО</button>
       <button class="btn sm" id="d-code" type="button">Новый код</button>
@@ -319,10 +342,12 @@ function showStudent(id) {
     <div id="d-out"></div>
     <div class="stats"><div class="stat"><span>Тестов пройдено</span><b>${s.tests}</b></div><div class="stat"><span>Средний</span><b>${s.avg == null ? "—" : s.avg + "%"}</b></div>
       <div class="stat"><span>Попыток</span><b>${s.at.length}</b></div><div class="stat"><span>Повторение: просрочено</span><b>${s.overdue} / ${s.cards}</b></div></div>
+    <h3>Посещения</h3><div id="d-visits" class="muted small">загрузка…</div>
     <h3>Слабые темы</h3><div id="d-weak" class="muted small">загрузка…</div>
     <h3>По тестам</h3><div class="scroll"><table><thead><tr><th>Тест</th><th class="n">Попыток</th><th class="n">Последний</th><th class="n">Лучший</th></tr></thead><tbody>
       ${Object.values(by).sort((a, b) => a.last - b.last).map(b => `<tr><td>${esc(b.title)}</td><td class="n">${b.n}</td><td class="n">${pct(b.last)}</td><td class="n">${pct(b.best)}</td></tr>`).join("") || `<tr><td colspan="4" class="muted">Нет попыток</td></tr>`}</tbody></table></div>
     <h3>Последние попытки</h3><div class="scroll"><table><tbody>${s.at.slice(0, 15).map(a => `<tr><td class="n">${dtt(a.finished_at)}</td><td>${esc(a.title)}</td><td class="small">${MODE[a.mode] || ""}</td><td class="n">${a.correct}/${a.total} · ${pct(a.percent)}</td></tr>`).join("")}</tbody></table></div>`);
+  loadVisits(p.id);
   // слабые темы по последней попытке каждого теста (тот же расчёт, что в «Моём плане» курсанта)
   (async () => {
     const last = AcadPlan.latest(s.at), need = Object.keys(last).filter(t => !(D.bank[t] && D.bank[t].questions && D.bank[t].questions.length));
@@ -496,7 +521,8 @@ A.ready.then(p => {
   if (!p) { $("denied").hidden = false; $("denied-text").textContent = "Войдите в личный кабинет как преподаватель."; return; }
   if (p.role !== "teacher" || p.status !== "active") { $("denied").hidden = false; $("denied-text").textContent = "Эта страница — только для преподавателя."; return; }
   $("app").hidden = false;
-  load().then(() => { if (D.metaMissing) $("upd").textContent += " · почта и время входа не видны: запустите в Supabase скрипт 03-teacher-view.sql"; })
+  load().then(() => { if (D.metaMissing) $("upd").textContent += " · почта и время входа не видны: запустите в Supabase скрипт 03-teacher-view.sql";
+    if (D.visitsMissing) $("upd").textContent += " · журнал посещений не включён: запустите в Supabase скрипт 08-visits.sql"; })
     .catch(e => { $("upd").textContent = "Ошибка загрузки: " + A.ru(e); });
 });
 })();

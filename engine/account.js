@@ -282,9 +282,38 @@ function shutter(p, opts) {
   document.querySelectorAll("body > :not([role=dialog])").forEach(el => { el.setAttribute("aria-hidden", "true"); el.style.visibility = "hidden"; });
 }
 
+// ---------- журнал посещений (скрипт 08-visits.sql) ----------
+// Устройство и браузер — чтобы преподаватель видел, например, «iPhone · Instagram» (встроенный браузер).
+function device() {
+  const ua = navigator.userAgent || "";
+  const os = /iPhone|iPod/.test(ua) ? "iPhone" : /iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? "iPad"
+    : /Android/.test(ua) ? "Android" : /Windows/.test(ua) ? "Windows" : /Macintosh|Mac OS X/.test(ua) ? "Mac" : /Linux/.test(ua) ? "Linux" : "другое";
+  const br = /Instagram/.test(ua) ? "Instagram" : /FBAN|FBAV|FB_IAB/.test(ua) ? "Facebook" : /Telegram/.test(ua) ? "Telegram" : /WhatsApp/.test(ua) ? "WhatsApp"
+    : /YaBrowser/.test(ua) ? "Яндекс" : /EdgiOS|Edg\//.test(ua) ? "Edge" : /OPR\/|Opera/.test(ua) ? "Opera" : /SamsungBrowser/.test(ua) ? "Samsung"
+    : /CriOS|Chrome\//.test(ua) ? "Chrome" : /FxiOS|Firefox\//.test(ua) ? "Firefox" : /Safari\//.test(ua) ? "Safari" : "браузер";
+  let app = false; try { app = navigator.standalone === true || matchMedia("(display-mode: standalone)").matches; } catch (e) {}
+  return os + " · " + br + (app ? " (значок)" : "");
+}
+function track(page, title) {
+  const p = api.profile;
+  if (!p || p.role !== "student" || !navigator.onLine) return;
+  const seen = LS.get("acad-visits", {}), key = p.id + "|" + page, now = Date.now();
+  if (page !== "вход" && now - (seen[key] || 0) < 5 * 60 * 1000) return;     // не чаще раза в 5 минут на страницу
+  for (const k in seen) if (now - seen[k] > 864e5) delete seen[k];
+  seen[key] = now; LS.set("acad-visits", seen);
+  sb.rpc("log_visit", { p_page: page, p_title: String(title || "").replace(/\s*[·—|-]\s*Академия УЗИ\s*$/, "").slice(0, 200), p_device: device() })
+    .then(() => {}, () => {});
+}
+function trackPage() {
+  const file = location.pathname.split("/").pop() || "index.html", t = new URLSearchParams(location.search).get("t");
+  const page = (file + (t ? "?t=" + t : "")).slice(0, 120);
+  setTimeout(() => track(page, document.title), 2500);     // заголовок теста подставляется после загрузки
+}
+
 async function afterLogin() {
   LS.del("acad-kicked");
   await loadProfile();
+  track("вход", "Вход по логину/коду или почте");
   // один аккаунт курсанта — одно устройство: прежние сеансы завершаются (скрипт 07)
   if (api.profile && api.profile.role !== "teacher") { try { await sb.rpc("keep_only_this_session"); } catch (e) {} }
   emit();
@@ -294,6 +323,7 @@ async function afterLogin() {
 
 addEventListener("online", () => { flush(); api.syncSrs(); });
 api.ready = loadProfile().then(p => {
+  if (p) trackPage();
   if (p && active()) {
     flush();
     if (LS.get(K.dirty, 0) || Date.now() - LS.get(K.synced, 0) > 60 * 1000) api.syncSrs().then(emit);
