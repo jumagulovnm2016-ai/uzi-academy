@@ -259,6 +259,13 @@
     "format": "quiz",
     "n": 30,
     "img": 8
+   },
+   {
+    "id": "screening-2-final",
+    "title": "Итоговый: скрининг II триместра",
+    "format": "quiz",
+    "n": 30,
+    "img": 0
    }
   ]
  },
