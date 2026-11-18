@@ -12,7 +12,9 @@
   • остальные страницы и папки (руководства, нормативы, картинки, анкета…) копируются как есть,
     с переименованием ключей хранилища (префикс acad-), чтобы Академия и «Тесты» на одном домене
     не мешали друг другу;
-  • собственные файлы Академии (главная, движок, кабинеты, офлайн-кэш, иконки) не трогаются.
+  • собственные файлы Академии (главная, движок, кабинеты, офлайн-кэш, иконки) не трогаются;
+  • собственные материалы Академии из data/acad-own.json (руководства, картинки) не удаляются,
+    а её руководства добавляются в guides.html; все руководства там открываются во встроенном просмотрщике.
 После переноса нужно пересобрать офлайн-кэш: python3 build-sw.py (в автоматическом переносе — само).
 """
 import filecmp, html, importlib.util, json, os, re, shutil, sys
@@ -24,6 +26,21 @@ OWN_FILES = {'index.html', 'quiz.html', 'guess.html', 'account.html', 'teacher.h
              'manifest.webmanifest', 'sw.js', 'sw.template.js', 'build-sw.py', 'offline.js', 'README.md', 'CNAME', '.nojekyll'}
 OWN_DIRS = {'engine', 'data', 'supabase', 'tools', 'icons', '.github', '.git'}
 MIRROR_DIRS = {'img', 'guides'}      # зеркально: удалённое в «Тестах» удаляется и здесь
+
+# Собственные материалы Академии (data/acad-own.json): перенос их не удаляет и добавляет в списки
+def load_own():
+    try:
+        return json.load(open(os.path.join(ROOT, 'data', 'acad-own.json'), encoding='utf-8'))
+    except FileNotFoundError:
+        return {}
+OWN = load_own()
+KEEP = tuple(OWN.get('keep', []))
+
+
+def is_kept(path):
+    rel = os.path.relpath(path, ROOT).replace(os.sep, '/')
+    return any(rel == k or (k.endswith('/') and rel.startswith(k)) for k in KEEP)
+
 
 spec = importlib.util.spec_from_file_location('extract_tests', os.path.join(ROOT, 'tools', 'extract-tests.py'))
 ex = importlib.util.module_from_spec(spec); spec.loader.exec_module(ex)
@@ -95,10 +112,32 @@ def copy_tree(src, dst, mirror, log, transform_html=False):
         for d, dirs, files in os.walk(dst):
             rel = os.path.relpath(d, dst)
             for f in files:
-                if not os.path.exists(os.path.join(src, rel, f)):
+                if not os.path.exists(os.path.join(src, rel, f)) and not is_kept(os.path.join(d, f)):
                     os.remove(os.path.join(d, f)); changed += 1
     if changed:
         log.append(f'{os.path.relpath(dst, ROOT)}/: файлов изменено {changed}')
+
+
+def acad_guides(text):
+    """guides.html Академии: руководства открываются во встроенном просмотрщике (без скачивания),
+    плюс собственные руководства Академии из data/acad-own.json."""
+    text = re.sub(r'href="guides/([a-z0-9-]+)\.pdf"(?:\s+target="_blank")?(?:\s+rel="noopener")?', r'href="viewer.html?g=\1"', text)
+    text = text.replace('Руководства открываются в формате PDF прямо в браузере; их можно сохранить на телефон.',
+                        'Руководства открываются прямо на сайте; страницы можно увеличивать кнопками «−» и «+».')
+    for g in OWN.get('guides', []):
+        href = re.search(r'href="([^"]+)"', g['link']).group(1)
+        if f'href="{href}"' in text:
+            continue
+        m = re.search(r'<h2>' + re.escape(g['section']) + r'</h2>\s*<div class="list">', text)
+        if m:
+            end = text.index('</div>', m.end())
+            text = text[:end].rstrip(' ') + ' ' + g['link'] + '\n' + text[end:]
+        else:
+            anchor = text.find('<h2>' + g.get('before', '') + '</h2>') if g.get('before') else -1
+            if anchor < 0:
+                anchor = text.find('<footer>')
+            text = text[:anchor] + f'<h2>{g["section"]}</h2>\n<div class="list">\n ' + g['link'] + '\n</div>\n' + text[anchor:]
+    return text
 
 
 # ---------- главная: добавить ссылки на новые тесты в нужный раздел ----------
@@ -165,6 +204,8 @@ def main(src):
             out = acad_keys(s)
             if f in GATED_PAGES:
                 out = add_gate(out)
+            if f == 'guides.html':
+                out = acad_guides(out)
             write_if_changed(os.path.join(ROOT, f), out, log, f)
             continue
         try:

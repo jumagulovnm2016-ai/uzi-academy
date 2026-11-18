@@ -1,7 +1,7 @@
 // Тесты по УЗ-диагностике — офлайн-режим. Файл sw.js собирается из sw.template.js командой: python3 build-sw.py
 // Страницы: сначала сеть (обновления приходят сразу), без сети — из кэша.
 // Результаты в Telegram: без сети ставятся в очередь и отправляются при появлении связи.
-const VERSION = '20261117-035843';
+const VERSION = '20261118-144838';
 const CACHE = 'academy-' + VERSION;
 const FONTS = 'academy-fonts';
 const PRECACHE = [
@@ -73,6 +73,7 @@ const PRECACHE = [
  "./engine/vendor/supabase-js-2.119.0.umd.js",
  "./engine/vendor/ts-fsrs-5.4.1.umd.js",
  "./data/tests/brain-guess.json",
+ "./data/tests/breast.json",
  "./data/tests/cns-face-spine.json",
  "./data/tests/early-pregnancy.json",
  "./data/tests/early-quiz.json",
@@ -139,6 +140,13 @@ const IMG = {
   "./img/brain-guess/b28.jpg",
   "./img/brain-guess/b29.jpg",
   "./img/brain-guess/b30.jpg"
+ ],
+ "breast": [
+  "./img/breast/q_abscess.jpg",
+  "./img/breast/q_cancer.jpg",
+  "./img/breast/q_cyst.jpg",
+  "./img/breast/q_fibroadenoma.jpg",
+  "./img/breast/q_radial_scar.jpg"
  ],
  "face-guess": [
   "./img/face-guess/f01.jpg",
