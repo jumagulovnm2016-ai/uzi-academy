@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ситуационные задачи · Академия УЗИ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600;700&family=PT+Sans:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="engine/quiz.css">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0a7b83">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+.vignette{margin:0;font-size:17px;line-height:1.55}
+.task-q{margin:0;font-weight:700;color:var(--navy)}
+.field{display:grid;gap:6px}
+.field label{font-weight:700;color:var(--navy);font-size:15px}
+.field input,.field textarea{font:inherit;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+.field textarea{min-height:120px;resize:vertical}
+.field input:focus-visible,.field textarea:focus-visible{outline:3px solid var(--teal);outline-offset:1px;border-color:var(--teal)}
+.field input[readonly],.field textarea[readonly]{background:var(--teal-soft)}
+.key{border-left:4px solid var(--teal);background:var(--teal-soft);border-radius:8px;padding:12px 16px;display:grid;gap:8px}
+.key .cat{font-family:var(--f-display);font-size:22px;font-weight:700;color:var(--navy)}
+.key p{margin:0}
+.key .trap{color:var(--bad)}
+.key .src{font-size:13px;color:var(--muted)}
+.self{display:grid;gap:8px}
+.self .row{display:flex;gap:8px;flex-wrap:wrap}
+.self button{font:inherit;font-weight:700;flex:1 1 140px;border-radius:8px;padding:10px 12px;cursor:pointer;border:1.5px solid var(--line);background:var(--paper);color:var(--ink)}
+.self button[data-v="1"][aria-pressed="true"]{background:var(--ok);border-color:var(--ok);color:var(--paper)}
+.self button[data-v="0.5"][aria-pressed="true"]{background:#b7791f;border-color:#b7791f;color:#fff}
+.self button[data-v="0"][aria-pressed="true"]{background:var(--bad);border-color:var(--bad);color:var(--paper)}
+.cell.half{background:#b7791f;border-color:#b7791f;color:#fff}
+.cell.open{border-color:var(--teal);color:var(--teal)}
+.navrow{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.mine{font-size:14px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="backlink" href="./">← Все тесты</a>
+    <span class="eyebrow" id="eyebrow">Академия УЗИ</span>
+    <h1 id="h1">Загрузка задач…</h1>
+    <p class="sub" id="about"></p>
+    <div class="bar"><div class="track" aria-hidden="true"><div class="fill" id="fill"></div></div><span class="stat" id="stat"></span></div>
+  </header>
+
+  <section class="card who" id="who">
+    <label for="fio">ФИО курсанта</label>
+    <input id="fio" type="text" autocomplete="name" placeholder="Например: Иванов Иван Иванович" maxlength="120">
+    <p class="hint" id="fiohint">Введите фамилию, имя и отчество.</p>
+  </section>
+
+  <section class="card" id="tcard" aria-live="polite"></section>
+  <section class="card result" id="result" hidden></section>
+
+  <section class="card">
+    <div class="maphead"><h2>Карта задач</h2>
+      <div class="legend"><span><i style="background:var(--ok)"></i>верно</span><span><i style="background:#b7791f"></i>частично</span><span><i style="background:var(--bad)"></i>неверно</span><span><i style="border:1.5px solid var(--teal)"></i>ответ открыт</span></div></div>
+    <div class="map" id="map"></div>
+    <div class="nav"><button class="btn" id="restart" type="button">Начать заново</button><button class="btn primary" id="finish" type="button">Завершить</button></div>
+  </section>
+
+  <footer><span id="foot"></span></footer>
+</div>
+<script src="engine/vendor/supabase-js-2.119.0.umd.js"></script>
+<script src="engine/account.js"></script>
+<script src="engine/cases.js"></script>
+<script src="offline.js"></script>
+</body>
+</html>

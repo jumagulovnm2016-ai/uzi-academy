@@ -35,6 +35,7 @@ precache += ['./data/catalog.json']
 # Единый движок тестов и банк вопросов
 precache += sorted('./' + os.path.join(d, f).replace(os.sep, '/') for d, _, fs in os.walk('engine') for f in fs if not f.endswith('.txt'))
 precache += ['./data/tests/' + f for f in sorted(os.listdir('data/tests')) if f.endswith('.json')] if os.path.isdir('data/tests') else []
+precache += ['./data/cases/' + f for f in sorted(os.listdir('data/cases')) if f.endswith('.json')] if os.path.isdir('data/cases') else []
 
 img_map = {}
 if os.path.isdir('img'):

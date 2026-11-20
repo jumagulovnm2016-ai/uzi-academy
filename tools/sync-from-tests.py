@@ -22,7 +22,7 @@ import filecmp, html, importlib.util, json, os, re, shutil, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Файлы и папки Академии, которые перенос не перезаписывает
-OWN_FILES = {'index.html', 'quiz.html', 'guess.html', 'account.html', 'teacher.html', 'plan.html', 'exam-builder.html',
+OWN_FILES = {'index.html', 'quiz.html', 'guess.html', 'cases.html', 'account.html', 'teacher.html', 'plan.html', 'exam-builder.html',
              'manifest.webmanifest', 'sw.js', 'sw.template.js', 'build-sw.py', 'offline.js', 'README.md', 'CNAME', '.nojekyll'}
 OWN_DIRS = {'engine', 'data', 'supabase', 'tools', 'icons', '.github', '.git'}
 MIRROR_DIRS = {'img', 'guides'}      # зеркально: удалённое в «Тестах» удаляется и здесь
